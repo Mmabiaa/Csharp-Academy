@@ -4,40 +4,42 @@ This document outlines the development roadmap for C# Academy.
 
 ## Phase 1: Foundation
 - [x] Project structure and documentation
-- [ ] Solution and project setup
-- [ ] Clean Architecture implementation
-- [ ] Database design and EF Core setup
-- [ ] Authentication and authorization (JWT)
+- [x] Solution and project setup
+- [x] Clean Architecture implementation
+- [x] Database design and EF Core setup
+- [x] Authentication and authorization (JWT)
 
 ## Phase 2: Learning Core
-- [ ] Courses
-- [ ] Modules
-- [ ] Lessons
-- [ ] Progress tracking
+- [x] Courses
+- [x] Modules
+- [x] Lessons
+- [x] Progress tracking
 
 ## Phase 3: Assessment
-- [ ] Quizzes
-- [ ] Question types (multiple choice, true/false, etc.)
-- [ ] Quiz attempts
-- [ ] Scoring
+- [x] Quizzes
+- [x] Question types (multiple choice, true/false)
+- [x] Quiz attempts
+- [x] Scoring
+- [ ] Additional question types (fill-in-the-blank, output prediction)
 
 ## Phase 4: Classroom
 - [ ] Teachers
 - [ ] Classes
-- [ ] Enrollments
+- [x] Enrollments
 
 ## Phase 5: Gamification
-- [ ] XP system
-- [ ] Badges/achievements
-- [ ] Streaks
-- [ ] Leaderboards
+- [x] XP system
+- [x] Badges/achievements
+- [x] Streaks
+- [x] Leaderboards
 
 ## Phase 6: AI Features
-- [ ] Code explanation
-- [ ] AI learning assistant
+- [x] AI learning assistant (chat tutor)
+- [ ] Code explanation (inline in lessons)
 - [ ] Quiz generation
 
 ## Phase 7: Advanced Features
-- [ ] Interactive coding playground (Roslyn)
-- [ ] Certificates
+- [x] Interactive coding playground (Roslyn)
+- [x] Certificates (digital + verification)
+- [ ] PDF certificate export
 - [ ] Analytics

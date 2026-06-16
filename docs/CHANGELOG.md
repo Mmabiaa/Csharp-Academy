@@ -8,52 +8,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- JWT authentication (register/login) with ASP.NET Core Identity
-- Auth API endpoints (`/api/auth/register`, `/api/auth/login`)
-- Course detail endpoint with modules and lessons (`GET /api/courses/{id}`)
-- Course enrollment endpoint (`POST /api/courses/{id}/enroll`)
-- Enrollment repository and command handler
-- JwtTokenService for token generation
-- DatabaseInitializer for auto-migration and role seeding on startup
-- EF Core `InitialCreate` migration
-- Seed data for modules and lessons
-- Frontend auth context, Login and Register pages
-- Frontend Course Detail page with enrollment
-- Frontend `.env` with API URL configuration
-- ApplicationDbContextFactory for design-time migrations
+- Teacher/classroom management: create classrooms, join codes, member lists, optional course linking
+- AI quiz generation from lesson content (`POST /api/lessons/{id}/quiz/generate`)
+- Analytics dashboard for teachers (users, enrollments, quiz pass rate, course stats)
+- PDF certificate export via QuestPDF (`GET /api/certificates/{code}/pdf`)
+- New question types: fill-in-the-blank and output prediction
+- Teacher registration role with JWT role claims
+- Frontend: Classrooms page, Analytics dashboard, quiz type UI, PDF download links
+- EF migration: `AddClassroomsAndQuestionTypes`
+- AI Learning Assistant with OpenAI integration and offline C# tutor fallback
+- Interactive C# Playground using Roslyn script execution (`POST /api/playground/run`)
+- Certificate system: auto-issue on course completion, verification endpoint, Graduate badge
+- Leaderboard API and page (top learners by XP)
+- Lesson viewer with markdown rendering (`react-markdown`)
+- Progress tracking with course completion percentage
+- Quiz taking, scoring, and `QuizAttempt` persistence
+- Gamification: XP rewards, daily streaks, 5 badges, badge checks on milestones
+- APIs: lessons, progress, quizzes, users/profile, certificates, leaderboard, assistant, playground
+- Frontend pages: Lesson, Quiz, Profile, Playground, AI Tutor, Leaderboard, Certificate Verify
+- EF migrations: `InitialCreate`, `AddQuizzesAndGamification`, `AddCertificatesAndFeatures`
+- Fixed `.env` loading with `Env.TraversePath().Load()` for reliable MySQL connection
 
 ### Changed
-- Downgraded EF Core packages to 9.0.0 for Pomelo MySQL provider compatibility on .NET 10
-- Enhanced ApplicationDbContext with entity relationships and indexes
-- Updated Courses page with links to course detail
-- Fixed frontend API base URL default to `http://localhost:5000/api`
-
-### Added (previous)
-- Project initialization with Clean Architecture structure
-- Documentation files (README.md, ARCHITECTURE.md, CHANGELOG.md, ROADMAP.md)
-- Domain entities (Course, CourseModule, Lesson, Quiz, Question, QuestionOption, User, Enrollment, Progress, Badge, UserBadge)
-- Application layer with MediatR and CQRS pattern (GetCoursesQuery)
-- Infrastructure layer with EF Core and Identity
-- Web API with controllers for Courses and WeatherForecast
-- Seed data for initial courses
-- React frontend with Vite, TypeScript, Tailwind CSS, React Router
-- Home and Courses pages with responsive design
-- .gitignore file
-- Environment variable support using DotNetEnv
-- EF Core tools manifest
-- CORS configuration
-- global.json for SDK version pinning
-- MySQL support with Pomelo.EntityFrameworkCore.MySql
-- Microsoft.EntityFrameworkCore.Design to API project for EF Core tools
-- .env.example template for environment variables
-
-### Changed
-- Switched target framework to net10.0 (matches installed SDK)
-- Updated all NuGet packages to .NET 10 compatible versions
-- Moved Identity dependencies out of Domain layer to maintain Clean Architecture
+- Course detail shows progress bar and completed lesson indicators
+- Lesson page links to AI Tutor with lesson context
+- Profile page shows certificates, badges, XP, and enrollments
+- Navigation expanded with Playground, AI Tutor, Leaderboard links
 
 ### Fixed
-- MediatR NuGet package errors (removed obsolete MediatR.Extensions.Microsoft.DependencyInjection)
-- Fixed IdentityUser dependency issues by using Microsoft.AspNetCore.Identity.EntityFrameworkCore in Infrastructure layer
-- Added Microsoft.EntityFrameworkCore.Design to API project for EF migrations
-- Package version mismatches (Microsoft.Extensions.DependencyInjection)
+- MySQL connection failures caused by `.env` not being found at runtime
+- Disabled HTTPS redirect in Development to avoid port warnings
+
+## [0.1.0] - 2026-06-16
+
+### Added
+- Project initialization with Clean Architecture structure
+- JWT authentication (register/login) with ASP.NET Core Identity
+- Courses API with modules, lessons, and enrollment
+- React frontend with Vite, TypeScript, Tailwind CSS, React Router
+- MySQL support with Pomelo.EntityFrameworkCore.MySql
+- Seed data: 2 courses, 3 modules, 4 lessons
+- Environment variable support using DotNetEnv
+- CORS configuration and Swagger docs
+
+### Changed
+- Target framework net10.0 with EF Core 9 for Pomelo compatibility
