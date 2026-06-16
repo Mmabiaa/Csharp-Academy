@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchCourses, type Course } from '../lib/api';
+import { Link } from 'react-router-dom';
+import { fetchCourses } from '../lib/api';
 
 export default function Courses() {
   const { data: courses, isLoading, error } = useQuery({
@@ -30,10 +31,14 @@ export default function Courses() {
       <h1 className="text-4xl font-bold text-gray-900 mb-8">Courses</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {courses?.map((course) => (
-          <div key={course.id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+          <Link
+            key={course.id}
+            to={`/courses/${course.id}`}
+            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow block"
+          >
             <h2 className="text-2xl font-semibold mb-2 text-gray-900">{course.title}</h2>
             <p className="text-gray-600">{course.description}</p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

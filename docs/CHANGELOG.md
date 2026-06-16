@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- JWT authentication (register/login) with ASP.NET Core Identity
+- Auth API endpoints (`/api/auth/register`, `/api/auth/login`)
+- Course detail endpoint with modules and lessons (`GET /api/courses/{id}`)
+- Course enrollment endpoint (`POST /api/courses/{id}/enroll`)
+- Enrollment repository and command handler
+- JwtTokenService for token generation
+- DatabaseInitializer for auto-migration and role seeding on startup
+- EF Core `InitialCreate` migration
+- Seed data for modules and lessons
+- Frontend auth context, Login and Register pages
+- Frontend Course Detail page with enrollment
+- Frontend `.env` with API URL configuration
+- ApplicationDbContextFactory for design-time migrations
+
+### Changed
+- Downgraded EF Core packages to 9.0.0 for Pomelo MySQL provider compatibility on .NET 10
+- Enhanced ApplicationDbContext with entity relationships and indexes
+- Updated Courses page with links to course detail
+- Fixed frontend API base URL default to `http://localhost:5000/api`
+
+### Added (previous)
 - Project initialization with Clean Architecture structure
 - Documentation files (README.md, ARCHITECTURE.md, CHANGELOG.md, ROADMAP.md)
 - Domain entities (Course, CourseModule, Lesson, Quiz, Question, QuestionOption, User, Enrollment, Progress, Badge, UserBadge)
