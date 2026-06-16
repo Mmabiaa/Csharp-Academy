@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchUserProfile } from "../lib/api";
+import { fetchUserProfile, fetchCertificates, getCertificatePdfUrl } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function Profile() {
@@ -9,6 +9,12 @@ export default function Profile() {
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ["profile"],
     queryFn: () => fetchUserProfile(token!),
+    enabled: isAuthenticated && !!token,
+  });
+
+  const { data: certificates } = useQuery({
+    queryKey: ["certificates"],
+    queryFn: () => fetchCertificates(token!),
     enabled: isAuthenticated && !!token,
   });
 
@@ -62,6 +68,40 @@ export default function Profile() {
               <div key={badge.id} className="bg-white p-4 rounded-lg shadow-md border-l-4 border-yellow-400">
                 <p className="font-semibold text-gray-900">{badge.name}</p>
                 <p className="text-sm text-gray-600">{badge.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Certificates</h2>
+        {!certificates || certificates.length === 0 ? (
+          <p className="text-gray-500">Complete a course to earn a certificate.</p>
+        ) : (
+          <div className="space-y-3">
+            {certificates.map((cert) => (
+              <div
+                key={cert.id}
+                className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200"
+              >
+                <Link
+                  to={`/certificates/${cert.certificateCode}`}
+                  className="block hover:opacity-90"
+                >
+                  <p className="font-medium text-gray-900">🎓 {cert.courseTitle}</p>
+                  <p className="text-sm text-gray-600">
+                    Issued {new Date(cert.issuedAt).toLocaleDateString()} · Code: {cert.certificateCode}
+                  </p>
+                </Link>
+                <a
+                  href={getCertificatePdfUrl(cert.certificateCode)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-2 text-sm text-blue-600 hover:underline"
+                >
+                  Download PDF
+                </a>
               </div>
             ))}
           </div>

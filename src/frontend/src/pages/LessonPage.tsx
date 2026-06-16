@@ -1,14 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { fetchLesson, completeLesson } from "../lib/api";
+import { fetchLesson, completeLesson, generateQuiz } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 
 export default function LessonPage() {
   const { id } = useParams<{ id: string }>();
   const lessonId = Number(id);
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, isTeacher } = useAuth();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
 
@@ -22,12 +22,25 @@ export default function LessonPage() {
     mutationFn: () => completeLesson(lessonId, token!),
     onSuccess: (result) => {
       const badgeMsg = result.newBadges.length > 0 ? ` Badges earned: ${result.newBadges.join(", ")}` : "";
-      setMessage(
-        `Lesson complete! +${result.xpEarned} XP (Total: ${result.totalXp}). Streak: ${result.currentStreak} days.${badgeMsg}`
-      );
+      let msg = `Lesson complete! +${result.xpEarned} XP (Total: ${result.totalXp}). Streak: ${result.currentStreak} days.${badgeMsg}`;
+      if (result.courseCompleted && result.certificateCode) {
+        msg += ` 🎓 Course completed! Certificate: ${result.certificateCode}`;
+      }
+      setMessage(msg);
       queryClient.invalidateQueries({ queryKey: ["lesson", lessonId] });
       queryClient.invalidateQueries({ queryKey: ["course-progress"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
+    },
+    onError: (err: Error) => setMessage(err.message),
+  });
+
+  const generateMutation = useMutation({
+    mutationFn: () => generateQuiz(lessonId, token!),
+    onSuccess: (data) => {
+      setMessage(`Quiz generated with ${data.questionCount} questions${data.usedAi ? " (AI)" : ""}.`);
+      queryClient.invalidateQueries({ queryKey: ["lesson", lessonId] });
+      queryClient.invalidateQueries({ queryKey: ["quiz", lessonId] });
     },
     onError: (err: Error) => setMessage(err.message),
   });
@@ -79,6 +92,21 @@ export default function LessonPage() {
                 Take Quiz
               </Link>
             )}
+            {isTeacher && (
+              <button
+                onClick={() => generateMutation.mutate()}
+                disabled={generateMutation.isPending}
+                className="bg-amber-600 text-white px-6 py-2 rounded-md hover:bg-amber-700 disabled:opacity-50 font-medium"
+              >
+                {generateMutation.isPending ? "Generating..." : lesson.hasQuiz ? "Regenerate Quiz (AI)" : "Generate Quiz (AI)"}
+              </button>
+            )}
+            <Link
+              to={`/assistant?lesson=${encodeURIComponent(lesson.title)}`}
+              className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 font-medium"
+            >
+              Ask AI Tutor
+            </Link>
           </>
         ) : (
           <p className="text-gray-600">

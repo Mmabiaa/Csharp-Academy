@@ -8,6 +8,7 @@ export default function Register() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"Student" | "Teacher">("Student");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -18,7 +19,7 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      const auth = await apiRegister(email, password, firstName, lastName);
+      const auth = await apiRegister(email, password, firstName, lastName, role);
       login(auth);
       navigate("/courses");
     } catch (err) {
@@ -79,6 +80,29 @@ export default function Register() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Register as</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="role"
+                checked={role === "Student"}
+                onChange={() => setRole("Student")}
+              />
+              Student
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="role"
+                checked={role === "Teacher"}
+                onChange={() => setRole("Teacher")}
+              />
+              Teacher
+            </label>
+          </div>
         </div>
         <button
           type="submit"

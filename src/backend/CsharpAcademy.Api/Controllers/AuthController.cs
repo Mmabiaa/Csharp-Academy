@@ -22,7 +22,7 @@ public class AuthController : ControllerBase
         try
         {
             var result = await _mediator.Send(new RegisterCommand(
-                request.Email, request.Password, request.FirstName, request.LastName));
+                request.Email, request.Password, request.FirstName, request.LastName, request.Role ?? "Student"));
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -46,5 +46,5 @@ public class AuthController : ControllerBase
     }
 }
 
-public record RegisterRequest(string Email, string Password, string FirstName, string LastName);
+public record RegisterRequest(string Email, string Password, string FirstName, string LastName, string? Role);
 public record LoginRequest(string Email, string Password);

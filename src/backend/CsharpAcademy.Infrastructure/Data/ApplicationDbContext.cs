@@ -25,6 +25,8 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
     public DbSet<UserBadge> UserBadges { get; set; }
     public DbSet<QuizAttempt> QuizAttempts { get; set; }
     public DbSet<Certificate> Certificates { get; set; }
+    public DbSet<Classroom> Classrooms { get; set; }
+    public DbSet<ClassroomMember> ClassroomMembers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -104,6 +106,38 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .HasOne(c => c.Course)
             .WithMany()
             .HasForeignKey(c => c.CourseId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Classroom>()
+            .HasIndex(c => c.JoinCode)
+            .IsUnique();
+
+        modelBuilder.Entity<ClassroomMember>()
+            .HasIndex(m => new { m.ClassroomId, m.UserId })
+            .IsUnique();
+
+        modelBuilder.Entity<Classroom>()
+            .HasOne(c => c.Teacher)
+            .WithMany()
+            .HasForeignKey(c => c.TeacherId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Classroom>()
+            .HasOne(c => c.Course)
+            .WithMany()
+            .HasForeignKey(c => c.CourseId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<ClassroomMember>()
+            .HasOne(m => m.Classroom)
+            .WithMany(c => c.Members)
+            .HasForeignKey(m => m.ClassroomId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ClassroomMember>()
+            .HasOne(m => m.User)
+            .WithMany()
+            .HasForeignKey(m => m.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         SeedData(modelBuilder);
@@ -213,7 +247,9 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
         modelBuilder.Entity<Question>().HasData(
             new Question { Id = 1, QuizId = 1, Text = "Who developed C#?", Type = QuestionType.MultipleChoice, CreatedAt = SeedDate },
             new Question { Id = 2, QuizId = 1, Text = "C# runs on the .NET platform.", Type = QuestionType.TrueFalse, CreatedAt = SeedDate },
-            new Question { Id = 3, QuizId = 2, Text = "Which keyword declares an integer variable?", Type = QuestionType.MultipleChoice, CreatedAt = SeedDate }
+            new Question { Id = 3, QuizId = 2, Text = "Which keyword declares an integer variable?", Type = QuestionType.MultipleChoice, CreatedAt = SeedDate },
+            new Question { Id = 4, QuizId = 2, Text = "Fill in the blank: The keyword for text/strings in C# is ___.", Type = QuestionType.FillInTheBlank, CorrectAnswer = "string", CreatedAt = SeedDate },
+            new Question { Id = 5, QuizId = 1, Text = "What is the output of: Console.WriteLine(2 + 3);", Type = QuestionType.OutputPrediction, CreatedAt = SeedDate }
         );
 
         modelBuilder.Entity<QuestionOption>().HasData(
@@ -224,7 +260,10 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             new QuestionOption { Id = 5, QuestionId = 2, Text = "False", IsCorrect = false, CreatedAt = SeedDate },
             new QuestionOption { Id = 6, QuestionId = 3, Text = "int", IsCorrect = true, CreatedAt = SeedDate },
             new QuestionOption { Id = 7, QuestionId = 3, Text = "string", IsCorrect = false, CreatedAt = SeedDate },
-            new QuestionOption { Id = 8, QuestionId = 3, Text = "bool", IsCorrect = false, CreatedAt = SeedDate }
+            new QuestionOption { Id = 8, QuestionId = 3, Text = "bool", IsCorrect = false, CreatedAt = SeedDate },
+            new QuestionOption { Id = 9, QuestionId = 5, Text = "5", IsCorrect = true, CreatedAt = SeedDate },
+            new QuestionOption { Id = 10, QuestionId = 5, Text = "23", IsCorrect = false, CreatedAt = SeedDate },
+            new QuestionOption { Id = 11, QuestionId = 5, Text = "Error", IsCorrect = false, CreatedAt = SeedDate }
         );
     }
 }

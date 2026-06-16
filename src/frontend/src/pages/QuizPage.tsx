@@ -4,11 +4,16 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { fetchQuiz, submitQuiz } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
+function isTextQuestion(type: string) {
+  return type === "FillInTheBlank";
+}
+
 export default function QuizPage() {
   const { id } = useParams<{ id: string }>();
   const lessonId = Number(id);
   const { token, isAuthenticated } = useAuth();
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [optionAnswers, setOptionAnswers] = useState<Record<number, number>>({});
+  const [textAnswers, setTextAnswers] = useState<Record<number, string>>({});
   const [result, setResult] = useState<Awaited<ReturnType<typeof submitQuiz>> | null>(null);
 
   const { data: quiz, isLoading, error } = useQuery({
@@ -18,7 +23,7 @@ export default function QuizPage() {
   });
 
   const submitMutation = useMutation({
-    mutationFn: () => submitQuiz(lessonId, answers, token!),
+    mutationFn: () => submitQuiz(lessonId, optionAnswers, textAnswers, token!),
     onSuccess: (data) => setResult(data),
   });
 
@@ -70,7 +75,11 @@ export default function QuizPage() {
     );
   }
 
-  const allAnswered = quiz.questions.every((q) => answers[q.id] !== undefined);
+  const allAnswered = quiz.questions.every((q) =>
+    isTextQuestion(q.type)
+      ? (textAnswers[q.id]?.trim().length ?? 0) > 0
+      : optionAnswers[q.id] !== undefined
+  );
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
@@ -82,28 +91,41 @@ export default function QuizPage() {
       <div className="space-y-8">
         {quiz.questions.map((question, index) => (
           <div key={question.id} className="bg-white p-6 rounded-lg shadow-md">
-            <p className="font-medium text-gray-900 mb-4">{index + 1}. {question.text}</p>
-            <div className="space-y-2">
-              {question.options.map((option) => (
-                <label
-                  key={option.id}
-                  className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
-                    answers[question.id] === option.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name={`question-${question.id}`}
-                    checked={answers[question.id] === option.id}
-                    onChange={() => setAnswers((prev) => ({ ...prev, [question.id]: option.id }))}
-                    className="text-blue-600"
-                  />
-                  <span>{option.text}</span>
-                </label>
-              ))}
-            </div>
+            <p className="font-medium text-gray-900 mb-1">{index + 1}. {question.text}</p>
+            {question.type === "OutputPrediction" && (
+              <p className="text-xs text-purple-600 mb-3">Output prediction — select the correct output</p>
+            )}
+            {isTextQuestion(question.type) ? (
+              <input
+                type="text"
+                value={textAnswers[question.id] ?? ""}
+                onChange={(e) => setTextAnswers((prev) => ({ ...prev, [question.id]: e.target.value }))}
+                placeholder="Type your answer"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+              />
+            ) : (
+              <div className="space-y-2 mt-4">
+                {question.options.map((option) => (
+                  <label
+                    key={option.id}
+                    className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
+                      optionAnswers[question.id] === option.id
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`question-${question.id}`}
+                      checked={optionAnswers[question.id] === option.id}
+                      onChange={() => setOptionAnswers((prev) => ({ ...prev, [question.id]: option.id }))}
+                      className="text-blue-600"
+                    />
+                    <span className="font-mono text-sm">{option.text}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>

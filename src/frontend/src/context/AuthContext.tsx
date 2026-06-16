@@ -6,6 +6,7 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
+  roles: string[];
 }
 
 interface AuthContextType {
@@ -14,6 +15,7 @@ interface AuthContextType {
   login: (auth: AuthResponse) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isTeacher: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: auth.email,
       firstName: auth.firstName,
       lastName: auth.lastName,
+      roles: auth.roles ?? [],
     };
     setUser(userData);
     localStorage.setItem(TOKEN_KEY, auth.token);
@@ -48,8 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(USER_KEY);
   };
 
+  const isTeacher = user?.roles.some((r) => r === "Teacher" || r === "Admin") ?? false;
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isTeacher }}>
       {children}
     </AuthContext.Provider>
   );

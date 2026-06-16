@@ -73,7 +73,23 @@ public class LessonsController : ControllerBase
         var userId = GetRequiredUserId();
         try
         {
-            var result = await _mediator.Send(new SubmitQuizCommand(userId, lessonId, request.Answers));
+            var result = await _mediator.Send(new SubmitQuizCommand(
+                userId, lessonId, request.OptionAnswers ?? new(), request.TextAnswers ?? new()));
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Roles = "Teacher,Admin")]
+    [HttpPost("{lessonId}/quiz/generate")]
+    public async Task<ActionResult<QuizGeneratedDto>> GenerateQuiz(int lessonId, [FromQuery] int count = 5)
+    {
+        try
+        {
+            var result = await _mediator.Send(new GenerateQuizCommand(lessonId, count));
             return Ok(result);
         }
         catch (KeyNotFoundException ex)
@@ -100,4 +116,6 @@ public class LessonsController : ControllerBase
     }
 }
 
-public record SubmitQuizRequest(Dictionary<int, int> Answers);
+public record SubmitQuizRequest(
+    Dictionary<int, int>? OptionAnswers,
+    Dictionary<int, string>? TextAnswers);

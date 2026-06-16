@@ -6,6 +6,7 @@ public class Question : Entity
     public Quiz Quiz { get; set; } = null!;
     public string Text { get; set; } = string.Empty;
     public QuestionType Type { get; set; }
+    public string? CorrectAnswer { get; set; }
     public ICollection<QuestionOption> Options { get; set; } = new List<QuestionOption>();
 }
 

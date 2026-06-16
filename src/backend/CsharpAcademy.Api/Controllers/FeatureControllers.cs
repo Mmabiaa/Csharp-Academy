@@ -53,10 +53,12 @@ public class AssistantController : ControllerBase
 public class CertificatesController : ControllerBase
 {
     private readonly ISender _mediator;
+    private readonly ICertificatePdfService _pdfService;
 
-    public CertificatesController(ISender mediator)
+    public CertificatesController(ISender mediator, ICertificatePdfService pdfService)
     {
         _mediator = mediator;
+        _pdfService = pdfService;
     }
 
     [Authorize]
@@ -78,6 +80,21 @@ public class CertificatesController : ControllerBase
         }
 
         return Ok(cert);
+    }
+
+    [HttpGet("{code}/pdf")]
+    public async Task<IActionResult> DownloadPdf(string code)
+    {
+        var cert = await _mediator.Send(new GetCertificateByCodeQuery(code));
+        if (cert is null)
+        {
+            return NotFound(new { message = "Certificate not found." });
+        }
+
+        var pdf = await _pdfService.GeneratePdfAsync(
+            cert.StudentName, cert.CourseTitle, cert.CertificateCode, cert.IssuedAt);
+
+        return File(pdf, "application/pdf", $"certificate-{code}.pdf");
     }
 
     private int GetRequiredUserId()

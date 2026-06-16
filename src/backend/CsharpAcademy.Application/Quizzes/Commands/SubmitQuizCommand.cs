@@ -1,29 +1,21 @@
-using CsharpAcademy.Application.Common;
 using CsharpAcademy.Application.Common.Interfaces;
-using CsharpAcademy.Domain.Entities;
 using CsharpAcademy.Domain.Interfaces;
 using MediatR;
 
 namespace CsharpAcademy.Application.Quizzes.Commands;
 
-public record SubmitQuizCommand(int UserId, int LessonId, Dictionary<int, int> Answers) : IRequest<QuizResultDto>;
-
-public class QuizResultDto
-{
-    public int Score { get; set; }
-    public int TotalQuestions { get; set; }
-    public bool Passed { get; set; }
-    public int XpEarned { get; set; }
-    public int TotalXp { get; set; }
-    public List<string> NewBadges { get; set; } = new();
-    public List<QuestionResultDto> QuestionResults { get; set; } = new();
-}
+public record SubmitQuizCommand(
+    int UserId,
+    int LessonId,
+    Dictionary<int, int> OptionAnswers,
+    Dictionary<int, string> TextAnswers) : IRequest<QuizResultDto>;
 
 public class QuestionResultDto
 {
     public int QuestionId { get; set; }
     public bool IsCorrect { get; set; }
-    public int CorrectOptionId { get; set; }
+    public int? CorrectOptionId { get; set; }
+    public string? CorrectTextAnswer { get; set; }
 }
 
 public class SubmitQuizCommandHandler : IRequestHandler<SubmitQuizCommand, QuizResultDto>
@@ -54,27 +46,24 @@ public class SubmitQuizCommandHandler : IRequestHandler<SubmitQuizCommand, QuizR
 
         foreach (var question in quiz.Questions)
         {
+            var isCorrect = EvaluateAnswer(question, request.OptionAnswers, request.TextAnswers);
+
+            if (isCorrect) score++;
+
             var correctOption = question.Options.FirstOrDefault(o => o.IsCorrect);
-            var selectedId = request.Answers.GetValueOrDefault(question.Id);
-            var isCorrect = correctOption is not null && selectedId == correctOption.Id;
-
-            if (isCorrect)
-            {
-                score++;
-            }
-
             questionResults.Add(new QuestionResultDto
             {
                 QuestionId = question.Id,
                 IsCorrect = isCorrect,
-                CorrectOptionId = correctOption?.Id ?? 0
+                CorrectOptionId = correctOption?.Id,
+                CorrectTextAnswer = question.CorrectAnswer
             });
         }
 
         var total = quiz.Questions.Count;
         var passed = total > 0 && (double)score / total >= PassThreshold;
 
-        await _quizRepository.SaveAttemptAsync(new QuizAttempt
+        await _quizRepository.SaveAttemptAsync(new Domain.Entities.QuizAttempt
         {
             UserId = request.UserId,
             QuizId = quiz.Id,
@@ -90,7 +79,7 @@ public class SubmitQuizCommandHandler : IRequestHandler<SubmitQuizCommand, QuizR
         var xpEarned = 0;
         if (passed)
         {
-            xpEarned = GamificationRewards.QuizPassXp;
+            xpEarned = Application.Common.GamificationRewards.QuizPassXp;
             await _gamificationService.AwardXpAndUpdateStreakAsync(user, xpEarned, cancellationToken);
         }
 
@@ -100,10 +89,7 @@ public class SubmitQuizCommandHandler : IRequestHandler<SubmitQuizCommand, QuizR
         await _gamificationService.CheckQuizBadgesAsync(user, passed, cancellationToken);
 
         var badgesAfter = await _userRepository.GetUserBadgesAsync(request.UserId, cancellationToken);
-        var newBadges = badgesAfter
-            .Where(b => !badgesBefore.Contains(b.Name))
-            .Select(b => b.Name)
-            .ToList();
+        var newBadges = badgesAfter.Where(b => !badgesBefore.Contains(b.Name)).Select(b => b.Name).ToList();
 
         user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken)!;
 
@@ -118,4 +104,30 @@ public class SubmitQuizCommandHandler : IRequestHandler<SubmitQuizCommand, QuizR
             QuestionResults = questionResults
         };
     }
+
+    private static bool EvaluateAnswer(
+        Domain.Entities.Question question,
+        Dictionary<int, int> optionAnswers,
+        Dictionary<int, string> textAnswers)
+    {
+        return question.Type switch
+        {
+            Domain.Entities.QuestionType.FillInTheBlank => textAnswers.TryGetValue(question.Id, out var text)
+                && string.Equals(text.Trim(), question.CorrectAnswer?.Trim(), StringComparison.OrdinalIgnoreCase),
+            Domain.Entities.QuestionType.OutputPrediction or Domain.Entities.QuestionType.MultipleChoice or Domain.Entities.QuestionType.TrueFalse
+                => question.Options.Any(o => o.IsCorrect && optionAnswers.GetValueOrDefault(question.Id) == o.Id),
+            _ => false
+        };
+    }
+}
+
+public class QuizResultDto
+{
+    public int Score { get; set; }
+    public int TotalQuestions { get; set; }
+    public bool Passed { get; set; }
+    public int XpEarned { get; set; }
+    public int TotalXp { get; set; }
+    public List<string> NewBadges { get; set; } = new();
+    public List<QuestionResultDto> QuestionResults { get; set; } = new();
 }

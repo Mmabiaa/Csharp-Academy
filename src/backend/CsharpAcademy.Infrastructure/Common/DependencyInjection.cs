@@ -30,10 +30,14 @@ public static class DependencyInjection
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICertificateRepository, CertificateRepository>();
+        services.AddScoped<IClassroomRepository, ClassroomRepository>();
+        services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IGamificationService, GamificationService>();
         services.AddScoped<ICodeExecutionService, RoslynCodeExecutionService>();
         services.AddScoped<IAiAssistantService, AiAssistantService>();
+        services.AddScoped<IAiQuizGenerationService, AiQuizGenerationService>();
+        services.AddScoped<ICertificatePdfService, CertificatePdfService>();
 
         return services;
     }

@@ -40,7 +40,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             throw new InvalidOperationException(errors);
         }
 
-        await _userManager.AddToRoleAsync(user, "Student");
+        var role = request.Role.Equals("Teacher", StringComparison.OrdinalIgnoreCase) ? "Teacher" : "Student";
+        await _userManager.AddToRoleAsync(user, role);
 
         var roles = await _userManager.GetRolesAsync(user);
         var token = _jwtTokenService.GenerateToken(user, roles);
@@ -51,7 +52,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             UserId = user.Id,
             Email = user.Email!,
             FirstName = user.FirstName,
-            LastName = user.LastName
+            LastName = user.LastName,
+            Roles = roles.ToList()
         };
     }
 }

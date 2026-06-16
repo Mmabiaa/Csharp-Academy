@@ -47,6 +47,7 @@ export interface AuthResponse {
   email: string;
   firstName: string;
   lastName: string;
+  roles: string[];
 }
 
 export interface Enrollment {
@@ -64,6 +65,8 @@ export interface LessonCompleteResult {
   totalXp: number;
   currentStreak: number;
   newBadges: string[];
+  courseCompleted: boolean;
+  certificateCode: string | null;
 }
 
 export interface Quiz {
@@ -158,13 +161,14 @@ export async function fetchQuiz(lessonId: number): Promise<Quiz> {
 
 export async function submitQuiz(
   lessonId: number,
-  answers: Record<number, number>,
+  optionAnswers: Record<number, number>,
+  textAnswers: Record<number, string>,
   token: string
 ): Promise<QuizResult> {
   const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/quiz/submit`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
-    body: JSON.stringify({ answers }),
+    body: JSON.stringify({ optionAnswers, textAnswers }),
   });
   return handleResponse<QuizResult>(response);
 }
@@ -180,12 +184,13 @@ export async function register(
   email: string,
   password: string,
   firstName: string,
-  lastName: string
+  lastName: string,
+  role?: string
 ): Promise<AuthResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, firstName, lastName }),
+    body: JSON.stringify({ email, password, firstName, lastName, role: role ?? "Student" }),
   });
   return handleResponse<AuthResponse>(response);
 }
@@ -205,4 +210,143 @@ export async function enrollInCourse(courseId: number, token: string): Promise<E
     headers: authHeaders(token),
   });
   return handleResponse<Enrollment>(response);
+}
+
+export interface CodeExecutionResult {
+  success: boolean;
+  output: string;
+  error: string | null;
+}
+
+export interface AiAssistantResponse {
+  reply: string;
+  usedAiProvider: boolean;
+}
+
+export interface Certificate {
+  id: number;
+  courseId: number;
+  courseTitle: string;
+  certificateCode: string;
+  issuedAt: string;
+}
+
+export interface CertificateVerification {
+  certificateCode: string;
+  studentName: string;
+  courseTitle: string;
+  issuedAt: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: number;
+  displayName: string;
+  xp: number;
+  currentStreak: number;
+}
+
+export async function runCode(code: string): Promise<CodeExecutionResult> {
+  const response = await fetch(`${API_BASE_URL}/playground/run`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+  });
+  return handleResponse<CodeExecutionResult>(response);
+}
+
+export async function askAssistant(message: string, lessonContext?: string): Promise<AiAssistantResponse> {
+  const response = await fetch(`${API_BASE_URL}/assistant/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, lessonContext }),
+  });
+  return handleResponse<AiAssistantResponse>(response);
+}
+
+export async function fetchCertificates(token: string): Promise<Certificate[]> {
+  const response = await fetch(`${API_BASE_URL}/certificates`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse<Certificate[]>(response);
+}
+
+export async function verifyCertificate(code: string): Promise<CertificateVerification> {
+  const response = await fetch(`${API_BASE_URL}/certificates/verify/${code}`);
+  return handleResponse<CertificateVerification>(response);
+}
+
+export async function fetchLeaderboard(top = 10): Promise<LeaderboardEntry[]> {
+  const response = await fetch(`${API_BASE_URL}/leaderboard?top=${top}`);
+  return handleResponse<LeaderboardEntry[]>(response);
+}
+
+export interface Classroom {
+  id: number;
+  name: string;
+  description: string;
+  joinCode: string;
+  courseId: number | null;
+  courseTitle: string | null;
+  teacherName: string;
+  memberCount: number;
+  members: { userId: number; name: string; email: string; joinedAt: string }[];
+}
+
+export interface AnalyticsDashboard {
+  totalUsers: number;
+  totalEnrollments: number;
+  totalQuizAttempts: number;
+  averageCourseCompletion: number;
+  quizPassRate: number;
+  totalClassrooms: number;
+  certificatesIssued: number;
+  courseStats: { courseId: number; courseTitle: string; enrollmentCount: number; averageCompletion: number }[];
+}
+
+export async function fetchClassrooms(token: string): Promise<Classroom[]> {
+  const response = await fetch(`${API_BASE_URL}/classrooms`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse<Classroom[]>(response);
+}
+
+export async function createClassroom(
+  token: string,
+  data: { name: string; description: string; courseId: number | null }
+): Promise<Classroom> {
+  const response = await fetch(`${API_BASE_URL}/classrooms`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Classroom>(response);
+}
+
+export async function joinClassroom(token: string, joinCode: string): Promise<Classroom> {
+  const response = await fetch(`${API_BASE_URL}/classrooms/join`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ joinCode }),
+  });
+  return handleResponse<Classroom>(response);
+}
+
+export async function fetchAnalyticsDashboard(token: string): Promise<AnalyticsDashboard> {
+  const response = await fetch(`${API_BASE_URL}/analytics/dashboard`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse<AnalyticsDashboard>(response);
+}
+
+export async function generateQuiz(lessonId: number, token: string, count = 5): Promise<{ quizId: number; questionCount: number; usedAi: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/quiz/generate?count=${count}`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export function getCertificatePdfUrl(code: string): string {
+  return `${API_BASE_URL}/certificates/${code}/pdf`;
 }
