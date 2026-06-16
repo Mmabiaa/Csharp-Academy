@@ -23,6 +23,13 @@ obj/
 node_modules/
 dist/
 .vite/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Environment variables
+src/backend/.env
 
 # OS
 .DS_Store
