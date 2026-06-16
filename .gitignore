@@ -1,0 +1,46 @@
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.cache
+*.log
+*.pidb
+*.psess
+*.vsp
+*.vspx
+*.dbmdl
+*.dbproj.user
+*.filenamesuggestion
+*.jfm
+*.db-shm
+*.db-wal
+*.sqlproj.user
+*.Publish.xml
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+*.sln.docstates
+.vs/
+
+
+# 其他
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
