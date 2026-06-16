@@ -53,4 +53,13 @@ public class UserRepository : IUserRepository
         return await _context.UserBadges
             .AnyAsync(ub => ub.UserId == userId && ub.BadgeId == badgeId, cancellationToken);
     }
+
+    public async Task<List<User>> GetTopByXpAsync(int count, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .OrderByDescending(u => u.Xp)
+            .ThenBy(u => u.FirstName)
+            .Take(count)
+            .ToListAsync(cancellationToken);
+    }
 }

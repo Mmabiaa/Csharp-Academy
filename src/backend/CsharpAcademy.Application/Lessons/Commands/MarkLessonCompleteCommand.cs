@@ -1,5 +1,6 @@
 using CsharpAcademy.Application.Common;
 using CsharpAcademy.Application.Common.Interfaces;
+using CsharpAcademy.Domain.Entities;
 using CsharpAcademy.Domain.Interfaces;
 using MediatR;
 
@@ -15,6 +16,8 @@ public class LessonCompleteResultDto
     public int TotalXp { get; set; }
     public int CurrentStreak { get; set; }
     public List<string> NewBadges { get; set; } = new();
+    public bool CourseCompleted { get; set; }
+    public string? CertificateCode { get; set; }
 }
 
 public class MarkLessonCompleteCommandHandler : IRequestHandler<MarkLessonCompleteCommand, LessonCompleteResultDto>
@@ -24,19 +27,22 @@ public class MarkLessonCompleteCommandHandler : IRequestHandler<MarkLessonComple
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IUserRepository _userRepository;
     private readonly IGamificationService _gamificationService;
+    private readonly ICertificateRepository _certificateRepository;
 
     public MarkLessonCompleteCommandHandler(
         ILessonRepository lessonRepository,
         IProgressRepository progressRepository,
         IEnrollmentRepository enrollmentRepository,
         IUserRepository userRepository,
-        IGamificationService gamificationService)
+        IGamificationService gamificationService,
+        ICertificateRepository certificateRepository)
     {
         _lessonRepository = lessonRepository;
         _progressRepository = progressRepository;
         _enrollmentRepository = enrollmentRepository;
         _userRepository = userRepository;
         _gamificationService = gamificationService;
+        _certificateRepository = certificateRepository;
     }
 
     public async Task<LessonCompleteResultDto> Handle(MarkLessonCompleteCommand request, CancellationToken cancellationToken)
@@ -75,6 +81,33 @@ public class MarkLessonCompleteCommandHandler : IRequestHandler<MarkLessonComple
 
         await _gamificationService.CheckLessonBadgesAsync(user, completed.Count, cancellationToken);
 
+        string? certificateCode = null;
+        var courseCompleted = enrollment.CompletionPercentage >= 100;
+
+        if (courseCompleted)
+        {
+            await _gamificationService.CheckCourseCompletionBadgesAsync(user, cancellationToken);
+
+            var existingCert = await _certificateRepository.GetByUserAndCourseAsync(
+                request.UserId, courseId, cancellationToken);
+
+            if (existingCert is null)
+            {
+                var cert = await _certificateRepository.CreateAsync(new Certificate
+                {
+                    UserId = request.UserId,
+                    CourseId = courseId,
+                    CertificateCode = Guid.NewGuid().ToString("N")[..12].ToUpperInvariant(),
+                    IssuedAt = DateTime.UtcNow
+                }, cancellationToken);
+                certificateCode = cert.CertificateCode;
+            }
+            else
+            {
+                certificateCode = existingCert.CertificateCode;
+            }
+        }
+
         var badgesAfter = await _userRepository.GetUserBadgesAsync(request.UserId, cancellationToken);
         var newBadges = badgesAfter
             .Where(b => !badgesBefore.Contains(b.Name))
@@ -90,7 +123,9 @@ public class MarkLessonCompleteCommandHandler : IRequestHandler<MarkLessonComple
             XpEarned = xpEarned,
             TotalXp = user!.Xp,
             CurrentStreak = user.CurrentStreak,
-            NewBadges = newBadges
+            NewBadges = newBadges,
+            CourseCompleted = courseCompleted,
+            CertificateCode = certificateCode
         };
     }
 }

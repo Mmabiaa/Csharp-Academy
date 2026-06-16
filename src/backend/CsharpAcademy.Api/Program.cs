@@ -31,6 +31,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddHttpClient();
 
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     {

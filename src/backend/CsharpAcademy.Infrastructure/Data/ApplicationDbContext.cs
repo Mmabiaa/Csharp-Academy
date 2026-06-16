@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
     public DbSet<Badge> Badges { get; set; }
     public DbSet<UserBadge> UserBadges { get; set; }
     public DbSet<QuizAttempt> QuizAttempts { get; set; }
+    public DbSet<Certificate> Certificates { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,6 +84,26 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .HasOne(a => a.Quiz)
             .WithMany()
             .HasForeignKey(a => a.QuizId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Certificate>()
+            .HasIndex(c => c.CertificateCode)
+            .IsUnique();
+
+        modelBuilder.Entity<Certificate>()
+            .HasIndex(c => new { c.UserId, c.CourseId })
+            .IsUnique();
+
+        modelBuilder.Entity<Certificate>()
+            .HasOne(c => c.User)
+            .WithMany()
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Certificate>()
+            .HasOne(c => c.Course)
+            .WithMany()
+            .HasForeignKey(c => c.CourseId)
             .OnDelete(DeleteBehavior.Cascade);
 
         SeedData(modelBuilder);
@@ -180,7 +201,8 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             new Badge { Id = 1, Name = "First Steps", Description = "Complete your first lesson", ImageUrl = "", CreatedAt = SeedDate },
             new Badge { Id = 2, Name = "On Fire", Description = "Maintain a 3-day learning streak", ImageUrl = "", CreatedAt = SeedDate },
             new Badge { Id = 3, Name = "Quick Learner", Description = "Complete 3 lessons", ImageUrl = "", CreatedAt = SeedDate },
-            new Badge { Id = 4, Name = "Quiz Whiz", Description = "Pass your first quiz", ImageUrl = "", CreatedAt = SeedDate }
+            new Badge { Id = 4, Name = "Quiz Whiz", Description = "Pass your first quiz", ImageUrl = "", CreatedAt = SeedDate },
+            new Badge { Id = 5, Name = "Graduate", Description = "Complete an entire course", ImageUrl = "", CreatedAt = SeedDate }
         );
 
         modelBuilder.Entity<Quiz>().HasData(

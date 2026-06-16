@@ -29,8 +29,11 @@ public static class DependencyInjection
         services.AddScoped<IProgressRepository, ProgressRepository>();
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICertificateRepository, CertificateRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IGamificationService, GamificationService>();
+        services.AddScoped<ICodeExecutionService, RoslynCodeExecutionService>();
+        services.AddScoped<IAiAssistantService, AiAssistantService>();
 
         return services;
     }

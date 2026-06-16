@@ -50,6 +50,11 @@ public class GamificationService : IGamificationService
         }
     }
 
+    public async Task CheckCourseCompletionBadgesAsync(User user, CancellationToken cancellationToken = default)
+    {
+        await _userRepository.AwardBadgeAsync(user.Id, 5, cancellationToken);
+    }
+
     private static void UpdateStreak(User user)
     {
         var today = DateTime.UtcNow.Date;
