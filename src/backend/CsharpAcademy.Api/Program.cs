@@ -1,9 +1,16 @@
 using CsharpAcademy.Application.Common;
 using CsharpAcademy.Infrastructure.Common;
 using CsharpAcademy.Infrastructure.Data;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
+// Load environment variables from .env file
+Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Add environment variables to configuration
+builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
 builder.Services.AddControllers();
