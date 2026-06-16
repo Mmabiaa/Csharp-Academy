@@ -1,7 +1,9 @@
 using CsharpAcademy.Application.Common;
+using CsharpAcademy.Domain.Entities;
 using CsharpAcademy.Infrastructure.Common;
 using CsharpAcademy.Infrastructure.Data;
 using DotNetEnv;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 // Load environment variables from .env file
@@ -31,6 +33,11 @@ builder.Services.AddCors(options =>
 // Add Clean Architecture services
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Add Identity
+builder.Services.AddIdentity<User, IdentityRole<int>>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 

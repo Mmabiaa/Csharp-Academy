@@ -1,27 +1,25 @@
-using CsharpAcademy.Infrastructure.Data;
+using CsharpAcademy.Domain.Interfaces;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace CsharpAcademy.Application.Courses.Queries;
 
 public class GetCoursesQueryHandler : IRequestHandler<GetCoursesQuery, List<CourseDto>>
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ICourseRepository _courseRepository;
 
-    public GetCoursesQueryHandler(ApplicationDbContext context)
+    public GetCoursesQueryHandler(ICourseRepository courseRepository)
     {
-        _context = context;
+        _courseRepository = courseRepository;
     }
 
     public async Task<List<CourseDto>> Handle(GetCoursesQuery request, CancellationToken cancellationToken)
     {
-        return await _context.Courses
-            .Select(c => new CourseDto
-            {
-                Id = c.Id,
-                Title = c.Title,
-                Description = c.Description
-            })
-            .ToListAsync(cancellationToken);
+        var courses = await _courseRepository.GetAllAsync(cancellationToken);
+        return courses.Select(c => new CourseDto
+        {
+            Id = c.Id,
+            Title = c.Title,
+            Description = c.Description
+        }).ToList();
     }
 }

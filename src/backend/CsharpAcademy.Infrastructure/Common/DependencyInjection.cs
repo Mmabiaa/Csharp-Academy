@@ -1,6 +1,5 @@
 using CsharpAcademy.Infrastructure.Data;
-using CsharpAcademy.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
+using CsharpAcademy.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,9 +16,8 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-        services.AddIdentity<User, IdentityRole<int>>()
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+        // Register repositories
+        services.AddScoped<ICourseRepository, CourseRepository>();
 
         return services;
     }

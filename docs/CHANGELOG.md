@@ -18,13 +18,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - React frontend with Vite, TypeScript, Tailwind CSS, React Router
 - Home and Courses pages with responsive design
 - .gitignore file
-- .NET 9.0 (LTS) support
 - Environment variable support using DotNetEnv
 - EF Core tools manifest
 - CORS configuration
 - global.json for SDK version pinning
 - MySQL support with Pomelo.EntityFrameworkCore.MySql
+- Microsoft.EntityFrameworkCore.Design to API project for EF Core tools
+- .env.example template for environment variables
+
+### Changed
+- Switched target framework to net10.0 (matches installed SDK)
+- Updated all NuGet packages to .NET 10 compatible versions
+- Moved Identity dependencies out of Domain layer to maintain Clean Architecture
 
 ### Fixed
 - MediatR NuGet package errors (removed obsolete MediatR.Extensions.Microsoft.DependencyInjection)
-- Pomelo.EntityFrameworkCore.MySql version compatibility (switched to net9.0)
+- Fixed IdentityUser dependency issues by using Microsoft.AspNetCore.Identity.EntityFrameworkCore in Infrastructure layer
+- Added Microsoft.EntityFrameworkCore.Design to API project for EF migrations
+- Package version mismatches (Microsoft.Extensions.DependencyInjection)
