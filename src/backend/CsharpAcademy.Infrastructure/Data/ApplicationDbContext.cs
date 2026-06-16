@@ -23,6 +23,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
     public DbSet<Progress> ProgressRecords { get; set; }
     public DbSet<Badge> Badges { get; set; }
     public DbSet<UserBadge> UserBadges { get; set; }
+    public DbSet<QuizAttempt> QuizAttempts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,6 +71,18 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .HasOne(p => p.Lesson)
             .WithMany()
             .HasForeignKey(p => p.LessonId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<QuizAttempt>()
+            .HasOne(a => a.User)
+            .WithMany()
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<QuizAttempt>()
+            .HasOne(a => a.Quiz)
+            .WithMany()
+            .HasForeignKey(a => a.QuizId)
             .OnDelete(DeleteBehavior.Cascade);
 
         SeedData(modelBuilder);
@@ -161,6 +174,35 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
                 Order = 1,
                 CreatedAt = SeedDate
             }
+        );
+
+        modelBuilder.Entity<Badge>().HasData(
+            new Badge { Id = 1, Name = "First Steps", Description = "Complete your first lesson", ImageUrl = "", CreatedAt = SeedDate },
+            new Badge { Id = 2, Name = "On Fire", Description = "Maintain a 3-day learning streak", ImageUrl = "", CreatedAt = SeedDate },
+            new Badge { Id = 3, Name = "Quick Learner", Description = "Complete 3 lessons", ImageUrl = "", CreatedAt = SeedDate },
+            new Badge { Id = 4, Name = "Quiz Whiz", Description = "Pass your first quiz", ImageUrl = "", CreatedAt = SeedDate }
+        );
+
+        modelBuilder.Entity<Quiz>().HasData(
+            new Quiz { Id = 1, LessonId = 1, Title = "C# Basics Quiz", CreatedAt = SeedDate },
+            new Quiz { Id = 2, LessonId = 3, Title = "Variables Quiz", CreatedAt = SeedDate }
+        );
+
+        modelBuilder.Entity<Question>().HasData(
+            new Question { Id = 1, QuizId = 1, Text = "Who developed C#?", Type = QuestionType.MultipleChoice, CreatedAt = SeedDate },
+            new Question { Id = 2, QuizId = 1, Text = "C# runs on the .NET platform.", Type = QuestionType.TrueFalse, CreatedAt = SeedDate },
+            new Question { Id = 3, QuizId = 2, Text = "Which keyword declares an integer variable?", Type = QuestionType.MultipleChoice, CreatedAt = SeedDate }
+        );
+
+        modelBuilder.Entity<QuestionOption>().HasData(
+            new QuestionOption { Id = 1, QuestionId = 1, Text = "Microsoft", IsCorrect = true, CreatedAt = SeedDate },
+            new QuestionOption { Id = 2, QuestionId = 1, Text = "Google", IsCorrect = false, CreatedAt = SeedDate },
+            new QuestionOption { Id = 3, QuestionId = 1, Text = "Apple", IsCorrect = false, CreatedAt = SeedDate },
+            new QuestionOption { Id = 4, QuestionId = 2, Text = "True", IsCorrect = true, CreatedAt = SeedDate },
+            new QuestionOption { Id = 5, QuestionId = 2, Text = "False", IsCorrect = false, CreatedAt = SeedDate },
+            new QuestionOption { Id = 6, QuestionId = 3, Text = "int", IsCorrect = true, CreatedAt = SeedDate },
+            new QuestionOption { Id = 7, QuestionId = 3, Text = "string", IsCorrect = false, CreatedAt = SeedDate },
+            new QuestionOption { Id = 8, QuestionId = 3, Text = "bool", IsCorrect = false, CreatedAt = SeedDate }
         );
     }
 }

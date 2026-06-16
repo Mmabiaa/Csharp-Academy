@@ -1,0 +1,56 @@
+using CsharpAcademy.Domain.Entities;
+using CsharpAcademy.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace CsharpAcademy.Infrastructure.Data;
+
+public class UserRepository : IUserRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public UserRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users.FindAsync([id], cancellationToken);
+    }
+
+    public async Task SaveAsync(User user, CancellationToken cancellationToken = default)
+    {
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<List<Badge>> GetUserBadgesAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.UserBadges
+            .Where(ub => ub.UserId == userId)
+            .Select(ub => ub.Badge)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task AwardBadgeAsync(int userId, int badgeId, CancellationToken cancellationToken = default)
+    {
+        if (await HasBadgeAsync(userId, badgeId, cancellationToken))
+        {
+            return;
+        }
+
+        _context.UserBadges.Add(new UserBadge
+        {
+            UserId = userId,
+            BadgeId = badgeId,
+            EarnedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> HasBadgeAsync(int userId, int badgeId, CancellationToken cancellationToken = default)
+    {
+        return await _context.UserBadges
+            .AnyAsync(ub => ub.UserId == userId && ub.BadgeId == badgeId, cancellationToken);
+    }
+}

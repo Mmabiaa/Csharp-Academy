@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .lesson-content p { @apply mb-4 text-gray-700 leading-relaxed; }
+  .lesson-content pre { @apply bg-gray-900 text-gray-100 p-4 rounded-md overflow-x-auto mb-4 text-sm; }
+  .lesson-content code { @apply font-mono text-sm; }
+  .lesson-content pre code { @apply text-gray-100; }
+  .lesson-content p code { @apply bg-gray-100 px-1.5 py-0.5 rounded text-gray-800; }
+}

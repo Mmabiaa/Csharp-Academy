@@ -2,6 +2,9 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/Home";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
+import LessonPage from "./pages/LessonPage";
+import QuizPage from "./pages/QuizPage";
+import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { useAuth } from "./context/AuthContext";
@@ -18,15 +21,13 @@ function App() {
             <nav className="flex items-center gap-6">
               <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium">Home</Link>
               <Link to="/courses" className="text-gray-600 hover:text-gray-900 font-medium">Courses</Link>
+              {isAuthenticated && (
+                <Link to="/profile" className="text-gray-600 hover:text-gray-900 font-medium">Profile</Link>
+              )}
               {isAuthenticated ? (
                 <>
-                  <span className="text-gray-600 text-sm">
-                    Hi, {user?.firstName}
-                  </span>
-                  <button
-                    onClick={logout}
-                    className="text-gray-600 hover:text-gray-900 font-medium"
-                  >
+                  <span className="text-gray-600 text-sm">Hi, {user?.firstName}</span>
+                  <button onClick={logout} className="text-gray-600 hover:text-gray-900 font-medium">
                     Logout
                   </button>
                 </>
@@ -46,6 +47,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:id" element={<CourseDetail />} />
+            <Route path="/lessons/:id" element={<LessonPage />} />
+            <Route path="/lessons/:id/quiz" element={<QuizPage />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Routes>

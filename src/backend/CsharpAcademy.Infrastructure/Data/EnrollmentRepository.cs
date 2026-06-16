@@ -33,4 +33,10 @@ public class EnrollmentRepository : IEnrollmentRepository
             .Where(e => e.UserId == userId)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task UpdateAsync(Enrollment enrollment, CancellationToken cancellationToken = default)
+    {
+        _context.Enrollments.Update(enrollment);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
