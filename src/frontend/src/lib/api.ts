@@ -20,6 +20,10 @@ export interface LessonDetail extends Lesson {
   courseTitle: string;
   hasQuiz: boolean;
   isCompleted: boolean;
+  bestPractices: string;
+  voiceSummary: string;
+  hasTutorial: boolean;
+  hasPractice: boolean;
 }
 
 export interface Module {
@@ -349,4 +353,55 @@ export async function generateQuiz(lessonId: number, token: string, count = 5): 
 
 export function getCertificatePdfUrl(code: string): string {
   return `${API_BASE_URL}/certificates/${code}/pdf`;
+}
+
+export interface CodingExercise {
+  id: number;
+  lessonId: number;
+  lessonTitle?: string;
+  courseTitle?: string;
+  title: string;
+  instructions: string;
+  starterCode: string;
+  hint: string;
+  difficulty: number;
+}
+
+export interface TutorialStep {
+  id: number;
+  title: string;
+  content: string;
+  codeSample: string | null;
+  order: number;
+}
+
+export interface PracticeResult {
+  passed: boolean;
+  output: string;
+  message: string;
+  xpEarned: number;
+}
+
+export async function fetchAllPractices(): Promise<CodingExercise[]> {
+  const response = await fetch(`${API_BASE_URL}/practices`);
+  return handleResponse<CodingExercise[]>(response);
+}
+
+export async function fetchLessonExercises(lessonId: number): Promise<CodingExercise[]> {
+  const response = await fetch(`${API_BASE_URL}/practices/lessons/${lessonId}`);
+  return handleResponse<CodingExercise[]>(response);
+}
+
+export async function fetchTutorialSteps(lessonId: number): Promise<TutorialStep[]> {
+  const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/tutorial`);
+  return handleResponse<TutorialStep[]>(response);
+}
+
+export async function submitPractice(exerciseId: number, code: string, token: string): Promise<PracticeResult> {
+  const response = await fetch(`${API_BASE_URL}/practices/${exerciseId}/submit`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+  });
+  return handleResponse<PracticeResult>(response);
 }

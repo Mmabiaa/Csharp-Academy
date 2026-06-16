@@ -17,14 +17,14 @@ This document outlines the development roadmap for C# Academy.
 
 ## Phase 3: Assessment
 - [x] Quizzes
-- [x] Question types (multiple choice, true/false)
+- [x] Question types (multiple choice, true/false, fill-in-the-blank, output prediction)
 - [x] Quiz attempts
 - [x] Scoring
-- [ ] Additional question types (fill-in-the-blank, output prediction)
+- [x] AI quiz generation
 
 ## Phase 4: Classroom
-- [ ] Teachers
-- [ ] Classes
+- [x] Teachers
+- [x] Classes
 - [x] Enrollments
 
 ## Phase 5: Gamification
@@ -32,14 +32,27 @@ This document outlines the development roadmap for C# Academy.
 - [x] Badges/achievements
 - [x] Streaks
 - [x] Leaderboards
+- [x] Practice XP rewards
 
 ## Phase 6: AI Features
 - [x] AI learning assistant (chat tutor)
-- [ ] Code explanation (inline in lessons)
-- [ ] Quiz generation
+- [x] Quiz generation
+- [ ] Inline code explanation (click-to-explain code blocks)
 
-## Phase 7: Advanced Features
+## Phase 7: Learning Experience
+- [x] Guided step-by-step tutorials
+- [x] Hands-on coding practices
+- [x] Best practices per lesson
+- [x] Voice narration (browser TTS)
+- [ ] Video lessons / embedded tutorials
+
+## Phase 8: Advanced Features
 - [x] Interactive coding playground (Roslyn)
 - [x] Certificates (digital + verification)
-- [ ] PDF certificate export
-- [ ] Analytics
+- [x] PDF certificate export
+- [x] Analytics dashboard
+- [ ] Admin content management panel
+- [ ] Real-time notifications
+- [ ] Assignment submissions and grading
+- [ ] OAuth social login
+- [ ] Mobile PWA

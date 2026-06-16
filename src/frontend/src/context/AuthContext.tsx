@@ -23,22 +23,38 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const TOKEN_KEY = "csharp_academy_token";
 const USER_KEY = "csharp_academy_user";
 
+function normalizeUser(raw: Partial<User> | null): User | null {
+  if (!raw?.userId) return null;
+  return {
+    userId: raw.userId,
+    email: raw.email ?? "",
+    firstName: raw.firstName ?? "",
+    lastName: raw.lastName ?? "",
+    roles: Array.isArray(raw.roles) ? raw.roles : [],
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
   const [user, setUser] = useState<User | null>(() => {
     const stored = localStorage.getItem(USER_KEY);
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+    try {
+      return normalizeUser(JSON.parse(stored));
+    } catch {
+      return null;
+    }
   });
 
   const login = (auth: AuthResponse) => {
     setToken(auth.token);
-    const userData: User = {
+    const userData = normalizeUser({
       userId: auth.userId,
       email: auth.email,
       firstName: auth.firstName,
       lastName: auth.lastName,
       roles: auth.roles ?? [],
-    };
+    })!;
     setUser(userData);
     localStorage.setItem(TOKEN_KEY, auth.token);
     localStorage.setItem(USER_KEY, JSON.stringify(userData));
@@ -51,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(USER_KEY);
   };
 
-  const isTeacher = user?.roles.some((r) => r === "Teacher" || r === "Admin") ?? false;
+  const isTeacher = (user?.roles ?? []).some((r) => r === "Teacher" || r === "Admin");
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isTeacher }}>

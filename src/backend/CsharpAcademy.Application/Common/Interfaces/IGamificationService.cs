@@ -8,4 +8,5 @@ public interface IGamificationService
     Task CheckLessonBadgesAsync(User user, int completedLessonCount, CancellationToken cancellationToken = default);
     Task CheckQuizBadgesAsync(User user, bool passed, CancellationToken cancellationToken = default);
     Task CheckCourseCompletionBadgesAsync(User user, CancellationToken cancellationToken = default);
+    Task<int> AwardPracticeXpAsync(int userId, int exerciseId, CancellationToken cancellationToken = default);
 }

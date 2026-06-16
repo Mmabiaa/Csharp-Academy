@@ -16,4 +16,8 @@ public class LessonDetailDto
     public string CourseTitle { get; set; } = string.Empty;
     public bool HasQuiz { get; set; }
     public bool IsCompleted { get; set; }
+    public string BestPractices { get; set; } = string.Empty;
+    public string VoiceSummary { get; set; } = string.Empty;
+    public bool HasTutorial { get; set; }
+    public bool HasPractice { get; set; }
 }

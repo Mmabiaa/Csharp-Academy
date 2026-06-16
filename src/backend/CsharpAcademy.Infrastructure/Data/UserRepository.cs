@@ -62,4 +62,21 @@ public class UserRepository : IUserRepository
             .Take(count)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<bool> HasCompletedPracticeAsync(int userId, int exerciseId, CancellationToken cancellationToken = default)
+    {
+        return await _context.PracticeCompletions
+            .AnyAsync(p => p.UserId == userId && p.ExerciseId == exerciseId, cancellationToken);
+    }
+
+    public async Task RecordPracticeCompletionAsync(int userId, int exerciseId, CancellationToken cancellationToken = default)
+    {
+        _context.PracticeCompletions.Add(new PracticeCompletion
+        {
+            UserId = userId,
+            ExerciseId = exerciseId,
+            CompletedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

@@ -11,6 +11,7 @@ import CertificateVerify from "./pages/CertificateVerify";
 import Leaderboard from "./pages/Leaderboard";
 import Classrooms from "./pages/Classrooms";
 import Analytics from "./pages/Analytics";
+import Practices from "./pages/Practices";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { useAuth } from "./context/AuthContext";
@@ -26,6 +27,7 @@ function App() {
             <Link to="/" className="text-2xl font-bold text-gray-900">C# Academy</Link>
             <nav className="flex items-center gap-5 text-sm">
               <Link to="/courses" className="text-gray-600 hover:text-gray-900 font-medium">Courses</Link>
+              <Link to="/practices" className="text-gray-600 hover:text-gray-900 font-medium">Practices</Link>
               <Link to="/playground" className="text-gray-600 hover:text-gray-900 font-medium">Playground</Link>
               <Link to="/assistant" className="text-gray-600 hover:text-gray-900 font-medium">AI Tutor</Link>
               <Link to="/leaderboard" className="text-gray-600 hover:text-gray-900 font-medium">Leaderboard</Link>
@@ -61,6 +63,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:id" element={<CourseDetail />} />
+            <Route path="/practices" element={<Practices />} />
             <Route path="/lessons/:id" element={<LessonPage />} />
             <Route path="/lessons/:id/quiz" element={<QuizPage />} />
             <Route path="/playground" element={<Playground />} />

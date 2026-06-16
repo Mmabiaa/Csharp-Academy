@@ -10,4 +10,6 @@ public interface IUserRepository
     Task AwardBadgeAsync(int userId, int badgeId, CancellationToken cancellationToken = default);
     Task<bool> HasBadgeAsync(int userId, int badgeId, CancellationToken cancellationToken = default);
     Task<List<User>> GetTopByXpAsync(int count, CancellationToken cancellationToken = default);
+    Task<bool> HasCompletedPracticeAsync(int userId, int exerciseId, CancellationToken cancellationToken = default);
+    Task RecordPracticeCompletionAsync(int userId, int exerciseId, CancellationToken cancellationToken = default);
 }

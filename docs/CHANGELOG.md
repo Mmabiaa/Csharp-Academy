@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Analytics dashboard for teachers (users, enrollments, quiz pass rate, course stats)
 - PDF certificate export via QuestPDF (`GET /api/certificates/{code}/pdf`)
 - New question types: fill-in-the-blank and output prediction
+- Guided tutorials, coding practices, best practices, and voice narration on lessons
+- Practices hub with XP rewards for completed exercises (+15 XP)
 - Teacher registration role with JWT role claims
 - Frontend: Classrooms page, Analytics dashboard, quiz type UI, PDF download links
 - EF migration: `AddClassroomsAndQuestionTypes`

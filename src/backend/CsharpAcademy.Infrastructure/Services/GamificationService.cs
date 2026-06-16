@@ -55,6 +55,24 @@ public class GamificationService : IGamificationService
         await _userRepository.AwardBadgeAsync(user.Id, 5, cancellationToken);
     }
 
+    public async Task<int> AwardPracticeXpAsync(int userId, int exerciseId, CancellationToken cancellationToken = default)
+    {
+        if (await _userRepository.HasCompletedPracticeAsync(userId, exerciseId, cancellationToken))
+        {
+            return 0;
+        }
+
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (user is null)
+        {
+            return 0;
+        }
+
+        await AwardXpAndUpdateStreakAsync(user, GamificationRewards.PracticeXp, cancellationToken);
+        await _userRepository.RecordPracticeCompletionAsync(userId, exerciseId, cancellationToken);
+        return GamificationRewards.PracticeXp;
+    }
+
     private static void UpdateStreak(User user)
     {
         var today = DateTime.UtcNow.Date;

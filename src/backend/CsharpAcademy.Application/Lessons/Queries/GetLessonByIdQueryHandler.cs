@@ -8,15 +8,21 @@ public class GetLessonByIdQueryHandler : IRequestHandler<GetLessonByIdQuery, Les
     private readonly ILessonRepository _lessonRepository;
     private readonly IQuizRepository _quizRepository;
     private readonly IProgressRepository _progressRepository;
+    private readonly ICodingExerciseRepository _exerciseRepository;
+    private readonly ITutorialStepRepository _tutorialStepRepository;
 
     public GetLessonByIdQueryHandler(
         ILessonRepository lessonRepository,
         IQuizRepository quizRepository,
-        IProgressRepository progressRepository)
+        IProgressRepository progressRepository,
+        ICodingExerciseRepository exerciseRepository,
+        ITutorialStepRepository tutorialStepRepository)
     {
         _lessonRepository = lessonRepository;
         _quizRepository = quizRepository;
         _progressRepository = progressRepository;
+        _exerciseRepository = exerciseRepository;
+        _tutorialStepRepository = tutorialStepRepository;
     }
 
     public async Task<LessonDetailDto?> Handle(GetLessonByIdQuery request, CancellationToken cancellationToken)
@@ -32,6 +38,9 @@ public class GetLessonByIdQueryHandler : IRequestHandler<GetLessonByIdQuery, Les
             ? await _progressRepository.GetByUserAndLessonAsync(request.UserId.Value, lesson.Id, cancellationToken)
             : null;
 
+        var exercises = await _exerciseRepository.GetByLessonIdAsync(lesson.Id, cancellationToken);
+        var tutorialSteps = await _tutorialStepRepository.GetByLessonIdAsync(lesson.Id, cancellationToken);
+
         return new LessonDetailDto
         {
             Id = lesson.Id,
@@ -43,7 +52,11 @@ public class GetLessonByIdQueryHandler : IRequestHandler<GetLessonByIdQuery, Les
             CourseId = lesson.CourseModule.CourseId,
             CourseTitle = lesson.CourseModule.Course?.Title ?? string.Empty,
             HasQuiz = quiz is not null,
-            IsCompleted = progress?.IsCompleted ?? false
+            IsCompleted = progress?.IsCompleted ?? false,
+            BestPractices = lesson.BestPractices,
+            VoiceSummary = lesson.VoiceSummary,
+            HasTutorial = tutorialSteps.Count > 0,
+            HasPractice = exercises.Count > 0
         };
     }
 }

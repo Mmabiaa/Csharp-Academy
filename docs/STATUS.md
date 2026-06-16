@@ -48,6 +48,13 @@
 - [x] Certificates (auto-issued at 100% course completion, public verification)
 - [x] PDF certificate export (QuestPDF)
 
+### Learning Experience
+- [x] Step-by-step guided tutorials per lesson
+- [x] Hands-on coding practices with validation and XP
+- [x] Best practices tips per lesson
+- [x] Voice narration (browser text-to-speech) on lessons
+- [x] Practices hub page listing all exercises
+
 ### Frontend
 - [x] Home, Courses, Course Detail, Lesson, Quiz pages
 - [x] Login, Register (Student/Teacher), Profile with XP/badges/enrollments
@@ -106,6 +113,10 @@ npm run dev
 | GET | `/api/certificates` | Yes | User certificates |
 | GET | `/api/certificates/verify/{code}` | No | Verify certificate |
 | GET | `/api/certificates/{code}/pdf` | No | Download certificate PDF |
+| GET | `/api/practices` | No | List all coding exercises |
+| GET | `/api/practices/lessons/{id}` | No | Exercises for a lesson |
+| POST | `/api/practices/{id}/submit` | Yes | Submit practice solution |
+| GET | `/api/lessons/{id}/tutorial` | No | Guided tutorial steps |
 | GET | `/api/leaderboard` | No | XP leaderboard |
 | GET | `/api/users/me` | Yes | User profile |
 | POST | `/api/auth/register` | No | Register (optional role) |

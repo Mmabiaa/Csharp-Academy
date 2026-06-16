@@ -32,6 +32,8 @@ public static class DependencyInjection
         services.AddScoped<ICertificateRepository, CertificateRepository>();
         services.AddScoped<IClassroomRepository, ClassroomRepository>();
         services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
+        services.AddScoped<ICodingExerciseRepository, CodingExerciseRepository>();
+        services.AddScoped<ITutorialStepRepository, TutorialStepRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IGamificationService, GamificationService>();
         services.AddScoped<ICodeExecutionService, RoslynCodeExecutionService>();
