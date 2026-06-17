@@ -68,9 +68,9 @@ Copy `src/backend/.env.example` to `src/backend/.env`:
 ```
 CONNECTION_STRING=Server=localhost;Port=3306;Database=csharpacademy;Uid=root;Pwd=YOUR_PASSWORD;CharSet=utf8mb4;
 
-# Optional: enable full AI assistant and quiz generation
-OPENAI_API_KEY=sk-your-key-here
-OPENAI_MODEL=gpt-4o-mini
+# Optional: enable AI assistant and quiz generation (Google Gemini)
+GEMINI_API_KEY=your-key-here
+GEMINI_MODEL=gemini-2.0-flash
 ```
 
 ### 2. Apply Migrations
@@ -125,7 +125,7 @@ npm run dev
 ## Known Issues
 - Pomelo EF Core 10 not yet released; project uses EF Core 9 (compatible with .NET 10 runtime)
 - Playground blocks file/network access; 5-second execution timeout
-- AI features use offline fallback unless `OPENAI_API_KEY` is set
+- AI features use offline fallback unless `GEMINI_API_KEY` is set
 
 ## Next Features to Implement
 1. Admin panel for course/content management

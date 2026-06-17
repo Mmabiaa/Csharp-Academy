@@ -37,8 +37,8 @@ export default function Assistant() {
       setAiStatus(response.usedAiProvider ? "online" : response.error ? "error" : "offline");
       setStatusMessage(
         response.usedAiProvider
-          ? "Powered by OpenAI"
-          : response.error ?? "Offline tutor mode — set OPENAI_API_KEY in src/backend/.env"
+          ? "Powered by Google Gemini"
+          : response.error ?? "Offline tutor mode — set GEMINI_API_KEY in src/backend/.env"
       );
       setMessages((prev) => [...prev, { role: "assistant", content: response.reply }]);
     } catch {

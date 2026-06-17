@@ -1,5 +1,3 @@
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using CsharpAcademy.Application.Common.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -26,20 +24,20 @@ public class AiQuizGenerationService : IAiQuizGenerationService
     public async Task<GeneratedQuizData> GenerateAsync(
         string lessonTitle, string lessonContent, int questionCount, CancellationToken cancellationToken = default)
     {
-        var apiKey = OpenAiClient.GetApiKey(_configuration);
+        var apiKey = GeminiClient.GetApiKey(_configuration);
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            _logger.LogWarning("OPENAI_API_KEY is not set — using fallback quiz.");
+            _logger.LogWarning("GEMINI_API_KEY is not set — using fallback quiz.");
             return GenerateFallbackQuiz(lessonTitle, questionCount);
         }
 
         try
         {
-            return await CallOpenAiAsync(apiKey, lessonTitle, lessonContent, questionCount, cancellationToken);
+            return await CallGeminiAsync(apiKey, lessonTitle, lessonContent, questionCount, cancellationToken);
         }
-        catch (OpenAiException ex)
+        catch (GeminiException ex)
         {
-            _logger.LogWarning("OpenAI quiz generation failed: {Message}", ex.Message);
+            _logger.LogWarning("Gemini quiz generation failed: {Message}", ex.Message);
             return GenerateFallbackQuiz(lessonTitle, questionCount);
         }
         catch (Exception ex)
@@ -49,11 +47,10 @@ public class AiQuizGenerationService : IAiQuizGenerationService
         }
     }
 
-    private async Task<GeneratedQuizData> CallOpenAiAsync(
+    private async Task<GeneratedQuizData> CallGeminiAsync(
         string apiKey, string lessonTitle, string lessonContent, int questionCount, CancellationToken cancellationToken)
     {
         var client = _httpClientFactory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
         var systemPrompt = """
             You generate C# programming quiz questions as JSON only.
@@ -64,34 +61,15 @@ public class AiQuizGenerationService : IAiQuizGenerationService
 
         var userPrompt = $"Lesson: {lessonTitle}\n\nContent:\n{lessonContent}\n\nGenerate {questionCount} questions.";
 
-        var body = new
-        {
-            model = OpenAiClient.GetModel(_configuration),
-            messages = new[]
-            {
-                new { role = "system", content = systemPrompt },
-                new { role = "user", content = userPrompt }
-            },
-            response_format = new { type = "json_object" },
-            max_tokens = 2000
-        };
-
-        var response = await client.PostAsync(
-            "https://api.openai.com/v1/chat/completions",
-            new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"),
-            cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogWarning("OpenAI quiz API returned {Status}: {Body}", (int)response.StatusCode, errorBody);
-            throw new OpenAiException($"OpenAI returned {(int)response.StatusCode}");
-        }
-
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        using var doc = JsonDocument.Parse(json);
-        var content = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()
-            ?? throw new InvalidOperationException("Empty AI response.");
+        var content = await GeminiClient.ChatAsync(
+            client,
+            apiKey,
+            GeminiClient.GetModel(_configuration),
+            systemPrompt,
+            userPrompt,
+            maxTokens: 2000,
+            jsonResponse: true,
+            cancellationToken: cancellationToken);
 
         var quiz = JsonSerializer.Deserialize<GeneratedQuizData>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             ?? throw new InvalidOperationException("Failed to parse AI quiz JSON.");

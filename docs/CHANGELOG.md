@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Teacher registration role with JWT role claims
 - Frontend: Classrooms page, Analytics dashboard, quiz type UI, PDF download links
 - EF migration: `AddClassroomsAndQuestionTypes`
-- AI Learning Assistant with OpenAI integration and offline C# tutor fallback
+- AI Learning Assistant with Google Gemini integration and offline C# tutor fallback
 - Interactive C# Playground using Roslyn script execution (`POST /api/playground/run`)
 - Certificate system: auto-issue on course completion, verification endpoint, Graduate badge
 - Leaderboard API and page (top learners by XP)
@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `.env` loading with `Env.TraversePath().Load()` for reliable MySQL connection
 
 ### Changed
+- Switched AI provider from OpenAI to Google Gemini (`GEMINI_API_KEY`, `GEMINI_MODEL`)
 - Course detail shows progress bar and completed lesson indicators
 - Lesson page links to AI Tutor with lesson context
 - Profile page shows certificates, badges, XP, and enrollments

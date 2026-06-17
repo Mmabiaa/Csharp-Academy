@@ -22,10 +22,10 @@ public class AiAssistantService : IAiAssistantService
 
     public async Task<AiAssistantResponse> GetResponseAsync(AiAssistantRequest request, CancellationToken cancellationToken = default)
     {
-        var apiKey = OpenAiClient.GetApiKey(_configuration);
+        var apiKey = GeminiClient.GetApiKey(_configuration);
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            _logger.LogWarning("OPENAI_API_KEY is not set — using offline tutor.");
+            _logger.LogWarning("GEMINI_API_KEY is not set — using offline tutor.");
             return OfflineResponse(request);
         }
 
@@ -36,20 +36,20 @@ public class AiAssistantService : IAiAssistantService
                 "Give clear, concise explanations with short code examples when helpful. " +
                 (request.LessonContext is not null ? $"The student is studying: {request.LessonContext}. " : "");
 
-            var reply = await OpenAiClient.ChatAsync(
+            var reply = await GeminiClient.ChatAsync(
                 client,
                 apiKey,
-                OpenAiClient.GetModel(_configuration),
+                GeminiClient.GetModel(_configuration),
                 systemPrompt,
                 request.Message,
                 maxTokens: 500,
-                cancellationToken);
+                cancellationToken: cancellationToken);
 
             return new AiAssistantResponse { Reply = reply, UsedAiProvider = true };
         }
-        catch (OpenAiException ex)
+        catch (GeminiException ex)
         {
-            _logger.LogWarning("OpenAI error: {Message}", ex.Message);
+            _logger.LogWarning("Gemini error: {Message}", ex.Message);
             return new AiAssistantResponse
             {
                 Reply = $"⚠️ **AI unavailable:** {ex.Message}\n\n---\n\n{GetLocalResponse(request.Message, request.LessonContext)}",
@@ -59,7 +59,7 @@ public class AiAssistantService : IAiAssistantService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "OpenAI request failed unexpectedly.");
+            _logger.LogWarning(ex, "Gemini request failed unexpectedly.");
             return new AiAssistantResponse
             {
                 Reply = $"⚠️ **AI connection error:** {ex.Message}\n\n---\n\n{GetLocalResponse(request.Message, request.LessonContext)}",
@@ -98,10 +98,10 @@ public class AiAssistantService : IAiAssistantService
         if (lower.Contains("hello") || lower.Contains("hi"))
         {
             return "Hello! I'm your C# learning assistant. Ask me about variables, classes, loops, or any C# concept!" + context +
-                   "\n\n*Tip: Set `OPENAI_API_KEY` in `src/backend/.env` for AI-powered responses.*";
+                   "\n\n*Tip: Set `GEMINI_API_KEY` in `src/backend/.env` for AI-powered responses.*";
         }
 
         return "I'm here to help you learn C#! Try asking about:\n- Variables and data types\n- Classes and objects\n- Loops and conditionals\n- Methods and functions" + context +
-               "\n\n*Running in offline tutor mode. Add `OPENAI_API_KEY` to `src/backend/.env` for full AI assistance.*";
+               "\n\n*Running in offline tutor mode. Add `GEMINI_API_KEY` to `src/backend/.env` for full AI assistance.*";
     }
 }

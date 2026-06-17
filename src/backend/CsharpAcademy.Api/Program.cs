@@ -15,15 +15,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
 
-// Log OpenAI config status at startup (never log the key itself)
-var openAiKey = builder.Configuration["OPENAI_API_KEY"]?.Trim();
-if (!string.IsNullOrEmpty(openAiKey))
+// Log Gemini config status at startup (never log the key itself)
+var geminiKey = builder.Configuration["GEMINI_API_KEY"]?.Trim();
+if (!string.IsNullOrEmpty(geminiKey))
 {
-    Console.WriteLine($"[Config] OPENAI_API_KEY loaded (ends with ...{openAiKey[^4..]})");
+    Console.WriteLine($"[Config] GEMINI_API_KEY loaded (ends with ...{geminiKey[^4..]})");
 }
 else
 {
-    Console.WriteLine("[Config] OPENAI_API_KEY not set — AI features will use offline fallback.");
+    Console.WriteLine("[Config] GEMINI_API_KEY not set — AI features will use offline fallback.");
 }
 
 builder.Services.AddControllers();
