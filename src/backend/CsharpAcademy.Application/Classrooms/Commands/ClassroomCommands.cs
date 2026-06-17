@@ -1,3 +1,4 @@
+using CsharpAcademy.Application.Assignments.Commands;
 using CsharpAcademy.Domain.Entities;
 using CsharpAcademy.Domain.Interfaces;
 using MediatR;
@@ -19,6 +20,7 @@ public class ClassroomDto
     public string TeacherName { get; set; } = string.Empty;
     public int MemberCount { get; set; }
     public List<ClassroomMemberDto> Members { get; set; } = new();
+    public List<AttachmentDto> Attachments { get; set; } = new();
 }
 
 public class ClassroomMemberDto
@@ -70,7 +72,8 @@ public class CreateClassroomCommandHandler : IRequestHandler<CreateClassroomComm
             Name = $"{m.User.FirstName} {m.User.LastName}",
             Email = m.User.Email ?? "",
             JoinedAt = m.JoinedAt
-        }).ToList()
+        }).ToList(),
+        Attachments = c.Attachments?.Select(UploadAttachmentCommandHandler.Map).ToList() ?? new()
     };
 }
 

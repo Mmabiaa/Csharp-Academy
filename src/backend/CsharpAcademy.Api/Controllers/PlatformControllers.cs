@@ -109,15 +109,36 @@ public class AssignmentsController : ControllerBase
     public async Task<ActionResult<List<SubmissionDto>>> Submissions(int id) =>
         Ok(await _mediator.Send(new GetAssignmentSubmissionsQuery(id, GetUserId())));
 
+    [Authorize(Roles = "Teacher,Admin")]
+    [HttpPost("submissions/{id}/grade")]
+    public async Task<ActionResult<SubmissionDto>> Grade(int id, [FromBody] GradeBody body) =>
+        Ok(await _mediator.Send(new GradeSubmissionCommand(GetUserId(), id, body.Grade, body.Feedback)));
+
     [Authorize]
     [HttpPost("{id}/submit")]
     public async Task<ActionResult<SubmissionDto>> Submit(int id, [FromBody] SubmitAssignmentBody body) =>
         Ok(await _mediator.Send(new SubmitAssignmentCommand(GetUserId(), id, body.Content)));
 
-    [Authorize(Roles = "Teacher,Admin")]
-    [HttpPost("submissions/{id}/grade")]
-    public async Task<ActionResult<SubmissionDto>> Grade(int id, [FromBody] GradeBody body) =>
-        Ok(await _mediator.Send(new GradeSubmissionCommand(GetUserId(), id, body.Grade, body.Feedback)));
+    [Authorize]
+    [HttpPost("attachments")]
+    public async Task<ActionResult<AttachmentDto>> UploadAttachment(
+        [FromForm] int? classroomId, 
+        [FromForm] int? assignmentId, 
+        [FromForm] int? submissionId, 
+        IFormFile file)
+    {
+        var result = await _mediator.Send(new UploadAttachmentCommand(
+            GetUserId(), classroomId, assignmentId, submissionId, file));
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpDelete("attachments/{id}")]
+    public async Task<IActionResult> DeleteAttachment(int id)
+    {
+        await _mediator.Send(new DeleteAttachmentCommand(GetUserId(), id));
+        return NoContent();
+    }
 
     private int GetUserId()
     {

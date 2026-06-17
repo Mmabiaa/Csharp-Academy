@@ -20,6 +20,7 @@ public class ClassroomRepository : IClassroomRepository
             .Include(c => c.Teacher)
             .Include(c => c.Members)
                 .ThenInclude(m => m.User)
+            .Include(c => c.Attachments)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
@@ -36,6 +37,7 @@ public class ClassroomRepository : IClassroomRepository
             .Include(c => c.Teacher)
             .Include(c => c.Members)
                 .ThenInclude(m => m.User)
+            .Include(c => c.Attachments)
             .Where(c => c.TeacherId == teacherId)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -46,6 +48,7 @@ public class ClassroomRepository : IClassroomRepository
         return await _context.Classrooms
             .Include(c => c.Course)
             .Include(c => c.Teacher)
+            .Include(c => c.Attachments)
             .Where(c => c.Members.Any(m => m.UserId == studentId))
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync(cancellationToken);

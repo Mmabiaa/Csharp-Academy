@@ -303,6 +303,17 @@ export interface Classroom {
   teacherName: string;
   memberCount: number;
   members: { userId: number; name: string; email: string; joinedAt: string }[];
+  attachments: Attachment[];
+}
+
+export interface Attachment {
+  id: number;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+  uploadedById: number;
+  createdAt: string;
 }
 
 export interface AnalyticsDashboard {
@@ -452,6 +463,7 @@ export interface Assignment {
   requiresCode: boolean;
   submissionCount: number;
   mySubmission: Submission | null;
+  attachments: Attachment[];
 }
 
 export interface Submission {
@@ -464,6 +476,7 @@ export interface Submission {
   status: string;
   grade: number | null;
   feedback: string | null;
+  attachments: Attachment[];
 }
 
 export interface Challenge {
@@ -613,4 +626,36 @@ export async function fetchLessonVideos(lessonId: number): Promise<LessonVideo[]
 export async function fetchUserProgressSummary(token: string): Promise<UserProgressSummary> {
   const response = await fetch(`${API_BASE_URL}/users/me/progress`, { headers: authHeaders(token) });
   return handleResponse(response);
+}
+
+export async function uploadAttachment(
+  token: string,
+  file: File,
+  params: { classroomId?: number; assignmentId?: number; submissionId?: number }
+): Promise<Attachment> {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (params.classroomId) formData.append("classroomId", params.classroomId.toString());
+  if (params.assignmentId) formData.append("assignmentId", params.assignmentId.toString());
+  if (params.submissionId) formData.append("submissionId", params.submissionId.toString());
+
+  const response = await fetch(`${API_BASE_URL}/assignments/attachments`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: formData,
+  });
+  return handleResponse(response);
+}
+
+export async function deleteAttachment(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/assignments/attachments/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete attachment");
+}
+
+export function getFileUrl(path: string): string {
+  const base = API_BASE_URL.replace("/api", "");
+  return `${base}${path}`;
 }

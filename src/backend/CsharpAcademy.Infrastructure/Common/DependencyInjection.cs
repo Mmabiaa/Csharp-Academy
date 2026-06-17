@@ -37,12 +37,14 @@ public static class DependencyInjection
         services.AddScoped<IAssignmentRepository, AssignmentRepository>();
         services.AddScoped<ICodingChallengeRepository, CodingChallengeRepository>();
         services.AddScoped<ILessonVideoRepository, LessonVideoRepository>();
+        services.AddScoped<IAttachmentRepository, AttachmentRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IGamificationService, GamificationService>();
         services.AddScoped<ICodeExecutionService, RoslynCodeExecutionService>();
         services.AddScoped<IAiAssistantService, AiAssistantService>();
         services.AddScoped<IAiQuizGenerationService, AiQuizGenerationService>();
         services.AddScoped<ICertificatePdfService, CertificatePdfService>();
+        services.AddScoped<IFileService, FileService>();
 
         return services;
     }

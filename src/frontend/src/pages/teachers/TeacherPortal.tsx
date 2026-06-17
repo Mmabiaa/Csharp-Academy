@@ -7,6 +7,7 @@ import {
   fetchTeacherDashboard,
   fetchTeachingAssignments,
   gradeSubmission,
+  getFileUrl,
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -173,9 +174,8 @@ export default function TeacherPortal() {
               <li key={a.id}>
                 <button
                   onClick={() => setSelectedAssignment(a.id)}
-                  className={`w-full text-left px-5 py-4 hover:bg-slate-800/50 ${
-                    selectedAssignment === a.id ? "bg-indigo-900/30" : ""
-                  }`}
+                  className={`w-full text-left px-5 py-4 hover:bg-slate-800/50 ${selectedAssignment === a.id ? "bg-indigo-900/30" : ""
+                    }`}
                 >
                   <p className="font-medium">{a.title}</p>
                   <p className="text-sm text-slate-400">
@@ -206,6 +206,23 @@ export default function TeacherPortal() {
                       <pre className="mt-2 text-xs bg-slate-800 p-2 rounded overflow-x-auto max-h-24">{s.content}</pre>
                       {s.grade !== null && (
                         <p className="mt-2 text-sm text-emerald-400">Grade: {s.grade} — {s.feedback}</p>
+                      )}
+
+                      {s.attachments?.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {s.attachments.map(file => (
+                            <a
+                              key={file.id}
+                              href={getFileUrl(file.fileUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs px-2 py-1 rounded bg-slate-800 border border-slate-700 hover:border-indigo-500 text-slate-300 transition-colors truncate max-w-[150px]"
+                              title={file.fileName}
+                            >
+                              📎 {file.fileName}
+                            </a>
+                          ))}
+                        </div>
                       )}
                     </div>
                     {s.status === "Submitted" && (

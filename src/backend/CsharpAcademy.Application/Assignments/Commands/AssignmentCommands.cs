@@ -1,4 +1,5 @@
 using CsharpAcademy.Application.Common.Interfaces;
+using Microsoft.AspNetCore.Http;
 using CsharpAcademy.Domain.Entities;
 using CsharpAcademy.Domain.Interfaces;
 using MediatR;
@@ -10,6 +11,21 @@ public record CreateAssignmentCommand(int TeacherId, string Title, string Descri
 public record SubmitAssignmentCommand(int UserId, int AssignmentId, string Content) : IRequest<SubmissionDto>;
 
 public record GradeSubmissionCommand(int TeacherId, int SubmissionId, int Grade, string Feedback) : IRequest<SubmissionDto>;
+
+public record UploadAttachmentCommand(int UserId, int? ClassroomId, int? AssignmentId, int? SubmissionId, IFormFile File) : IRequest<AttachmentDto>;
+
+public record DeleteAttachmentCommand(int UserId, int AttachmentId) : IRequest<Unit>;
+
+public class AttachmentDto
+{
+    public int Id { get; set; }
+    public string FileName { get; set; } = string.Empty;
+    public string FileUrl { get; set; } = string.Empty;
+    public string FileType { get; set; } = string.Empty;
+    public long FileSize { get; set; }
+    public int UploadedById { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
 
 public class AssignmentDto
 {
@@ -26,6 +42,7 @@ public class AssignmentDto
     public bool RequiresCode { get; set; }
     public int SubmissionCount { get; set; }
     public SubmissionDto? MySubmission { get; set; }
+    public List<AttachmentDto> Attachments { get; set; } = new();
 }
 
 public class SubmissionDto
@@ -39,6 +56,7 @@ public class SubmissionDto
     public string Status { get; set; } = string.Empty;
     public int? Grade { get; set; }
     public string? Feedback { get; set; }
+    public List<AttachmentDto> Attachments { get; set; } = new();
 }
 
 public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCommand, AssignmentDto>
@@ -80,7 +98,8 @@ public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCo
         MaxPoints = a.MaxPoints,
         RequiresCode = a.RequiresCode,
         SubmissionCount = a.Submissions?.Count ?? 0,
-        MySubmission = mine
+        MySubmission = mine,
+        Attachments = a.Attachments?.Select(UploadAttachmentCommandHandler.Map).ToList() ?? new()
     };
 }
 
@@ -121,7 +140,8 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
         SubmittedAt = s.SubmittedAt,
         Status = s.Status.ToString(),
         Grade = s.Grade,
-        Feedback = s.Feedback
+        Feedback = s.Feedback,
+        Attachments = s.Attachments?.Select(UploadAttachmentCommandHandler.Map).ToList() ?? new()
     };
 }
 
@@ -147,5 +167,78 @@ public class GradeSubmissionCommandHandler : IRequestHandler<GradeSubmissionComm
 
         await _repo.GradeSubmissionAsync(submission, cancellationToken);
         return SubmitAssignmentCommandHandler.MapSubmission(submission, $"{submission.User.FirstName} {submission.User.LastName}");
+    }
+}
+
+public class UploadAttachmentCommandHandler : IRequestHandler<UploadAttachmentCommand, AttachmentDto>
+{
+    private readonly IAttachmentRepository _attachmentRepo;
+    private readonly IFileService _fileService;
+
+    public UploadAttachmentCommandHandler(IAttachmentRepository attachmentRepo, IFileService fileService)
+    {
+        _attachmentRepo = attachmentRepo;
+        _fileService = fileService;
+    }
+
+    public async Task<AttachmentDto> Handle(UploadAttachmentCommand request, CancellationToken cancellationToken)
+    {
+        var folder = request.ClassroomId.HasValue ? "classrooms" :
+                     request.AssignmentId.HasValue ? "assignments" : "submissions";
+
+        var url = await _fileService.SaveFileAsync(request.File, folder);
+
+        var attachment = new Attachment
+        {
+            FileName = request.File.FileName,
+            FileUrl = url,
+            FileType = Path.GetExtension(request.File.FileName).TrimStart('.'),
+            FileSize = request.File.Length,
+            ClassroomId = request.ClassroomId,
+            AssignmentId = request.AssignmentId,
+            SubmissionId = request.SubmissionId,
+            UploadedById = request.UserId
+        };
+
+        await _attachmentRepo.AddAsync(attachment, cancellationToken);
+
+        return Map(attachment);
+    }
+
+    internal static AttachmentDto Map(Attachment a) => new()
+    {
+        Id = a.Id,
+        FileName = a.FileName,
+        FileUrl = a.FileUrl,
+        FileType = a.FileType,
+        FileSize = a.FileSize,
+        UploadedById = a.UploadedById,
+        CreatedAt = a.CreatedAt
+    };
+}
+
+public class DeleteAttachmentCommandHandler : IRequestHandler<DeleteAttachmentCommand, Unit>
+{
+    private readonly IAttachmentRepository _attachmentRepo;
+    private readonly IFileService _fileService;
+
+    public DeleteAttachmentCommandHandler(IAttachmentRepository attachmentRepo, IFileService fileService)
+    {
+        _attachmentRepo = attachmentRepo;
+        _fileService = fileService;
+    }
+
+    public async Task<Unit> Handle(DeleteAttachmentCommand request, CancellationToken cancellationToken)
+    {
+        var attachment = await _attachmentRepo.GetByIdAsync(request.AttachmentId, cancellationToken)
+            ?? throw new KeyNotFoundException("Attachment not found.");
+
+        if (attachment.UploadedById != request.UserId)
+            throw new UnauthorizedAccessException("Not authorized to delete this attachment.");
+
+        _fileService.DeleteFile(attachment.FileUrl);
+        await _attachmentRepo.DeleteAsync(request.AttachmentId, cancellationToken);
+
+        return Unit.Value;
     }
 }

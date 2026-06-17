@@ -6,6 +6,9 @@ import {
   createClassroom,
   joinClassroom,
   fetchCourses,
+  uploadAttachment,
+  deleteAttachment,
+  getFileUrl,
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -194,6 +197,101 @@ export default function Classrooms() {
                   ))}
                 </ul>
               )}
+
+              {/* Classroom Files Section */}
+              <div className="mt-6 border-t pt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    Classroom Files
+                  </h3>
+                  {isTeacher && (
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id={`file-upload-${c.id}`}
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            try {
+                              await uploadAttachment(token!, file, { classroomId: c.id });
+                              queryClient.invalidateQueries({ queryKey: ["classrooms"] });
+                            } catch (err: any) {
+                              setMessage(err.message);
+                            }
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor={`file-upload-${c.id}`}
+                        className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm font-medium border border-gray-300"
+                      >
+                        Upload File
+                      </label>
+                    </div>
+                  )}
+                </div>
+
+                {c.attachments?.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {c.attachments.map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 group"
+                      >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="p-2 bg-white rounded border border-gray-200 text-gray-400">
+                            {file.fileType.toUpperCase()}
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {file.fileName}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {(file.fileSize / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <a
+                            href={getFileUrl(file.fileUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                            title="Download"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                          </a>
+                          {isTeacher && (
+                            <button
+                              onClick={async () => {
+                                if (confirm("Delete this file?")) {
+                                  try {
+                                    await deleteAttachment(token!, file.id);
+                                    queryClient.invalidateQueries({ queryKey: ["classrooms"] });
+                                  } catch (err: any) {
+                                    setMessage(err.message);
+                                  }
+                                }
+                              }}
+                              className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                              title="Delete"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No files shared yet.</p>
+                )}
+              </div>
             </div>
           ))}
         </div>

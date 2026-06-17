@@ -15,11 +15,13 @@ public class AssignmentRepository : IAssignmentRepository
             .Include(a => a.Course)
             .Include(a => a.Lesson)
             .Include(a => a.Classroom)
+            .Include(a => a.Attachments)
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
     public async Task<List<Assignment>> GetByTeacherIdAsync(int teacherId, CancellationToken cancellationToken = default) =>
         await _context.Assignments
             .Include(a => a.Submissions)
+            .Include(a => a.Attachments)
             .Where(a => a.CreatedById == teacherId)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -33,6 +35,7 @@ public class AssignmentRepository : IAssignmentRepository
 
         return await _context.Assignments
             .Include(a => a.Submissions.Where(s => s.UserId == userId))
+            .Include(a => a.Attachments)
             .Where(a => a.ClassroomId == null || classroomIds.Contains(a.ClassroomId.Value))
             .OrderByDescending(a => a.DueDate)
             .ToListAsync(cancellationToken);
@@ -49,10 +52,12 @@ public class AssignmentRepository : IAssignmentRepository
         await _context.AssignmentSubmissions
             .Include(s => s.User)
             .Include(s => s.Assignment)
+            .Include(s => s.Attachments)
             .FirstOrDefaultAsync(s => s.Id == submissionId, cancellationToken);
 
     public async Task<AssignmentSubmission?> GetUserSubmissionAsync(int assignmentId, int userId, CancellationToken cancellationToken = default) =>
         await _context.AssignmentSubmissions
+            .Include(s => s.Attachments)
             .FirstOrDefaultAsync(s => s.AssignmentId == assignmentId && s.UserId == userId, cancellationToken);
 
     public async Task<Assignment> CreateAsync(Assignment assignment, CancellationToken cancellationToken = default)

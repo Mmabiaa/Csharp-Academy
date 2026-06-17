@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchMyAssignments, submitAssignment } from "../../lib/api";
+import { fetchMyAssignments, submitAssignment, uploadAttachment, getFileUrl, deleteAttachment } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import CodeEditor from "../../components/CodeEditor";
 
 export default function Assignments() {
-  const { token, isAuthenticated } = useAuth();
+  const { user, token, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<number | null>(null);
   const [content, setContent] = useState("");
@@ -57,11 +57,10 @@ export default function Assignments() {
                   setContent(submitted?.content ?? "");
                   setMessage("");
                 }}
-                className={`w-full text-left p-4 rounded-xl border transition-colors ${
-                  active?.id === a.id
-                    ? "border-indigo-500 bg-indigo-900/20"
-                    : "border-slate-800 bg-slate-900 hover:border-slate-700"
-                }`}
+                className={`w-full text-left p-4 rounded-xl border transition-colors ${active?.id === a.id
+                  ? "border-indigo-500 bg-indigo-900/20"
+                  : "border-slate-800 bg-slate-900 hover:border-slate-700"
+                  }`}
               >
                 <p className="font-medium">{a.title}</p>
                 <p className="text-xs text-slate-400 mt-1">{a.courseTitle}</p>
@@ -98,7 +97,21 @@ export default function Assignments() {
 
             <div className="rounded-lg bg-slate-800/50 p-4">
               <h3 className="text-sm font-medium text-slate-300 mb-2">Instructions</h3>
-              <p className="text-sm text-slate-400 whitespace-pre-wrap">{active.instructions}</p>
+              <p className="text-sm text-slate-400 whitespace-pre-wrap mb-4">{active.instructions}</p>
+
+              {active.attachments?.filter(a => a.uploadedById !== user?.userId).length > 0 && (
+                <div className="space-y-2 border-t border-slate-700 pt-3">
+                  <p className="text-xs text-slate-500 uppercase tracking-wider">Instruction Files</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {active.attachments.filter(a => a.uploadedById !== user?.userId).map(file => (
+                      <div key={file.id} className="flex items-center justify-between p-2 bg-slate-800 rounded border border-slate-700">
+                        <span className="text-sm truncate max-w-[150px]">{file.fileName}</span>
+                        <a href={getFileUrl(file.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 text-xs">Download</a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {active.mySubmission?.status === "Graded" ? (
@@ -111,8 +124,20 @@ export default function Assignments() {
               </div>
             ) : active.mySubmission ? (
               <div className="rounded-lg border border-slate-700 p-4">
-                <p className="text-amber-400 text-sm">Submitted — awaiting grade</p>
-                <pre className="mt-2 text-xs bg-slate-800 p-3 rounded overflow-x-auto">{active.mySubmission.content}</pre>
+                <p className="text-amber-400 text-sm mb-4">Submitted — awaiting grade</p>
+                <pre className="mb-4 text-xs bg-slate-800 p-3 rounded overflow-x-auto">{active.mySubmission.content}</pre>
+
+                {active.mySubmission.attachments?.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider">Attachments</p>
+                    {active.mySubmission.attachments.map(file => (
+                      <div key={file.id} className="flex items-center justify-between p-2 bg-slate-800 rounded border border-slate-700">
+                        <span className="text-sm truncate">{file.fileName}</span>
+                        <a href={getFileUrl(file.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 text-sm">Download</a>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -127,13 +152,85 @@ export default function Assignments() {
                     className="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 font-mono text-sm"
                   />
                 )}
-                <button
-                  onClick={() => submitMutation.mutate()}
-                  disabled={!content.trim() || submitMutation.isPending}
-                  className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 font-medium"
-                >
-                  {submitMutation.isPending ? "Submitting..." : "Submit Assignment"}
-                </button>
+
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-4 items-center">
+                    <button
+                      onClick={() => submitMutation.mutate()}
+                      disabled={(!content.trim() && !active.attachments?.length) || submitMutation.isPending}
+                      className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 font-medium"
+                    >
+                      {submitMutation.isPending ? "Submitting..." : "Submit Assignment"}
+                    </button>
+
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="assignment-file"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file && active) {
+                            // First submit or get an existing submission to attach to?
+                            // Actually, I should probably allow attaching to the "intent" or just handle it in the backend differently.
+                            // In this case, I'll submit first or require content.
+                            // Better: The backend supports uploading to assignmentId or submissionId.
+                            // If they haven't submitted yet, I can't upload to submissionId.
+                            // I'll change the backend to handle "pending" attachments or just upload to assignmentId as "student upload".
+                            // But wait, my entity has SubmissionId.
+                            // Let's just submit the content first, then allow adding files to the submission.
+                            // OR, the student can upload files to the Assignment with their userId, and I'll link them.
+                            // Current implementation: uploadAttachment(userId, classroomId, assignmentId, submissionId, file).
+                            // I'll upload to assignmentId and the backend will know who uploaded it.
+                            try {
+                              await uploadAttachment(token!, file, { assignmentId: active.id });
+                              queryClient.invalidateQueries({ queryKey: ["my-assignments"] });
+                            } catch (err: any) {
+                              setMessage(err.message);
+                            }
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="assignment-file"
+                        className="cursor-pointer px-4 py-2 rounded-lg border border-slate-700 hover:bg-slate-800 text-sm"
+                      >
+                        Attach File
+                      </label>
+                    </div>
+                  </div>
+
+                  {active.attachments?.some(a => a.uploadedById === user?.userId) && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-slate-500 uppercase tracking-wider">Your Attachments</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {active.attachments.filter(a => a.uploadedById === user?.userId).map(file => (
+                          <div key={file.id} className="flex items-center justify-between p-2 bg-slate-800 rounded border border-slate-700">
+                            <span className="text-sm truncate max-w-[150px]">{file.fileName}</span>
+                            <div className="flex gap-2">
+                              <a href={getFileUrl(file.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 text-xs">View</a>
+                              <button
+                                onClick={async () => {
+                                  if (confirm("Remove this file?")) {
+                                    try {
+                                      await deleteAttachment(token!, file.id);
+                                      queryClient.invalidateQueries({ queryKey: ["my-assignments"] });
+                                    } catch (err: any) {
+                                      setMessage(err.message);
+                                    }
+                                  }
+                                }}
+                                className="text-red-500 hover:text-red-400 text-xs"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>

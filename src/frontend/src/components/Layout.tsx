@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { fetchClassrooms } from "../lib/api";
 import {
   BookOpen,
   Code2,
@@ -26,10 +27,19 @@ type NavItem = {
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated, isTeacher, isAdmin, logout } = useAuth();
+  const { user, token, isAuthenticated, isTeacher, isAdmin, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [hasJoinedClass, setHasJoinedClass] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && !isTeacher && !isAdmin) {
+      fetchClassrooms(token!)
+        .then((classes) => setHasJoinedClass(classes.length > 0))
+        .catch(() => setHasJoinedClass(false));
+    }
+  }, [isAuthenticated, isTeacher, isAdmin, token]);
 
   const navItems: NavItem[] = [
     { path: "/", label: "Dashboard", icon: Home },
@@ -56,6 +66,9 @@ export default function Layout({ children }: { children: ReactNode }) {
       );
     }
     if (item.authOnly) {
+      if (item.path === "/assignments" && !isTeacher && !isAdmin) {
+        return isAuthenticated && hasJoinedClass;
+      }
       return isAuthenticated;
     }
     return true;
@@ -99,9 +112,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`sidebar-link !px-4 !py-2.5 ${
-                  isActive ? "!bg-white !text-black" : "text-gray-300 hover:bg-gray-900 hover:text-white"
-                }`}
+                className={`sidebar-link !px-4 !py-2.5 ${isActive ? "!bg-white !text-black" : "text-gray-300 hover:bg-gray-900 hover:text-white"
+                  }`}
               >
                 <Icon className="w-5 h-5" />
                 {item.label}
