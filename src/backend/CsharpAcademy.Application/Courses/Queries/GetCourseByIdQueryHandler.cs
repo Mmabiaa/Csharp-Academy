@@ -25,17 +25,22 @@ public class GetCourseByIdQueryHandler : IRequestHandler<GetCourseByIdQuery, Cou
             Id = course.Id,
             Title = course.Title,
             Description = course.Description,
+            Level = course.Level,
+            EstimatedHours = course.EstimatedHours,
             Modules = course.Modules.Select(m => new ModuleDto
             {
                 Id = m.Id,
                 Title = m.Title,
                 Description = m.Description,
+                LearningObjectives = m.LearningObjectives,
                 Order = m.Order,
                 Lessons = m.Lessons.Select(l => new LessonDto
                 {
                     Id = l.Id,
                     Title = l.Title,
                     Content = l.Content,
+                    Type = l.Type.ToString(),
+                    DurationMinutes = l.DurationMinutes,
                     Order = l.Order
                 }).ToList()
             }).ToList()

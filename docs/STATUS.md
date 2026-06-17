@@ -6,6 +6,7 @@
 - Database: MySQL (`csharpacademy`) with EF Core 9 + Pomelo 9 on .NET 10
 - Architecture: Clean Architecture (Domain → Application → Infrastructure → Api)
 - Authentication: JWT + ASP.NET Core Identity (Student / Teacher / Admin roles)
+- AI: Google Gemini (`GEMINI_API_KEY`, `GEMINI_MODEL`)
 - API docs: http://localhost:5000/swagger
 
 ## Completed Features
@@ -15,51 +16,49 @@
 - [x] Domain entities and EF Core migrations
 - [x] JWT authentication (register/login) with role selection
 - [x] MySQL connection via `.env` with `Env.TraversePath().Load()`
-- [x] Auto-migration and role seeding on startup
+- [x] Auto-migration, role seeding, and demo users on startup
 
 ### Learning Core
-- [x] Courses, modules, and lessons (CRUD read APIs + seed data)
-- [x] Course enrollment
-- [x] Lesson viewer with markdown rendering
-- [x] Progress tracking (mark lessons complete, course %)
+- [x] 5 courses with sections (modules), topics (lessons), levels, and estimated hours
+- [x] Lesson types: Reading, Video, Practice, Interactive
+- [x] Course enrollment and progress tracking
+- [x] Lesson viewer with markdown, tutorials, practices, best practices
+- [x] YouTube video tutoring (`GET /api/lessons/{id}/videos`)
 
-### Assessment
-- [x] Quizzes with multiple choice, true/false, fill-in-the-blank, and output prediction
-- [x] Quiz submission, scoring, and attempt persistence
-- [x] Pass threshold (70%) with XP rewards
-- [x] AI quiz generation from lesson content (Gemini + fallback)
+### Assessment & Challenges
+- [x] Quizzes (MC, T/F, fill-in-the-blank, output prediction)
+- [x] AI quiz generation (Gemini)
+- [x] 8 standalone coding challenges with XP rewards
+- [x] Hands-on lesson practices with validation
+
+### Assignments & Grading
+- [x] Teachers create assignments (code or essay)
+- [x] Students submit assignments
+- [x] Teachers grade submissions with feedback
+- [x] Demo assignments seeded on startup
+
+### Admin & Teacher Portals
+- [x] Admin dashboard (users, courses, enrollments, assignments, challenges)
+- [x] Admin course creation
+- [x] Teacher portal (classrooms, assignments, pending grading)
+- [x] Student progress summary dashboard
 
 ### Gamification
-- [x] XP system (lessons +10, quizzes +25)
-- [x] Daily streak tracking
-- [x] Badges (First Steps, On Fire, Quick Learner, Quiz Whiz, Graduate)
-- [x] Leaderboard (top learners by XP)
+- [x] XP, streaks, badges, leaderboard, certificates + PDF
 
-### Teacher & Classroom
-- [x] Teacher registration role
-- [x] Classroom creation with join codes
-- [x] Student join-by-code enrollment
-- [x] Optional course linking per classroom
-- [x] Analytics dashboard (users, enrollments, quiz stats, course performance)
+### Frontend UI
+- [x] Dark professional theme (Microsoft Learn / Codecademy inspired)
+- [x] Layout with role-based navigation
+- [x] Pages: Admin, Teacher, Assignments, Challenges, Progress
+- [x] Course cards with level badges, curriculum accordion
+- [x] Lesson video tab with YouTube embeds
 
-### Advanced Features
-- [x] AI Learning Assistant (Google Gemini when configured, offline tutor fallback)
-- [x] Interactive C# Playground (Roslyn script execution)
-- [x] Certificates (auto-issued at 100% course completion, public verification)
-- [x] PDF certificate export (QuestPDF)
+## Demo Accounts
 
-### Learning Experience
-- [x] Step-by-step guided tutorials per lesson
-- [x] Hands-on coding practices with validation and XP
-- [x] Best practices tips per lesson
-- [x] Voice narration (browser text-to-speech) on lessons
-- [x] Practices hub page listing all exercises
-
-### Frontend
-- [x] Home, Courses, Course Detail, Lesson, Quiz pages
-- [x] Login, Register (Student/Teacher), Profile with XP/badges/enrollments
-- [x] Playground, AI Tutor, Leaderboard, Certificate verification
-- [x] Classrooms page, Analytics dashboard (teachers), PDF download links
+| Role | Email | Password |
+|------|-------|----------|
+| Teacher | teacher@academy.com | Teacher123! |
+| Admin | admin@academy.com | Admin123! |
 
 ## Setup Instructions
 
@@ -68,14 +67,19 @@ Copy `src/backend/.env.example` to `src/backend/.env`:
 ```
 CONNECTION_STRING=Server=localhost;Port=3306;Database=csharpacademy;Uid=root;Pwd=YOUR_PASSWORD;CharSet=utf8mb4;
 
-# Optional: enable AI assistant and quiz generation (Google Gemini)
 GEMINI_API_KEY=your-key-here
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-1.5-flash
 ```
 
 ### 2. Apply Migrations
 ```powershell
 cd src/backend
+dotnet ef database update --project CsharpAcademy.Infrastructure --startup-project CsharpAcademy.Api
+```
+
+If a migration fails mid-way, drop and recreate:
+```powershell
+dotnet ef database drop --force --project CsharpAcademy.Infrastructure --startup-project CsharpAcademy.Api
 dotnet ef database update --project CsharpAcademy.Infrastructure --startup-project CsharpAcademy.Api
 ```
 
@@ -95,41 +99,49 @@ npm run dev
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/api/courses` | No | List courses |
-| GET | `/api/courses/{id}` | No | Course detail |
+| GET | `/api/courses` | No | List courses (level, hours, lesson count) |
+| GET | `/api/courses/{id}` | No | Course detail with sections/topics |
 | POST | `/api/courses/{id}/enroll` | Yes | Enroll in course |
 | GET | `/api/courses/{id}/progress` | Yes | User progress |
 | GET | `/api/lessons/{id}` | Optional | Lesson detail |
+| GET | `/api/lessons/{id}/videos` | No | YouTube/embed video list |
 | POST | `/api/lessons/{id}/complete` | Yes | Mark lesson complete |
-| GET | `/api/lessons/{id}/quiz` | No | Get quiz |
-| POST | `/api/lessons/{id}/quiz/submit` | Yes | Submit quiz |
-| POST | `/api/lessons/{id}/quiz/generate` | Teacher | AI-generate quiz |
-| POST | `/api/classrooms` | Teacher | Create classroom |
-| GET | `/api/classrooms` | Yes | List my classrooms |
-| POST | `/api/classrooms/join` | Yes | Join by code |
-| GET | `/api/analytics/dashboard` | Teacher | Analytics snapshot |
+| GET | `/api/challenges` | No | List coding challenges |
+| POST | `/api/challenges/{id}/submit` | Yes | Submit challenge solution |
+| GET | `/api/assignments/my` | Yes | Student assignments |
+| GET | `/api/assignments/teaching` | Teacher | Teacher assignments |
+| POST | `/api/assignments` | Teacher | Create assignment |
+| POST | `/api/assignments/{id}/submit` | Yes | Submit assignment |
+| GET | `/api/assignments/{id}/submissions` | Teacher | View submissions |
+| POST | `/api/assignments/submissions/{id}/grade` | Teacher | Grade submission |
+| GET | `/api/admin/dashboard` | Admin | Platform stats |
+| POST | `/api/admin/courses` | Admin | Create course |
+| GET | `/api/teacher/dashboard` | Teacher | Teacher stats |
+| GET | `/api/users/me/progress` | Yes | Progress summary |
+| POST | `/api/assistant/chat` | No | AI tutor (Gemini) |
 | POST | `/api/playground/run` | No | Run C# code |
-| POST | `/api/assistant/chat` | No | AI tutor chat |
-| GET | `/api/certificates` | Yes | User certificates |
-| GET | `/api/certificates/verify/{code}` | No | Verify certificate |
-| GET | `/api/certificates/{code}/pdf` | No | Download certificate PDF |
-| GET | `/api/practices` | No | List all coding exercises |
-| GET | `/api/practices/lessons/{id}` | No | Exercises for a lesson |
-| POST | `/api/practices/{id}/submit` | Yes | Submit practice solution |
-| GET | `/api/lessons/{id}/tutorial` | No | Guided tutorial steps |
-| GET | `/api/leaderboard` | No | XP leaderboard |
-| GET | `/api/users/me` | Yes | User profile |
-| POST | `/api/auth/register` | No | Register (optional role) |
-| POST | `/api/auth/login` | No | Login |
+
+See Swagger for the full API list.
+
+## Migrations
+
+| Migration | Description |
+|-----------|-------------|
+| `InitialCreate` | Core schema |
+| `AddQuizzesAndGamification` | Quizzes, XP, badges |
+| `AddCertificatesAndFeatures` | Certificates |
+| `AddClassroomsAndQuestionTypes` | Classrooms, question types |
+| `AddTutorialsPracticesAndVoice` | Tutorials, practices |
+| `AddPlatformFeatures` | Assignments, challenges, videos, course metadata |
 
 ## Known Issues
-- Pomelo EF Core 10 not yet released; project uses EF Core 9 (compatible with .NET 10 runtime)
+- Pomelo EF Core 10 not yet released; project uses EF Core 9
 - Playground blocks file/network access; 5-second execution timeout
-- AI features use offline fallback unless `GEMINI_API_KEY` is set
+- AI features require valid `GEMINI_API_KEY` (429 = quota exceeded)
 
-## Next Features to Implement
-1. Admin panel for course/content management
-2. Real-time notifications
-3. Assignment submissions and grading
-4. OAuth social login
-5. Mobile-responsive PWA
+## Next Features
+1. Real-time notifications
+2. OAuth social login
+3. Mobile PWA
+4. Inline code explanation (click-to-explain)
+5. Discussion forums

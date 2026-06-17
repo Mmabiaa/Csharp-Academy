@@ -39,4 +39,7 @@ public class EnrollmentRepository : IEnrollmentRepository
         _context.Enrollments.Update(enrollment);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
+        _context.Enrollments.CountAsync(cancellationToken);
 }

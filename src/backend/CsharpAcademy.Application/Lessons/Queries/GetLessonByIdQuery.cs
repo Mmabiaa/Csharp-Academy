@@ -20,4 +20,5 @@ public class LessonDetailDto
     public string VoiceSummary { get; set; } = string.Empty;
     public bool HasTutorial { get; set; }
     public bool HasPractice { get; set; }
+    public bool HasVideos { get; set; }
 }

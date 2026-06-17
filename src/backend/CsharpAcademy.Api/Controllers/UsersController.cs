@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CsharpAcademy.Application.Admin.Queries;
 using CsharpAcademy.Application.Progress.Queries;
 using CsharpAcademy.Application.Users.Queries;
 using MediatR;
@@ -25,6 +26,14 @@ public class UsersController : ControllerBase
         var userId = GetRequiredUserId();
         var profile = await _mediator.Send(new GetUserProfileQuery(userId));
         return Ok(profile);
+    }
+
+    [Authorize]
+    [HttpGet("me/progress")]
+    public async Task<ActionResult<UserProgressSummaryDto>> GetProgressSummary()
+    {
+        var userId = GetRequiredUserId();
+        return Ok(await _mediator.Send(new GetUserProgressSummaryQuery(userId)));
     }
 
     private int GetRequiredUserId()

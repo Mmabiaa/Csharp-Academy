@@ -22,6 +22,118 @@ namespace CsharpAcademy.Infrastructure.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.Assignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ClassroomId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxPoints")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("RequiresCode")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassroomId");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("LessonId");
+
+                    b.ToTable("Assignments");
+                });
+
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.AssignmentSubmission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssignmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Feedback")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("Grade")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("GradedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("GradedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("AssignmentId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("AssignmentSubmissions");
+                });
+
             modelBuilder.Entity("CsharpAcademy.Domain.Entities.Badge", b =>
                 {
                     b.Property<int>("Id")
@@ -65,7 +177,7 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         {
                             Id = 2,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Maintain a 3-day learning streak",
+                            Description = "3-day streak",
                             ImageUrl = "",
                             Name = "On Fire"
                         },
@@ -89,9 +201,17 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         {
                             Id = 5,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Complete an entire course",
+                            Description = "Complete a course",
                             ImageUrl = "",
                             Name = "Graduate"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Solve 5 coding challenges",
+                            ImageUrl = "",
+                            Name = "Challenge Master"
                         });
                 });
 
@@ -133,6 +253,39 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Certificates");
+                });
+
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.ChallengeCompletion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChallengeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChallengeId");
+
+                    b.HasIndex("UserId", "ChallengeId")
+                        .IsUnique();
+
+                    b.ToTable("ChallengeCompletions");
                 });
 
             modelBuilder.Entity("CsharpAcademy.Domain.Entities.Classroom", b =>
@@ -212,6 +365,184 @@ namespace CsharpAcademy.Infrastructure.Migrations
                     b.ToTable("ClassroomMembers");
                 });
 
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.CodingChallenge", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ExpectedOutput")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Hint")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StarterCode")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Tags")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("XpReward")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CodingChallenges");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Print numbers 1-5, replacing multiples of 3 with Fizz.",
+                            Difficulty = "Easy",
+                            ExpectedOutput = "1\n2\nFizz\n4\nFizz",
+                            Hint = "Use modulo operator %",
+                            IsPublished = true,
+                            Order = 1,
+                            StarterCode = "for(int i=1;i<=5;i++){}",
+                            Tags = "loops,conditionals",
+                            Title = "FizzBuzz",
+                            XpReward = 20
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Reverse the string \"hello\" and print it.",
+                            Difficulty = "Easy",
+                            ExpectedOutput = "olleh",
+                            Hint = "Use new string(s.Reverse().ToArray())",
+                            IsPublished = true,
+                            Order = 2,
+                            StarterCode = "string s=\"hello\";",
+                            Tags = "strings",
+                            Title = "Reverse String",
+                            XpReward = 20
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Sum the array [1,2,3,4,5] and print result.",
+                            Difficulty = "Easy",
+                            ExpectedOutput = "15",
+                            Hint = "Use a loop or a.Sum()",
+                            IsPublished = true,
+                            Order = 3,
+                            StarterCode = "int[] a={1,2,3,4,5};",
+                            Tags = "arrays",
+                            Title = "Sum Array",
+                            XpReward = 25
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Print factorial of 5 (120).",
+                            Difficulty = "Medium",
+                            ExpectedOutput = "120",
+                            Hint = "Multiply 1*2*3*4*5",
+                            IsPublished = true,
+                            Order = 4,
+                            StarterCode = "// compute 5!",
+                            Tags = "math,loops",
+                            Title = "Factorial",
+                            XpReward = 30
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Print True if \"racecar\" is palindrome.",
+                            Difficulty = "Medium",
+                            ExpectedOutput = "True",
+                            Hint = "Compare with reversed string",
+                            IsPublished = true,
+                            Order = 5,
+                            StarterCode = "string w=\"racecar\";",
+                            Tags = "strings",
+                            Title = "Palindrome Check",
+                            XpReward = 30
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Print the 7th Fibonacci number (13).",
+                            Difficulty = "Medium",
+                            ExpectedOutput = "13",
+                            Hint = "Iterate with two variables",
+                            IsPublished = true,
+                            Order = 6,
+                            StarterCode = "// fib sequence: 1,1,2,3,5,8,13",
+                            Tags = "math",
+                            Title = "Fibonacci",
+                            XpReward = 35
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Print True if 17 is prime.",
+                            Difficulty = "Hard",
+                            ExpectedOutput = "True",
+                            Hint = "Check divisors up to sqrt(n)",
+                            IsPublished = true,
+                            Order = 7,
+                            StarterCode = "int n=17;",
+                            Tags = "math",
+                            Title = "Prime Check",
+                            XpReward = 40
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Print index of 7 in sorted array [1,3,5,7,9].",
+                            Difficulty = "Hard",
+                            ExpectedOutput = "3",
+                            Hint = "Classic binary search",
+                            IsPublished = true,
+                            Order = 8,
+                            StarterCode = "int[] a={1,3,5,7,9}; int target=7;",
+                            Tags = "algorithms",
+                            Title = "Binary Search",
+                            XpReward = 50
+                        });
+                });
+
             modelBuilder.Entity("CsharpAcademy.Domain.Entities.CodingExercise", b =>
                 {
                     b.Property<int>("Id")
@@ -268,11 +599,11 @@ namespace CsharpAcademy.Infrastructure.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Difficulty = 1,
                             ExpectedOutput = "Hello, C#!",
-                            Hint = "Use Console.WriteLine(\"Hello, C#!\");",
-                            Instructions = "Use Console.WriteLine to print exactly: Hello, C#!",
+                            Hint = "Console.WriteLine(\"Hello, C#!\");",
+                            Instructions = "Print: Hello, C#!",
                             LessonId = 1,
                             Order = 1,
-                            StarterCode = "// Print your message below\n",
+                            StarterCode = "",
                             Title = "Hello, C#!"
                         },
                         new
@@ -281,12 +612,12 @@ namespace CsharpAcademy.Infrastructure.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Difficulty = 1,
                             ExpectedOutput = "30",
-                            Hint = "Use Console.WriteLine(a + b);",
-                            Instructions = "Declare two integers (10 and 20) and print their sum using Console.WriteLine.",
+                            Hint = "Console.WriteLine(a+b);",
+                            Instructions = "Print sum of 10 and 20.",
                             LessonId = 3,
                             Order = 1,
-                            StarterCode = "int a = 10;\nint b = 20;\n// Print the sum\n",
-                            Title = "Add Two Numbers"
+                            StarterCode = "int a=10;int b=20;",
+                            Title = "Add Numbers"
                         },
                         new
                         {
@@ -294,12 +625,12 @@ namespace CsharpAcademy.Infrastructure.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Difficulty = 2,
                             ExpectedOutput = "Bob",
-                            Hint = "Use Console.WriteLine(p.Name);",
-                            Instructions = "Create a Person class with Name property, instantiate it with name \"Bob\", and print the name.",
-                            LessonId = 4,
+                            Hint = "Console.WriteLine(p.Name);",
+                            Instructions = "Print name Bob.",
+                            LessonId = 7,
                             Order = 1,
-                            StarterCode = "public class Person { public string Name { get; set; } }\nvar p = new Person { Name = \"Bob\" };\n// Print p.Name\n",
-                            Title = "Create a Person"
+                            StarterCode = "public class Person{public string Name{get;set;}}",
+                            Title = "Create Person"
                         });
                 });
 
@@ -315,6 +646,20 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("EstimatedHours")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ThumbnailUrl")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -334,15 +679,56 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         {
                             Id = 1,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Learn the basics of C# programming language, including variables, loops, and functions.",
-                            Title = "C# Fundamentals for Beginners"
+                            Description = "Master C# from zero — variables, control flow, methods, and the .NET ecosystem. Perfect for beginners.",
+                            EstimatedHours = 8,
+                            IsPublished = true,
+                            Level = "Beginner",
+                            ThumbnailUrl = "",
+                            Title = "C# Fundamentals"
                         },
                         new
                         {
                             Id = 2,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Master OOP concepts like classes, inheritance, and polymorphism in C#.",
-                            Title = "Object-Oriented Programming with C#"
+                            Description = "Classes, inheritance, polymorphism, interfaces, and design principles in C#.",
+                            EstimatedHours = 10,
+                            IsPublished = true,
+                            Level = "Intermediate",
+                            ThumbnailUrl = "",
+                            Title = "Object-Oriented Programming"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Build modern web APIs and MVC apps with ASP.NET Core, EF Core, and REST best practices.",
+                            EstimatedHours = 12,
+                            IsPublished = true,
+                            Level = "Intermediate",
+                            ThumbnailUrl = "",
+                            Title = "ASP.NET Core Web Development"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Arrays, lists, stacks, queues, sorting, and searching — implemented in C#.",
+                            EstimatedHours = 15,
+                            IsPublished = true,
+                            Level = "Advanced",
+                            ThumbnailUrl = "",
+                            Title = "Data Structures & Algorithms"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Query data with LINQ, lambdas, delegates, and functional patterns.",
+                            EstimatedHours = 6,
+                            IsPublished = true,
+                            Level = "Intermediate",
+                            ThumbnailUrl = "",
+                            Title = "LINQ & Functional C#"
                         });
                 });
 
@@ -361,6 +747,10 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LearningObjectives")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -386,27 +776,80 @@ namespace CsharpAcademy.Infrastructure.Migrations
                             Id = 1,
                             CourseId = 1,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Introduction to C# and your development environment.",
+                            Description = "Introduction to C# and your dev environment.",
+                            LearningObjectives = "Understand C# history; Set up .NET SDK; Run first program",
                             Order = 1,
-                            Title = "Getting Started"
+                            Title = "Section 1: Getting Started"
                         },
                         new
                         {
                             Id = 2,
                             CourseId = 1,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Learn about variables, constants, and basic data types in C#.",
+                            Description = "Data types, variables, and operators.",
+                            LearningObjectives = "Declare variables; Use operators; Convert types",
                             Order = 2,
-                            Title = "Variables and Data Types"
+                            Title = "Section 2: Variables & Types"
                         },
                         new
                         {
                             Id = 3,
+                            CourseId = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Conditionals and loops.",
+                            LearningObjectives = "Write if/else; Use for and while loops",
+                            Order = 3,
+                            Title = "Section 3: Control Flow"
+                        },
+                        new
+                        {
+                            Id = 4,
                             CourseId = 2,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Understand the building blocks of object-oriented programming.",
+                            Description = "OOP foundations.",
+                            LearningObjectives = "Define classes; Create objects; Use properties",
                             Order = 1,
-                            Title = "Classes and Objects"
+                            Title = "Section 1: Classes & Objects"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CourseId = 2,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Extending and reusing code.",
+                            LearningObjectives = "Use inheritance; Override methods; Apply polymorphism",
+                            Order = 2,
+                            Title = "Section 2: Inheritance"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CourseId = 3,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "REST APIs with ASP.NET Core.",
+                            LearningObjectives = "Create controllers; Handle HTTP verbs; Return JSON",
+                            Order = 1,
+                            Title = "Section 1: Web API Basics"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CourseId = 4,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Arrays and linked lists.",
+                            LearningObjectives = "Implement arrays; Work with List<T>",
+                            Order = 1,
+                            Title = "Section 1: Linear Structures"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CourseId = 5,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Query syntax and method syntax.",
+                            LearningObjectives = "Write LINQ queries; Use lambdas",
+                            Order = 1,
+                            Title = "Section 1: LINQ Essentials"
                         });
                 });
 
@@ -468,12 +911,18 @@ namespace CsharpAcademy.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -492,46 +941,232 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            BestPractices = "- Use meaningful names for variables and methods\n- Follow C# naming conventions (PascalCase for types/methods, camelCase for locals)\n- Prefer `var` when the type is obvious from the right-hand side\n- Keep methods small and focused on one task",
-                            Content = "C# is a modern, object-oriented programming language developed by Microsoft. It runs on the .NET platform and is widely used for web, desktop, and mobile applications.",
+                            BestPractices = "- Follow naming conventions\n- Use meaningful names",
+                            Content = "C# is a modern, object-oriented language by Microsoft for the .NET platform.",
                             CourseModuleId = 1,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 10,
                             Order = 1,
                             Title = "What is C#?",
-                            VoiceSummary = "C# is a modern object-oriented language from Microsoft. It runs on the .NET platform and is used for web, desktop, and mobile apps. In this lesson you'll learn what makes C# popular and where it's used."
+                            Type = 4,
+                            VoiceSummary = "C sharp is a modern language for dot NET."
                         },
                         new
                         {
                             Id = 2,
-                            BestPractices = "- Pin your SDK version in a `global.json` for team projects\n- Use VS Code with the C# Dev Kit extension for a lightweight setup\n- Run `dotnet --info` to verify SDK and runtime versions\n- Create projects with `dotnet new` rather than copying folders",
-                            Content = "To start coding in C#, you need the .NET SDK and a code editor like Visual Studio or VS Code. Download the SDK from dotnet.microsoft.com and verify installation with `dotnet --version`.",
+                            BestPractices = "- Pin SDK with global.json",
+                            Content = "Install the .NET SDK from dotnet.microsoft.com and verify with `dotnet --version`.",
                             CourseModuleId = 1,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 15,
                             Order = 2,
-                            Title = "Setting Up Your Environment",
-                            VoiceSummary = "To start coding in C sharp, install the dot NET SDK and a code editor like Visual Studio Code. Download from dot net dot microsoft dot com and verify with dotnet dash dash version in your terminal."
+                            Title = "Setting Up .NET",
+                            Type = 0,
+                            VoiceSummary = "Install dot NET SDK to start coding."
                         },
                         new
                         {
                             Id = 3,
-                            BestPractices = "- Initialize variables when you declare them when possible\n- Use `const` for values that never change\n- Choose the smallest appropriate type (`int` vs `long`)\n- Avoid magic numbers — use named constants instead",
-                            Content = "Variables store data values. In C#, you declare a variable with a type and name:\n\n```csharp\nint age = 25;\nstring name = \"Alice\";\ndouble price = 19.99;\n```",
+                            BestPractices = "- Initialize on declaration",
+                            Content = "```csharp\nint age = 25;\nstring name = \"Alice\";\n```",
                             CourseModuleId = 2,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 12,
                             Order = 1,
                             Title = "Declaring Variables",
-                            VoiceSummary = "Variables store data in C sharp. Declare them with a type and name, like int age equals twenty five, or string name equals Alice. C sharp is statically typed, so the compiler checks types at build time."
+                            Type = 2,
+                            VoiceSummary = "Variables store typed data."
                         },
                         new
                         {
                             Id = 4,
-                            BestPractices = "- Use properties instead of public fields\n- Apply encapsulation — expose only what's needed\n- Name classes with nouns (Person, OrderService)\n- Keep one responsibility per class (Single Responsibility Principle)",
-                            Content = "A class is a blueprint for creating objects. It defines properties and methods:\n\n```csharp\npublic class Person\n{\n    public string Name { get; set; }\n    public int Age { get; set; }\n}\n```",
+                            BestPractices = "",
+                            Content = "Arithmetic: +, -, *, /. Comparison: ==, !=, <, >.",
+                            CourseModuleId = 2,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 10,
+                            Order = 2,
+                            Title = "Operators",
+                            Type = 0,
+                            VoiceSummary = ""
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BestPractices = "",
+                            Content = "```csharp\nif (score >= 70) Console.WriteLine(\"Pass\");\n```",
                             CourseModuleId = 3,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 8,
+                            Order = 1,
+                            Title = "If Statements",
+                            Type = 0,
+                            VoiceSummary = ""
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BestPractices = "",
+                            Content = "for, while, and foreach loops control repetition.",
+                            CourseModuleId = 3,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 15,
+                            Order = 2,
+                            Title = "Loops",
+                            Type = 2,
+                            VoiceSummary = ""
+                        },
+                        new
+                        {
+                            Id = 7,
+                            BestPractices = "- Use properties not public fields",
+                            Content = "```csharp\npublic class Person { public string Name { get; set; } }\n```",
+                            CourseModuleId = 4,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 20,
                             Order = 1,
                             Title = "Creating Classes",
-                            VoiceSummary = "A class is a blueprint for objects in C sharp. Define properties like Name and Age, then create instances with the new keyword. Classes are the foundation of object-oriented programming."
+                            Type = 4,
+                            VoiceSummary = ""
+                        },
+                        new
+                        {
+                            Id = 8,
+                            BestPractices = "",
+                            Content = "Derive classes with `: BaseClass` syntax.",
+                            CourseModuleId = 5,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 18,
+                            Order = 1,
+                            Title = "Inheritance",
+                            Type = 1,
+                            VoiceSummary = ""
+                        },
+                        new
+                        {
+                            Id = 9,
+                            BestPractices = "",
+                            Content = "Create a Web API project with `dotnet new webapi`.",
+                            CourseModuleId = 6,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 25,
+                            Order = 1,
+                            Title = "Your First API",
+                            Type = 0,
+                            VoiceSummary = ""
+                        },
+                        new
+                        {
+                            Id = 10,
+                            BestPractices = "",
+                            Content = "Fixed-size collections: `int[] nums = new int[5];`",
+                            CourseModuleId = 7,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 15,
+                            Order = 1,
+                            Title = "Arrays in C#",
+                            Type = 2,
+                            VoiceSummary = ""
+                        },
+                        new
+                        {
+                            Id = 11,
+                            BestPractices = "",
+                            Content = "Query collections: `items.Where(x => x > 5)`",
+                            CourseModuleId = 8,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 12,
+                            Order = 1,
+                            Title = "Introduction to LINQ",
+                            Type = 0,
+                            VoiceSummary = ""
+                        });
+                });
+
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.LessonVideo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("VideoUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.ToTable("LessonVideos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 2,
+                            LessonId = 1,
+                            Order = 1,
+                            Provider = 0,
+                            Title = "C# in 100 Seconds",
+                            VideoUrl = "https://www.youtube.com/watch?v=ravLFzWr5H4"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 15,
+                            LessonId = 1,
+                            Order = 2,
+                            Provider = 0,
+                            Title = "Introduction to C#",
+                            VideoUrl = "https://www.youtube.com/watch?v=Wx2TKSol0I8"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 20,
+                            LessonId = 8,
+                            Order = 1,
+                            Provider = 0,
+                            Title = "OOP in C#",
+                            VideoUrl = "https://www.youtube.com/watch?v=wqUfllZyeq4"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DurationMinutes = 30,
+                            LessonId = 9,
+                            Order = 1,
+                            Provider = 0,
+                            Title = "ASP.NET Core Tutorial",
+                            VideoUrl = "https://www.youtube.com/watch?v=AhAxLiGC7Pc"
                         });
                 });
 
@@ -651,7 +1286,7 @@ namespace CsharpAcademy.Infrastructure.Migrations
                             Id = 2,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             QuizId = 1,
-                            Text = "C# runs on the .NET platform.",
+                            Text = "C# runs on .NET.",
                             Type = 1
                         },
                         new
@@ -659,7 +1294,7 @@ namespace CsharpAcademy.Infrastructure.Migrations
                             Id = 3,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             QuizId = 2,
-                            Text = "Which keyword declares an integer variable?",
+                            Text = "Which keyword declares int?",
                             Type = 0
                         },
                         new
@@ -668,7 +1303,7 @@ namespace CsharpAcademy.Infrastructure.Migrations
                             CorrectAnswer = "string",
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             QuizId = 2,
-                            Text = "Fill in the blank: The keyword for text/strings in C# is ___.",
+                            Text = "Fill in: text type is ___.",
                             Type = 2
                         },
                         new
@@ -676,7 +1311,7 @@ namespace CsharpAcademy.Infrastructure.Migrations
                             Id = 5,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             QuizId = 1,
-                            Text = "What is the output of: Console.WriteLine(2 + 3);",
+                            Text = "Output of Console.WriteLine(2+3);",
                             Type = 3
                         });
                 });
@@ -732,21 +1367,13 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         {
                             Id = 3,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsCorrect = false,
-                            QuestionId = 1,
-                            Text = "Apple"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsCorrect = true,
                             QuestionId = 2,
                             Text = "True"
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 4,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsCorrect = false,
                             QuestionId = 2,
@@ -754,7 +1381,7 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 6,
+                            Id = 5,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsCorrect = true,
                             QuestionId = 3,
@@ -762,7 +1389,7 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 7,
+                            Id = 6,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsCorrect = false,
                             QuestionId = 3,
@@ -770,15 +1397,7 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 8,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsCorrect = false,
-                            QuestionId = 3,
-                            Text = "bool"
-                        },
-                        new
-                        {
-                            Id = 9,
+                            Id = 7,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsCorrect = true,
                             QuestionId = 5,
@@ -786,19 +1405,11 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 10,
+                            Id = 8,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsCorrect = false,
                             QuestionId = 5,
                             Text = "23"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsCorrect = false,
-                            QuestionId = 5,
-                            Text = "Error"
                         });
                 });
 
@@ -928,88 +1539,31 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Content = "A programming language lets you give instructions to a computer. C# is designed to be readable and powerful.",
+                            Content = "Languages give instructions to computers.",
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LessonId = 1,
                             Order = 1,
-                            Title = "What is a programming language?"
+                            Title = "What is a language?"
                         },
                         new
                         {
                             Id = 2,
-                            Content = "Microsoft created C# together with the .NET platform. It's open-source and cross-platform today.",
+                            CodeSample = "Console.WriteLine(\"Hello!\");",
+                            Content = "Output text:",
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LessonId = 1,
                             Order = 2,
-                            Title = "Who makes C#?"
+                            Title = "First code"
                         },
                         new
                         {
                             Id = 3,
-                            CodeSample = "Console.WriteLine(\"Hello, World!\");",
-                            Content = "Every C# program can output text to the console:",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            LessonId = 1,
-                            Order = 3,
-                            Title = "Your first line of code"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Content = "Variables label memory locations so you can reuse and update values throughout your program.",
+                            CodeSample = "int x = 5;",
+                            Content = "Store values with types.",
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LessonId = 3,
                             Order = 1,
-                            Title = "Why variables?"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CodeSample = "int count = 0;",
-                            Content = "Use `int` for whole numbers:",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            LessonId = 3,
-                            Order = 2,
-                            Title = "Declaring an integer"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CodeSample = "string greeting = \"Hello\";",
-                            Content = "Use `string` for text. Strings use double quotes:",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            LessonId = 3,
-                            Order = 3,
-                            Title = "Declaring a string"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Content = "A class defines structure; an object is a specific instance created from that class.",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            LessonId = 4,
-                            Order = 1,
-                            Title = "Classes vs objects"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CodeSample = "public class Car { public string Model { get; set; } }",
-                            Content = "Use the class keyword and add properties:",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            LessonId = 4,
-                            Order = 2,
-                            Title = "Defining a class"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CodeSample = "var car = new Car { Model = \"Sedan\" };",
-                            Content = "Use `new` to create an instance:",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            LessonId = 4,
-                            Order = 3,
-                            Title = "Creating an object"
+                            Title = "Variables"
                         });
                 });
 
@@ -1264,6 +1818,54 @@ namespace CsharpAcademy.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.Assignment", b =>
+                {
+                    b.HasOne("CsharpAcademy.Domain.Entities.Classroom", "Classroom")
+                        .WithMany()
+                        .HasForeignKey("ClassroomId");
+
+                    b.HasOne("CsharpAcademy.Domain.Entities.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId");
+
+                    b.HasOne("CsharpAcademy.Domain.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CsharpAcademy.Domain.Entities.Lesson", "Lesson")
+                        .WithMany()
+                        .HasForeignKey("LessonId");
+
+                    b.Navigation("Classroom");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.AssignmentSubmission", b =>
+                {
+                    b.HasOne("CsharpAcademy.Domain.Entities.Assignment", "Assignment")
+                        .WithMany("Submissions")
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CsharpAcademy.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assignment");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CsharpAcademy.Domain.Entities.Certificate", b =>
                 {
                     b.HasOne("CsharpAcademy.Domain.Entities.Course", "Course")
@@ -1279,6 +1881,25 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.ChallengeCompletion", b =>
+                {
+                    b.HasOne("CsharpAcademy.Domain.Entities.CodingChallenge", "Challenge")
+                        .WithMany()
+                        .HasForeignKey("ChallengeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CsharpAcademy.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Challenge");
 
                     b.Navigation("User");
                 });
@@ -1370,6 +1991,17 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("CourseModule");
+                });
+
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.LessonVideo", b =>
+                {
+                    b.HasOne("CsharpAcademy.Domain.Entities.Lesson", "Lesson")
+                        .WithMany("Videos")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
                 });
 
             modelBuilder.Entity("CsharpAcademy.Domain.Entities.PracticeCompletion", b =>
@@ -1543,6 +2175,11 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CsharpAcademy.Domain.Entities.Assignment", b =>
+                {
+                    b.Navigation("Submissions");
+                });
+
             modelBuilder.Entity("CsharpAcademy.Domain.Entities.Badge", b =>
                 {
                     b.Navigation("UserBadges");
@@ -1570,6 +2207,8 @@ namespace CsharpAcademy.Infrastructure.Migrations
                     b.Navigation("Quizzes");
 
                     b.Navigation("TutorialSteps");
+
+                    b.Navigation("Videos");
                 });
 
             modelBuilder.Entity("CsharpAcademy.Domain.Entities.Question", b =>

@@ -56,4 +56,10 @@ public class ProgressRepository : IProgressRepository
         await _context.SaveChangesAsync(cancellationToken);
         return progress;
     }
+
+    public async Task<List<int>> GetCompletedLessonIdsAsync(int userId, CancellationToken cancellationToken = default) =>
+        await _context.ProgressRecords
+            .Where(p => p.UserId == userId && p.IsCompleted)
+            .Select(p => p.LessonId)
+            .ToListAsync(cancellationToken);
 }

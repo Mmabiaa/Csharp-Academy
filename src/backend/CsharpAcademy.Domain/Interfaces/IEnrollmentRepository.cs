@@ -8,4 +8,5 @@ public interface IEnrollmentRepository
     Task<Enrollment> CreateAsync(Enrollment enrollment, CancellationToken cancellationToken = default);
     Task<List<Enrollment>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
     Task UpdateAsync(Enrollment enrollment, CancellationToken cancellationToken = default);
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
 }

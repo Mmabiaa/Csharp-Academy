@@ -2,10 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased;
+  }
+}
+
 @layer components {
-  .lesson-content p { @apply mb-4 text-gray-700 leading-relaxed; }
-  .lesson-content pre { @apply bg-gray-900 text-gray-100 p-4 rounded-md overflow-x-auto mb-4 text-sm; }
+  .lesson-content p { @apply mb-4 text-slate-300 leading-relaxed; }
+  .lesson-content pre { @apply bg-slate-950 text-emerald-400 p-4 rounded-lg overflow-x-auto mb-4 text-sm border border-slate-800; }
   .lesson-content code { @apply font-mono text-sm; }
-  .lesson-content pre code { @apply text-gray-100; }
-  .lesson-content p code { @apply bg-gray-100 px-1.5 py-0.5 rounded text-gray-800; }
+  .lesson-content pre code { @apply text-emerald-400; }
+  .lesson-content p code { @apply bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300; }
+  .lesson-content h1, .lesson-content h2, .lesson-content h3 { @apply text-white font-semibold mb-3 mt-6; }
+  .lesson-content ul { @apply list-disc list-inside text-slate-300 mb-4 space-y-1; }
+  .lesson-content ol { @apply list-decimal list-inside text-slate-300 mb-4 space-y-1; }
 }

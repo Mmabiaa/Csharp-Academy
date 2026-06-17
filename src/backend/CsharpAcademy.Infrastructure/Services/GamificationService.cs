@@ -73,6 +73,14 @@ public class GamificationService : IGamificationService
         return GamificationRewards.PracticeXp;
     }
 
+    public async Task<int> AwardChallengeXpAsync(int userId, int challengeId, int xpAmount, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (user is null) return 0;
+        await AwardXpAndUpdateStreakAsync(user, xpAmount, cancellationToken);
+        return xpAmount;
+    }
+
     private static void UpdateStreak(User user)
     {
         var today = DateTime.UtcNow.Date;

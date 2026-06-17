@@ -10,32 +10,32 @@ This document outlines the development roadmap for C# Academy.
 - [x] Authentication and authorization (JWT)
 
 ## Phase 2: Learning Core
-- [x] Courses
-- [x] Modules
-- [x] Lessons
-- [x] Progress tracking
+- [x] Courses with sections and topics
+- [x] Modules with learning objectives
+- [x] Lessons with types and durations
+- [x] Progress tracking dashboard
 
 ## Phase 3: Assessment
 - [x] Quizzes
 - [x] Question types (multiple choice, true/false, fill-in-the-blank, output prediction)
-- [x] Quiz attempts
-- [x] Scoring
-- [x] AI quiz generation
+- [x] Quiz attempts and scoring
+- [x] AI quiz generation (Gemini)
+- [x] Standalone coding challenges
 
-## Phase 4: Classroom
-- [x] Teachers
-- [x] Classes
-- [x] Enrollments
+## Phase 4: Classroom & Assignments
+- [x] Teachers and classrooms
+- [x] Assignment creation and submission
+- [x] Grading with feedback
+- [x] Teacher portal
 
 ## Phase 5: Gamification
 - [x] XP system
-- [x] Badges/achievements
-- [x] Streaks
-- [x] Leaderboards
-- [x] Practice XP rewards
+- [x] Badges/achievements (including Challenge Master)
+- [x] Streaks and leaderboards
+- [x] Practice and challenge XP rewards
 
 ## Phase 6: AI Features
-- [x] AI learning assistant (chat tutor)
+- [x] AI learning assistant (Gemini chat tutor)
 - [x] Quiz generation
 - [ ] Inline code explanation (click-to-explain code blocks)
 
@@ -44,15 +44,17 @@ This document outlines the development roadmap for C# Academy.
 - [x] Hands-on coding practices
 - [x] Best practices per lesson
 - [x] Voice narration (browser TTS)
-- [ ] Video lessons / embedded tutorials
+- [x] YouTube video lessons
 
-## Phase 8: Advanced Features
-- [x] Interactive coding playground (Roslyn)
-- [x] Certificates (digital + verification)
-- [x] PDF certificate export
+## Phase 8: Platform & Admin
+- [x] Admin content management panel
 - [x] Analytics dashboard
-- [ ] Admin content management panel
+- [x] Professional dark UI (Codecademy / Microsoft Learn inspired)
 - [ ] Real-time notifications
-- [ ] Assignment submissions and grading
 - [ ] OAuth social login
 - [ ] Mobile PWA
+
+## Phase 9: Community
+- [ ] Discussion forums
+- [ ] Peer code reviews
+- [ ] Live coding competitions

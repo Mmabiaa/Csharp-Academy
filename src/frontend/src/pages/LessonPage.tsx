@@ -10,12 +10,14 @@ import {
   fetchLessonExercises,
   submitPractice,
   runCode,
+  fetchLessonVideos,
 } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useVoiceNarration } from "../hooks/useVoiceNarration";
 import CodeEditor from "../components/CodeEditor";
+import VideoPlayer from "../components/VideoPlayer";
 
-type Tab = "read" | "tutorial" | "practice" | "practices";
+type Tab = "read" | "video" | "tutorial" | "practice" | "practices";
 
 export default function LessonPage() {
   const { id } = useParams<{ id: string }>();
@@ -50,6 +52,12 @@ export default function LessonPage() {
     queryKey: ["exercises", lessonId],
     queryFn: () => fetchLessonExercises(lessonId),
     enabled: !isNaN(lessonId) && (tab === "practice" || lesson?.hasPractice),
+  });
+
+  const { data: videos } = useQuery({
+    queryKey: ["lesson-videos", lessonId],
+    queryFn: () => fetchLessonVideos(lessonId),
+    enabled: !isNaN(lessonId) && (tab === "video" || lesson?.hasVideos),
   });
 
   const activeExercise = exercises?.find((e) => e.id === selectedExercise) ?? exercises?.[0];
@@ -119,7 +127,7 @@ export default function LessonPage() {
   const voiceText = lesson.voiceSummary || lesson.content.replace(/[#*`]/g, "").slice(0, 500);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto px-4 py-10">
       <Link to={`/courses/${lesson.courseId}`} className="text-blue-600 hover:underline text-sm mb-4 inline-block">
         &larr; Back to {lesson.courseTitle}
       </Link>
@@ -138,13 +146,15 @@ export default function LessonPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 pb-2">
-        {(["read", "tutorial", "practice", "practices"] as Tab[]).map((t) => {
+      <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-800 pb-2">
+        {(["read", "video", "tutorial", "practice", "practices"] as Tab[]).map((t) => {
+          if (t === "video" && !lesson.hasVideos) return null;
           if (t === "tutorial" && !lesson.hasTutorial) return null;
           if (t === "practice" && !lesson.hasPractice) return null;
           if (t === "practices") return null;
           const labels: Record<Tab, string> = {
             read: "Lesson",
+            video: "Video",
             tutorial: "Tutorial",
             practice: "Practice",
             practices: "Best Practices",
@@ -153,8 +163,8 @@ export default function LessonPage() {
             <button
               key={t}
               onClick={() => switchTab(t)}
-              className={`px-4 py-2 rounded-t-md text-sm font-medium ${
-                tab === t ? "bg-white border border-b-0 border-gray-200 text-blue-600" : "text-gray-600 hover:text-gray-900"
+              className={`px-4 py-2 rounded-t-lg text-sm font-medium ${
+                tab === t ? "bg-slate-900 border border-b-0 border-slate-700 text-indigo-400" : "text-slate-400 hover:text-white"
               }`}
             >
               {labels[t]}
@@ -164,8 +174,8 @@ export default function LessonPage() {
         {lesson.bestPractices && (
           <button
             onClick={() => switchTab("practices")}
-            className={`px-4 py-2 rounded-t-md text-sm font-medium ${
-              tab === "practices" ? "bg-white border border-b-0 border-gray-200 text-blue-600" : "text-gray-600 hover:text-gray-900"
+            className={`px-4 py-2 rounded-t-lg text-sm font-medium ${
+              tab === "practices" ? "bg-slate-900 border border-b-0 border-slate-700 text-indigo-400" : "text-slate-400 hover:text-white"
             }`}
           >
             Best Practices
@@ -174,9 +184,27 @@ export default function LessonPage() {
       </div>
 
       {tab === "read" && (
-        <article className="lesson-content bg-white p-6 rounded-lg shadow-md mb-8">
+        <article className="lesson-content bg-slate-900 border border-slate-800 p-6 rounded-xl mb-8">
           <ReactMarkdown>{lesson.content}</ReactMarkdown>
         </article>
+      )}
+
+      {tab === "video" && videos && (
+        <div className="space-y-6 mb-8">
+          {videos.length === 0 ? (
+            <p className="text-slate-500">No videos for this lesson.</p>
+          ) : (
+            videos.map((v) => (
+              <div key={v.id} className="rounded-xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+                <div className="flex justify-between items-center">
+                  <h2 className="font-semibold">{v.title}</h2>
+                  <span className="text-xs text-slate-500">{v.durationMinutes} min · {v.provider}</span>
+                </div>
+                <VideoPlayer embedUrl={v.embedUrl} title={v.title} />
+              </div>
+            ))
+          )}
+        </div>
       )}
 
       {tab === "tutorial" && tutorialSteps && (

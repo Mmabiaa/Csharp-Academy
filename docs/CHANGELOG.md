@@ -8,7 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Teacher/classroom management: create classrooms, join codes, member lists, optional course linking
+- **Platform upgrade**: Admin panel, teacher portal, assignments & grading, coding challenges
+- **Course structure**: 5 courses, 8 sections, 11 lessons with levels, durations, learning objectives
+- **Video tutoring**: YouTube embed support per lesson (`LessonVideo`, `GET /api/lessons/{id}/videos`)
+- **Coding challenges**: 8 standalone puzzles (FizzBuzz → Binary Search) with XP rewards
+- **Assignments**: Create, submit, grade workflow with demo teacher assignments
+- **Progress dashboard**: `/api/users/me/progress` and frontend progress page
+- **Seed data**: `PlatformSeedData.cs` + runtime demo users (`teacher@academy.com`, `admin@academy.com`)
+- **Frontend UI overhaul**: Dark theme, Layout component, role-based nav, professional course cards
+- **New pages**: AdminDashboard, TeacherPortal, Assignments, Challenges, ProgressDashboard
+- EF migration: `AddPlatformFeatures`
+
+### Changed
+- Course DTOs include `level`, `estimatedHours`, `lessonCount`, `learningObjectives`
+- Lesson DTOs include `type`, `durationMinutes`, `hasVideos`
+- `DatabaseInitializer` seeds demo users and assignments after migration
 - AI quiz generation from lesson content (`POST /api/lessons/{id}/quiz/generate`)
 - Analytics dashboard for teachers (users, enrollments, quiz pass rate, course stats)
 - PDF certificate export via QuestPDF (`GET /api/certificates/{code}/pdf`)

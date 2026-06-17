@@ -4,6 +4,9 @@ export interface Course {
   id: number;
   title: string;
   description: string;
+  level: string;
+  estimatedHours: number;
+  lessonCount: number;
 }
 
 export interface Lesson {
@@ -11,6 +14,8 @@ export interface Lesson {
   title: string;
   content: string;
   order: number;
+  type?: string;
+  durationMinutes?: number;
 }
 
 export interface LessonDetail extends Lesson {
@@ -24,12 +29,14 @@ export interface LessonDetail extends Lesson {
   voiceSummary: string;
   hasTutorial: boolean;
   hasPractice: boolean;
+  hasVideos: boolean;
 }
 
 export interface Module {
   id: number;
   title: string;
   description: string;
+  learningObjectives?: string;
   order: number;
   lessons: Lesson[];
 }
@@ -405,4 +412,205 @@ export async function submitPractice(exerciseId: number, code: string, token: st
     body: JSON.stringify({ code }),
   });
   return handleResponse<PracticeResult>(response);
+}
+
+// --- Platform: Admin, Teacher, Assignments, Challenges, Progress ---
+
+export interface AdminDashboard {
+  totalUsers: number;
+  totalCourses: number;
+  totalEnrollments: number;
+  totalAssignments: number;
+  totalChallenges: number;
+  recentUsers: { id: number; email: string; name: string; xp: number }[];
+}
+
+export interface TeacherDashboard {
+  classroomCount: number;
+  assignmentCount: number;
+  pendingGrading: number;
+  recentAssignments: {
+    id: number;
+    title: string;
+    submissionCount: number;
+    ungradedCount: number;
+    dueDate: string | null;
+  }[];
+}
+
+export interface Assignment {
+  id: number;
+  title: string;
+  description: string;
+  instructions: string;
+  courseId: number | null;
+  courseTitle: string | null;
+  lessonId: number | null;
+  classroomId: number | null;
+  dueDate: string | null;
+  maxPoints: number;
+  requiresCode: boolean;
+  submissionCount: number;
+  mySubmission: Submission | null;
+}
+
+export interface Submission {
+  id: number;
+  assignmentId: number;
+  userId: number;
+  studentName: string;
+  content: string;
+  submittedAt: string;
+  status: string;
+  grade: number | null;
+  feedback: string | null;
+}
+
+export interface Challenge {
+  id: number;
+  title: string;
+  description: string;
+  difficulty: string;
+  starterCode: string;
+  hint: string;
+  tags: string;
+  xpReward: number;
+}
+
+export interface ChallengeResult {
+  passed: boolean;
+  output: string;
+  message: string;
+  xpEarned: number;
+}
+
+export interface LessonVideo {
+  id: number;
+  title: string;
+  videoUrl: string;
+  provider: string;
+  embedUrl: string;
+  durationMinutes: number;
+}
+
+export interface UserProgressSummary {
+  totalXp: number;
+  coursesEnrolled: number;
+  lessonsCompleted: number;
+  practicesCompleted: number;
+  challengesCompleted: number;
+  courses: {
+    courseId: number;
+    courseTitle: string;
+    completionPercentage: number;
+    totalLessons: number;
+    completedLessons: number;
+  }[];
+}
+
+export async function fetchAdminDashboard(token: string): Promise<AdminDashboard> {
+  const response = await fetch(`${API_BASE_URL}/admin/dashboard`, { headers: authHeaders(token) });
+  return handleResponse(response);
+}
+
+export async function createCourse(
+  token: string,
+  data: { title: string; description: string; level?: string; estimatedHours: number }
+): Promise<Course> {
+  const response = await fetch(`${API_BASE_URL}/admin/courses`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function fetchTeacherDashboard(token: string): Promise<TeacherDashboard> {
+  const response = await fetch(`${API_BASE_URL}/teacher/dashboard`, { headers: authHeaders(token) });
+  return handleResponse(response);
+}
+
+export async function fetchMyAssignments(token: string): Promise<Assignment[]> {
+  const response = await fetch(`${API_BASE_URL}/assignments/my`, { headers: authHeaders(token) });
+  return handleResponse(response);
+}
+
+export async function fetchTeachingAssignments(token: string): Promise<Assignment[]> {
+  const response = await fetch(`${API_BASE_URL}/assignments/teaching`, { headers: authHeaders(token) });
+  return handleResponse(response);
+}
+
+export async function createAssignment(
+  token: string,
+  data: {
+    title: string;
+    description: string;
+    instructions: string;
+    courseId?: number;
+    lessonId?: number;
+    dueDate?: string;
+    maxPoints: number;
+    requiresCode: boolean;
+  }
+): Promise<Assignment> {
+  const response = await fetch(`${API_BASE_URL}/assignments`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function fetchAssignmentSubmissions(assignmentId: number, token: string): Promise<Submission[]> {
+  const response = await fetch(`${API_BASE_URL}/assignments/${assignmentId}/submissions`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function submitAssignment(assignmentId: number, content: string, token: string): Promise<Submission> {
+  const response = await fetch(`${API_BASE_URL}/assignments/${assignmentId}/submit`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ content }),
+  });
+  return handleResponse(response);
+}
+
+export async function gradeSubmission(
+  submissionId: number,
+  grade: number,
+  feedback: string,
+  token: string
+): Promise<Submission> {
+  const response = await fetch(`${API_BASE_URL}/assignments/submissions/${submissionId}/grade`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ grade, feedback }),
+  });
+  return handleResponse(response);
+}
+
+export async function fetchChallenges(): Promise<Challenge[]> {
+  const response = await fetch(`${API_BASE_URL}/challenges`);
+  return handleResponse(response);
+}
+
+export async function submitChallenge(challengeId: number, code: string, token: string): Promise<ChallengeResult> {
+  const response = await fetch(`${API_BASE_URL}/challenges/${challengeId}/submit`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+  });
+  return handleResponse(response);
+}
+
+export async function fetchLessonVideos(lessonId: number): Promise<LessonVideo[]> {
+  const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/videos`);
+  return handleResponse(response);
+}
+
+export async function fetchUserProgressSummary(token: string): Promise<UserProgressSummary> {
+  const response = await fetch(`${API_BASE_URL}/users/me/progress`, { headers: authHeaders(token) });
+  return handleResponse(response);
 }

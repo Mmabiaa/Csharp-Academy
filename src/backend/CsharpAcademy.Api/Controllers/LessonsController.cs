@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CsharpAcademy.Application.Challenges.Queries;
 using CsharpAcademy.Application.Lessons.Commands;
 using CsharpAcademy.Application.Lessons.Queries;
 using CsharpAcademy.Application.Progress.Queries;
@@ -33,6 +34,10 @@ public class LessonsController : ControllerBase
 
         return Ok(lesson);
     }
+
+    [HttpGet("{lessonId}/videos")]
+    public async Task<ActionResult<List<LessonVideoDto>>> GetVideos(int lessonId) =>
+        Ok(await _mediator.Send(new GetLessonVideosQuery(lessonId)));
 
     [Authorize]
     [HttpPost("{id}/complete")]

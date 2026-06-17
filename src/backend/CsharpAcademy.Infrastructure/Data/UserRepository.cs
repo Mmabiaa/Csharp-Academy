@@ -63,6 +63,14 @@ public class UserRepository : IUserRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Users.OrderBy(u => u.Email).ToListAsync(cancellationToken);
+    }
+
+    public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
+        _context.Users.CountAsync(cancellationToken);
+
     public async Task<bool> HasCompletedPracticeAsync(int userId, int exerciseId, CancellationToken cancellationToken = default)
     {
         return await _context.PracticeCompletions

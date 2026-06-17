@@ -10,19 +10,22 @@ public class GetLessonByIdQueryHandler : IRequestHandler<GetLessonByIdQuery, Les
     private readonly IProgressRepository _progressRepository;
     private readonly ICodingExerciseRepository _exerciseRepository;
     private readonly ITutorialStepRepository _tutorialStepRepository;
+    private readonly ILessonVideoRepository _videoRepository;
 
     public GetLessonByIdQueryHandler(
         ILessonRepository lessonRepository,
         IQuizRepository quizRepository,
         IProgressRepository progressRepository,
         ICodingExerciseRepository exerciseRepository,
-        ITutorialStepRepository tutorialStepRepository)
+        ITutorialStepRepository tutorialStepRepository,
+        ILessonVideoRepository videoRepository)
     {
         _lessonRepository = lessonRepository;
         _quizRepository = quizRepository;
         _progressRepository = progressRepository;
         _exerciseRepository = exerciseRepository;
         _tutorialStepRepository = tutorialStepRepository;
+        _videoRepository = videoRepository;
     }
 
     public async Task<LessonDetailDto?> Handle(GetLessonByIdQuery request, CancellationToken cancellationToken)
@@ -40,6 +43,7 @@ public class GetLessonByIdQueryHandler : IRequestHandler<GetLessonByIdQuery, Les
 
         var exercises = await _exerciseRepository.GetByLessonIdAsync(lesson.Id, cancellationToken);
         var tutorialSteps = await _tutorialStepRepository.GetByLessonIdAsync(lesson.Id, cancellationToken);
+        var videos = await _videoRepository.GetByLessonIdAsync(lesson.Id, cancellationToken);
 
         return new LessonDetailDto
         {
@@ -56,7 +60,8 @@ public class GetLessonByIdQueryHandler : IRequestHandler<GetLessonByIdQuery, Les
             BestPractices = lesson.BestPractices,
             VoiceSummary = lesson.VoiceSummary,
             HasTutorial = tutorialSteps.Count > 0,
-            HasPractice = exercises.Count > 0
+            HasPractice = exercises.Count > 0,
+            HasVideos = videos.Count > 0
         };
     }
 }

@@ -30,6 +30,11 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
     public DbSet<CodingExercise> CodingExercises { get; set; }
     public DbSet<TutorialStep> TutorialSteps { get; set; }
     public DbSet<PracticeCompletion> PracticeCompletions { get; set; }
+    public DbSet<LessonVideo> LessonVideos { get; set; }
+    public DbSet<Assignment> Assignments { get; set; }
+    public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
+    public DbSet<CodingChallenge> CodingChallenges { get; set; }
+    public DbSet<ChallengeCompletion> ChallengeCompletions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -171,198 +176,44 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .HasForeignKey(p => p.ExerciseId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        SeedData(modelBuilder);
-    }
+        modelBuilder.Entity<LessonVideo>()
+            .HasOne(v => v.Lesson)
+            .WithMany(l => l.Videos)
+            .HasForeignKey(v => v.LessonId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-    private static void SeedData(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Course>().HasData(
-            new Course
-            {
-                Id = 1,
-                Title = "C# Fundamentals for Beginners",
-                Description = "Learn the basics of C# programming language, including variables, loops, and functions.",
-                CreatedAt = SeedDate
-            },
-            new Course
-            {
-                Id = 2,
-                Title = "Object-Oriented Programming with C#",
-                Description = "Master OOP concepts like classes, inheritance, and polymorphism in C#.",
-                CreatedAt = SeedDate
-            }
-        );
+        modelBuilder.Entity<Assignment>()
+            .HasOne(a => a.CreatedBy)
+            .WithMany()
+            .HasForeignKey(a => a.CreatedById)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<CourseModule>().HasData(
-            new CourseModule
-            {
-                Id = 1,
-                CourseId = 1,
-                Title = "Getting Started",
-                Description = "Introduction to C# and your development environment.",
-                Order = 1,
-                CreatedAt = SeedDate
-            },
-            new CourseModule
-            {
-                Id = 2,
-                CourseId = 1,
-                Title = "Variables and Data Types",
-                Description = "Learn about variables, constants, and basic data types in C#.",
-                Order = 2,
-                CreatedAt = SeedDate
-            },
-            new CourseModule
-            {
-                Id = 3,
-                CourseId = 2,
-                Title = "Classes and Objects",
-                Description = "Understand the building blocks of object-oriented programming.",
-                Order = 1,
-                CreatedAt = SeedDate
-            }
-        );
+        modelBuilder.Entity<AssignmentSubmission>()
+            .HasIndex(s => new { s.AssignmentId, s.UserId })
+            .IsUnique();
 
-        modelBuilder.Entity<Lesson>().HasData(
-            new Lesson
-            {
-                Id = 1,
-                CourseModuleId = 1,
-                Title = "What is C#?",
-                Content = "C# is a modern, object-oriented programming language developed by Microsoft. It runs on the .NET platform and is widely used for web, desktop, and mobile applications.",
-                BestPractices = "- Use meaningful names for variables and methods\n- Follow C# naming conventions (PascalCase for types/methods, camelCase for locals)\n- Prefer `var` when the type is obvious from the right-hand side\n- Keep methods small and focused on one task",
-                VoiceSummary = "C# is a modern object-oriented language from Microsoft. It runs on the .NET platform and is used for web, desktop, and mobile apps. In this lesson you'll learn what makes C# popular and where it's used.",
-                Order = 1,
-                CreatedAt = SeedDate
-            },
-            new Lesson
-            {
-                Id = 2,
-                CourseModuleId = 1,
-                Title = "Setting Up Your Environment",
-                Content = "To start coding in C#, you need the .NET SDK and a code editor like Visual Studio or VS Code. Download the SDK from dotnet.microsoft.com and verify installation with `dotnet --version`.",
-                BestPractices = "- Pin your SDK version in a `global.json` for team projects\n- Use VS Code with the C# Dev Kit extension for a lightweight setup\n- Run `dotnet --info` to verify SDK and runtime versions\n- Create projects with `dotnet new` rather than copying folders",
-                VoiceSummary = "To start coding in C sharp, install the dot NET SDK and a code editor like Visual Studio Code. Download from dot net dot microsoft dot com and verify with dotnet dash dash version in your terminal.",
-                Order = 2,
-                CreatedAt = SeedDate
-            },
-            new Lesson
-            {
-                Id = 3,
-                CourseModuleId = 2,
-                Title = "Declaring Variables",
-                Content = "Variables store data values. In C#, you declare a variable with a type and name:\n\n```csharp\nint age = 25;\nstring name = \"Alice\";\ndouble price = 19.99;\n```",
-                BestPractices = "- Initialize variables when you declare them when possible\n- Use `const` for values that never change\n- Choose the smallest appropriate type (`int` vs `long`)\n- Avoid magic numbers — use named constants instead",
-                VoiceSummary = "Variables store data in C sharp. Declare them with a type and name, like int age equals twenty five, or string name equals Alice. C sharp is statically typed, so the compiler checks types at build time.",
-                Order = 1,
-                CreatedAt = SeedDate
-            },
-            new Lesson
-            {
-                Id = 4,
-                CourseModuleId = 3,
-                Title = "Creating Classes",
-                Content = "A class is a blueprint for creating objects. It defines properties and methods:\n\n```csharp\npublic class Person\n{\n    public string Name { get; set; }\n    public int Age { get; set; }\n}\n```",
-                BestPractices = "- Use properties instead of public fields\n- Apply encapsulation — expose only what's needed\n- Name classes with nouns (Person, OrderService)\n- Keep one responsibility per class (Single Responsibility Principle)",
-                VoiceSummary = "A class is a blueprint for objects in C sharp. Define properties like Name and Age, then create instances with the new keyword. Classes are the foundation of object-oriented programming.",
-                Order = 1,
-                CreatedAt = SeedDate
-            }
-        );
+        modelBuilder.Entity<AssignmentSubmission>()
+            .HasOne(s => s.Assignment)
+            .WithMany(a => a.Submissions)
+            .HasForeignKey(s => s.AssignmentId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Badge>().HasData(
-            new Badge { Id = 1, Name = "First Steps", Description = "Complete your first lesson", ImageUrl = "", CreatedAt = SeedDate },
-            new Badge { Id = 2, Name = "On Fire", Description = "Maintain a 3-day learning streak", ImageUrl = "", CreatedAt = SeedDate },
-            new Badge { Id = 3, Name = "Quick Learner", Description = "Complete 3 lessons", ImageUrl = "", CreatedAt = SeedDate },
-            new Badge { Id = 4, Name = "Quiz Whiz", Description = "Pass your first quiz", ImageUrl = "", CreatedAt = SeedDate },
-            new Badge { Id = 5, Name = "Graduate", Description = "Complete an entire course", ImageUrl = "", CreatedAt = SeedDate }
-        );
+        modelBuilder.Entity<AssignmentSubmission>()
+            .HasOne(s => s.User)
+            .WithMany()
+            .HasForeignKey(s => s.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Quiz>().HasData(
-            new Quiz { Id = 1, LessonId = 1, Title = "C# Basics Quiz", CreatedAt = SeedDate },
-            new Quiz { Id = 2, LessonId = 3, Title = "Variables Quiz", CreatedAt = SeedDate }
-        );
+        modelBuilder.Entity<ChallengeCompletion>()
+            .HasIndex(c => new { c.UserId, c.ChallengeId })
+            .IsUnique();
 
-        modelBuilder.Entity<Question>().HasData(
-            new Question { Id = 1, QuizId = 1, Text = "Who developed C#?", Type = QuestionType.MultipleChoice, CreatedAt = SeedDate },
-            new Question { Id = 2, QuizId = 1, Text = "C# runs on the .NET platform.", Type = QuestionType.TrueFalse, CreatedAt = SeedDate },
-            new Question { Id = 3, QuizId = 2, Text = "Which keyword declares an integer variable?", Type = QuestionType.MultipleChoice, CreatedAt = SeedDate },
-            new Question { Id = 4, QuizId = 2, Text = "Fill in the blank: The keyword for text/strings in C# is ___.", Type = QuestionType.FillInTheBlank, CorrectAnswer = "string", CreatedAt = SeedDate },
-            new Question { Id = 5, QuizId = 1, Text = "What is the output of: Console.WriteLine(2 + 3);", Type = QuestionType.OutputPrediction, CreatedAt = SeedDate }
-        );
+        modelBuilder.Entity<ChallengeCompletion>()
+            .HasOne(c => c.Challenge)
+            .WithMany()
+            .HasForeignKey(c => c.ChallengeId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<QuestionOption>().HasData(
-            new QuestionOption { Id = 1, QuestionId = 1, Text = "Microsoft", IsCorrect = true, CreatedAt = SeedDate },
-            new QuestionOption { Id = 2, QuestionId = 1, Text = "Google", IsCorrect = false, CreatedAt = SeedDate },
-            new QuestionOption { Id = 3, QuestionId = 1, Text = "Apple", IsCorrect = false, CreatedAt = SeedDate },
-            new QuestionOption { Id = 4, QuestionId = 2, Text = "True", IsCorrect = true, CreatedAt = SeedDate },
-            new QuestionOption { Id = 5, QuestionId = 2, Text = "False", IsCorrect = false, CreatedAt = SeedDate },
-            new QuestionOption { Id = 6, QuestionId = 3, Text = "int", IsCorrect = true, CreatedAt = SeedDate },
-            new QuestionOption { Id = 7, QuestionId = 3, Text = "string", IsCorrect = false, CreatedAt = SeedDate },
-            new QuestionOption { Id = 8, QuestionId = 3, Text = "bool", IsCorrect = false, CreatedAt = SeedDate },
-            new QuestionOption { Id = 9, QuestionId = 5, Text = "5", IsCorrect = true, CreatedAt = SeedDate },
-            new QuestionOption { Id = 10, QuestionId = 5, Text = "23", IsCorrect = false, CreatedAt = SeedDate },
-            new QuestionOption { Id = 11, QuestionId = 5, Text = "Error", IsCorrect = false, CreatedAt = SeedDate }
-        );
-
-        modelBuilder.Entity<CodingExercise>().HasData(
-            new CodingExercise
-            {
-                Id = 1, LessonId = 1, Title = "Hello, C#!", Order = 1, Difficulty = 1,
-                Instructions = "Use Console.WriteLine to print exactly: Hello, C#!",
-                StarterCode = "// Print your message below\n",
-                ExpectedOutput = "Hello, C#!",
-                Hint = "Use Console.WriteLine(\"Hello, C#!\");",
-                CreatedAt = SeedDate
-            },
-            new CodingExercise
-            {
-                Id = 2, LessonId = 3, Title = "Add Two Numbers", Order = 1, Difficulty = 1,
-                Instructions = "Declare two integers (10 and 20) and print their sum using Console.WriteLine.",
-                StarterCode = "int a = 10;\nint b = 20;\n// Print the sum\n",
-                ExpectedOutput = "30",
-                Hint = "Use Console.WriteLine(a + b);",
-                CreatedAt = SeedDate
-            },
-            new CodingExercise
-            {
-                Id = 3, LessonId = 4, Title = "Create a Person", Order = 1, Difficulty = 2,
-                Instructions = "Create a Person class with Name property, instantiate it with name \"Bob\", and print the name.",
-                StarterCode = "public class Person { public string Name { get; set; } }\nvar p = new Person { Name = \"Bob\" };\n// Print p.Name\n",
-                ExpectedOutput = "Bob",
-                Hint = "Use Console.WriteLine(p.Name);",
-                CreatedAt = SeedDate
-            }
-        );
-
-        modelBuilder.Entity<TutorialStep>().HasData(
-            new TutorialStep { Id = 1, LessonId = 1, Order = 1, Title = "What is a programming language?",
-                Content = "A programming language lets you give instructions to a computer. C# is designed to be readable and powerful.",
-                CreatedAt = SeedDate },
-            new TutorialStep { Id = 2, LessonId = 1, Order = 2, Title = "Who makes C#?",
-                Content = "Microsoft created C# together with the .NET platform. It's open-source and cross-platform today.",
-                CreatedAt = SeedDate },
-            new TutorialStep { Id = 3, LessonId = 1, Order = 3, Title = "Your first line of code",
-                Content = "Every C# program can output text to the console:", CodeSample = "Console.WriteLine(\"Hello, World!\");",
-                CreatedAt = SeedDate },
-            new TutorialStep { Id = 4, LessonId = 3, Order = 1, Title = "Why variables?",
-                Content = "Variables label memory locations so you can reuse and update values throughout your program.",
-                CreatedAt = SeedDate },
-            new TutorialStep { Id = 5, LessonId = 3, Order = 2, Title = "Declaring an integer",
-                Content = "Use `int` for whole numbers:", CodeSample = "int count = 0;",
-                CreatedAt = SeedDate },
-            new TutorialStep { Id = 6, LessonId = 3, Order = 3, Title = "Declaring a string",
-                Content = "Use `string` for text. Strings use double quotes:", CodeSample = "string greeting = \"Hello\";",
-                CreatedAt = SeedDate },
-            new TutorialStep { Id = 7, LessonId = 4, Order = 1, Title = "Classes vs objects",
-                Content = "A class defines structure; an object is a specific instance created from that class.",
-                CreatedAt = SeedDate },
-            new TutorialStep { Id = 8, LessonId = 4, Order = 2, Title = "Defining a class",
-                Content = "Use the class keyword and add properties:", CodeSample = "public class Car { public string Model { get; set; } }",
-                CreatedAt = SeedDate },
-            new TutorialStep { Id = 9, LessonId = 4, Order = 3, Title = "Creating an object",
-                Content = "Use `new` to create an instance:", CodeSample = "var car = new Car { Model = \"Sedan\" };",
-                CreatedAt = SeedDate }
-        );
+        PlatformSeedData.Apply(modelBuilder, SeedDate);
     }
 }

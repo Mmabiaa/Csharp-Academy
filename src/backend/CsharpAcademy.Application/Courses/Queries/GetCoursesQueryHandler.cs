@@ -19,7 +19,10 @@ public class GetCoursesQueryHandler : IRequestHandler<GetCoursesQuery, List<Cour
         {
             Id = c.Id,
             Title = c.Title,
-            Description = c.Description
+            Description = c.Description,
+            Level = c.Level,
+            EstimatedHours = c.EstimatedHours,
+            LessonCount = c.Modules.Sum(m => m.Lessons.Count)
         }).ToList();
     }
 }
