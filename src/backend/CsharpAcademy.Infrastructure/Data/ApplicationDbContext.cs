@@ -35,6 +35,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
     public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
     public DbSet<CodingChallenge> CodingChallenges { get; set; }
     public DbSet<ChallengeCompletion> ChallengeCompletions { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -212,6 +213,30 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .HasOne(c => c.Challenge)
             .WithMany()
             .HasForeignKey(c => c.ChallengeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Attachment>()
+            .HasOne(a => a.UploadedBy)
+            .WithMany()
+            .HasForeignKey(a => a.UploadedById)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Attachment>()
+            .HasOne(a => a.Classroom)
+            .WithMany(c => c.Attachments)
+            .HasForeignKey(a => a.ClassroomId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Attachment>()
+            .HasOne(a => a.Assignment)
+            .WithMany(a => a.Attachments)
+            .HasForeignKey(a => a.AssignmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Attachment>()
+            .HasOne(a => a.Submission)
+            .WithMany(s => s.Attachments)
+            .HasForeignKey(a => a.SubmissionId)
             .OnDelete(DeleteBehavior.Cascade);
 
         PlatformSeedData.Apply(modelBuilder, SeedDate);

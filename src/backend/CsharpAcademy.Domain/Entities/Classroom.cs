@@ -10,6 +10,7 @@ public class Classroom : Entity
     public int? CourseId { get; set; }
     public Course? Course { get; set; }
     public ICollection<ClassroomMember> Members { get; set; } = new List<ClassroomMember>();
+    public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
 }
 
 public class ClassroomMember : Entity

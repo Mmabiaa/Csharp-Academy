@@ -17,6 +17,7 @@ public class Assignment : Entity
     public int MaxPoints { get; set; } = 100;
     public bool RequiresCode { get; set; }
     public ICollection<AssignmentSubmission> Submissions { get; set; } = new List<AssignmentSubmission>();
+    public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
 }
 
 public class AssignmentSubmission : Entity
@@ -32,6 +33,7 @@ public class AssignmentSubmission : Entity
     public string? Feedback { get; set; }
     public int? GradedById { get; set; }
     public DateTime? GradedAt { get; set; }
+    public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
 }
 
 public enum SubmissionStatus
