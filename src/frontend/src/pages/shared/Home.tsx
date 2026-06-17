@@ -1,176 +1,238 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCourses, fetchChallenges, fetchLeaderboard, type Course, type Challenge, type LeaderboardEntry } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import {
   BookOpen,
-  Code2,
   Trophy,
-  FileText,
-  MessageSquare,
-  BarChart3
+  TrendingUp,
+  Users,
+  ArrowRight,
 } from "lucide-react";
 
-const features = [
-  {
-    to: "/courses",
-    title: "Structured Learning Paths",
-    desc: "Courses broken into sections and topics — like Microsoft Learn and Codecademy.",
-    icon: BookOpen,
-    gradient: "from-blue-50 to-indigo-50",
-    border: "border-blue-100",
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600"
-  },
-  {
-    to: "/challenges",
-    title: "Coding Challenges",
-    desc: "Solve puzzles in a live editor. Instant feedback, XP rewards — Replit-style.",
-    icon: Trophy,
-    gradient: "from-purple-50 to-pink-50",
-    border: "border-purple-100",
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600"
-  },
-  {
-    to: "/practices",
-    title: "Hands-on Practices",
-    desc: "Lesson-linked exercises with hints, run & submit — learn by doing.",
-    icon: Code2,
-    gradient: "from-emerald-50 to-teal-50",
-    border: "border-emerald-100",
-    iconBg: "bg-emerald-100",
-    iconColor: "text-emerald-600"
-  },
-  {
-    to: "/assignments",
-    title: "Assignments & Grading",
-    desc: "Teachers assign work, students submit code, get graded feedback.",
-    icon: FileText,
-    gradient: "from-amber-50 to-orange-50",
-    border: "border-amber-100",
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-600"
-  },
-  {
-    to: "/assistant",
-    title: "AI Tutor",
-    desc: "Get unstuck anytime with our AI-powered coding assistant.",
-    icon: MessageSquare,
-    gradient: "from-pink-50 to-rose-50",
-    border: "border-pink-100",
-    iconBg: "bg-pink-100",
-    iconColor: "text-pink-600"
-  },
-  {
-    to: "/progress",
-    title: "Progress Tracking",
-    desc: "Visual dashboards show your journey — Khan Academy inspired.",
-    icon: BarChart3,
-    gradient: "from-cyan-50 to-blue-50",
-    border: "border-cyan-100",
-    iconBg: "bg-cyan-100",
-    iconColor: "text-cyan-600"
-  },
-];
-
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { data: courses, isLoading: coursesLoading } = useQuery<Course[], Error>({
+    queryKey: ["courses"],
+    queryFn: () => fetchCourses(),
+  });
+  const { data: challenges, isLoading: challengesLoading } = useQuery<Challenge[], Error>({
+    queryKey: ["challenges"],
+    queryFn: () => fetchChallenges(),
+  });
+  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardEntry[], Error>({
+    queryKey: ["leaderboard"],
+    queryFn: () => fetchLeaderboard(),
+  });
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const stats = [
+    {
+      label: "Available Courses",
+      value: courses?.length || "—",
+      icon: BookOpen,
+      href: "/courses",
+    },
+    {
+      label: "Coding Challenges",
+      value: challenges?.length || "—",
+      icon: Trophy,
+      href: "/challenges",
+    },
+    {
+      label: "Active Students",
+      value: "—",
+      icon: Users,
+      href: "/leaderboard",
+    },
+    {
+      label: "XP Earned",
+      value: user?.xp || 0,
+      icon: TrendingUp,
+      href: "/progress",
+      authOnly: true,
+    },
+  ];
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 rounded-full blur-3xl opacity-40" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-200 rounded-full blur-3xl opacity-40" />
-        
-        <div className="relative max-w-7xl mx-auto px-6 py-20 lg:py-32 text-center">
-          <p className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-6">
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            Learn C# the modern way
-          </p>
-          
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight mb-6 text-slate-900">
-            Master C# from{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              zero to hero
-            </span>
+    <div className="space-y-12">
+      {/* Header */}
+      <div className="flex flex-col gap-4">
+        <div className="text-xs uppercase tracking-widest text-gray-500 font-semibold">
+          Dashboard
+        </div>
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-5xl font-serif font-bold tracking-tight text-black">
+            {getGreeting()},{" "}
+            {isAuthenticated ? user?.firstName || "Learner" : "Learner"}.
           </h1>
-          
-          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Interactive courses, video lessons, coding challenges, AI tutoring, and teacher tools —
-            all in one professional learning platform.
-          </p>
-          
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              to="/courses"
-              className="px-10 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-lg shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 hover:-translate-y-1 transition-all"
-            >
-              Start Learning
-            </Link>
-            <Link
-              to={isAuthenticated ? "/progress" : "/register"}
-              className="px-10 py-4 rounded-2xl bg-white border-2 border-slate-200 text-slate-700 font-semibold text-lg hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-all"
-            >
-              {isAuthenticated ? "View Progress" : "Create Free Account"}
-            </Link>
-          </div>
+          <span className="text-4xl font-serif italic text-gray-600">
+            Welcome.
+          </span>
         </div>
-      </section>
+        <p className="text-gray-600 text-lg max-w-2xl">
+          Start learning C# today. Build practical projects, practice coding
+          challenges, and track your progress.
+        </p>
+      </div>
 
-      {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-            Everything you need to learn C#
-          </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Built with the best practices from Microsoft Learn, Codecademy, and Replit.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((f) => {
-            const Icon = f.icon;
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats
+          .filter((s) => !s.authOnly || isAuthenticated)
+          .map((stat: {
+            label: string;
+            value: number | string;
+            icon: React.ComponentType<{ className?: string }>;
+            href: string;
+            authOnly?: boolean;
+          }, index: number) => {
+            const Icon = stat.icon;
             return (
               <Link
-                key={f.to}
-                to={f.to}
-                className={`group rounded-2xl border ${f.border} bg-gradient-to-br ${f.gradient} p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300`}
+                key={index}
+                to={stat.href}
+                className="card card-hover group"
               >
-                <div className={`w-14 h-14 rounded-2xl ${f.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                  <Icon className={`w-7 h-7 ${f.iconColor}`} />
+                <div className="flex items-start justify-between">
+                  <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 group-hover:text-black transition-all" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-slate-800">
-                  {f.title}
-                </h3>
-                <p className="text-slate-600 leading-relaxed">{f.desc}</p>
+                <div className="mt-6">
+                  <div className="text-4xl font-serif font-bold text-black">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-gray-500 uppercase tracking-wider mt-1">
+                    {stat.label}
+                  </div>
+                </div>
               </Link>
             );
           })}
-        </div>
-      </section>
+      </div>
 
-      {/* Demo Section */}
-      <section className="border-t border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-          <p className="text-slate-500 text-sm mb-3">Demo accounts</p>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-8 py-5">
-              <p className="text-sm text-slate-600 mb-1">Teacher</p>
-              <p className="text-slate-900 font-mono text-sm">
-                teacher@academy.com / Teacher123!
-              </p>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-8 py-5">
-              <p className="text-sm text-slate-600 mb-1">Admin</p>
-              <p className="text-slate-900 font-mono text-sm">
-                admin@academy.com / Admin123!
-              </p>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Featured Courses */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-serif font-semibold">
+              Featured Courses
+            </h2>
+            <Link
+              to="/courses"
+              className="text-sm font-medium text-gray-600 hover:text-black flex items-center gap-2"
+            >
+              Browse all <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {coursesLoading ? (
+              [1, 2].map((i: number) => (
+                <div key={i} className="card animate-pulse">
+                  <div className="h-32 bg-gray-100 rounded mb-4" />
+                  <div className="h-5 bg-gray-100 rounded w-3/4 mb-2" />
+                  <div className="h-4 bg-gray-100 rounded w-full mb-1" />
+                  <div className="h-4 bg-gray-100 rounded w-2/3" />
+                </div>
+              ))
+            ) : courses?.slice(0, 4).map((course: Course) => (
+              <Link
+                key={course.id}
+                to={`/courses/${course.id}`}
+                className="card card-hover"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="inline-block px-3 py-1 text-xs font-medium uppercase tracking-wider border border-gray-200 rounded-full text-gray-600">
+                    {course.level}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {course.estimatedHours}h
+                  </span>
+                </div>
+                <h3 className="text-xl font-serif font-semibold mb-2">
+                  {course.title}
+                </h3>
+                <p className="text-gray-600 text-sm line-clamp-2">
+                  {course.description}
+                </p>
+              </Link>
+            ))}
           </div>
         </div>
-      </section>
+
+        {/* Leaderboard */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-serif font-semibold">Leaderboard</h2>
+            <Link
+              to="/leaderboard"
+              className="text-sm font-medium text-gray-600 hover:text-black flex items-center gap-2"
+            >
+              See all <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="card">
+            {leaderboardLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i: number) => (
+                  <div key={i} className="flex items-center gap-4 animate-pulse">
+                    <div className="w-8 h-8 bg-gray-100 rounded-full" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-100 rounded w-1/2 mb-1" />
+                      <div className="h-3 bg-gray-100 rounded w-1/4" />
+                    </div>
+                    <div className="w-16 h-4 bg-gray-100 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {leaderboard?.slice(0, 5).map((entry: LeaderboardEntry, index: number) => (
+                  <div
+                    key={entry.userId}
+                    className="flex items-center justify-between py-2"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                          index === 0
+                            ? "bg-black text-white"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">
+                          {entry.displayName}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {entry.xp} XP
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {(!leaderboard || leaderboard.length === 0) && (
+                  <p className="text-gray-500 text-sm text-center py-8">
+                    No leaderboard data yet.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

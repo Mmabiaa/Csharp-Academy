@@ -7,6 +7,8 @@ interface User {
   firstName: string;
   lastName: string;
   roles: string[];
+  xp?: number;
+  totalXp?: number;
 }
 
 interface AuthContextType {
@@ -32,6 +34,8 @@ function normalizeUser(raw: Partial<User> | null): User | null {
     firstName: raw.firstName ?? "",
     lastName: raw.lastName ?? "",
     roles: Array.isArray(raw.roles) ? raw.roles : [],
+    xp: raw.xp ?? 0,
+    totalXp: raw.totalXp ?? 0,
   };
 }
 
