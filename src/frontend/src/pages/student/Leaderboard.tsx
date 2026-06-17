@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchLeaderboard } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { fetchLeaderboard } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Leaderboard() {
   const { user } = useAuth();

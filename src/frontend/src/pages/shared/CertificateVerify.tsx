@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { verifyCertificate, getCertificatePdfUrl } from "../lib/api";
+import { verifyCertificate, getCertificatePdfUrl } from "../../lib/api";
 
 export default function CertificateVerify() {
   const { code: routeCode } = useParams<{ code: string }>();

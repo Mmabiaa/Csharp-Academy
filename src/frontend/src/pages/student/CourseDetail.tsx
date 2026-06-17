@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchCourseById, enrollInCourse, fetchCourseProgress } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { fetchCourseById, enrollInCourse, fetchCourseProgress } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 const lessonTypeIcon: Record<string, string> = {
   Reading: "📖",

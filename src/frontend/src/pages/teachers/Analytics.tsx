@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchAnalyticsDashboard } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { fetchAnalyticsDashboard } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Analytics() {
   const { token, isTeacher } = useAuth();

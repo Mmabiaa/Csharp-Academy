@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchUserProgressSummary } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { fetchUserProgressSummary } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ProgressDashboard() {
   const { token, isAuthenticated } = useAuth();

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchUserProfile, fetchCertificates, getCertificatePdfUrl } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { fetchUserProfile, fetchCertificates, getCertificatePdfUrl } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Profile() {
   const { token, isAuthenticated } = useAuth();

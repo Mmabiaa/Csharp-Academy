@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchChallenges, runCode, submitChallenge } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
-import CodeEditor from "../components/CodeEditor";
+import { fetchChallenges, runCode, submitChallenge } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
+import CodeEditor from "../../components/CodeEditor";
 
 const difficultyColor: Record<string, string> = {
   Easy: "bg-emerald-900/50 text-emerald-400",

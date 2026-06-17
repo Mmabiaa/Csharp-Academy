@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { fetchQuiz, submitQuiz } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { fetchQuiz, submitQuiz } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 function isTextQuestion(type: string) {
   return type === "FillInTheBlank";

@@ -7,8 +7,8 @@ import {
   fetchTeacherDashboard,
   fetchTeachingAssignments,
   gradeSubmission,
-} from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+} from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function TeacherPortal() {
   const { token, isTeacher } = useAuth();

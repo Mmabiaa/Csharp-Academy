@@ -11,11 +11,11 @@ import {
   submitPractice,
   runCode,
   fetchLessonVideos,
-} from "../lib/api";
-import { useAuth } from "../context/AuthContext";
-import { useVoiceNarration } from "../hooks/useVoiceNarration";
-import CodeEditor from "../components/CodeEditor";
-import VideoPlayer from "../components/VideoPlayer";
+} from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
+import { useVoiceNarration } from "../../hooks/useVoiceNarration";
+import CodeEditor from "../../components/CodeEditor";
+import VideoPlayer from "../../components/VideoPlayer";
 
 type Tab = "read" | "video" | "tutorial" | "practice" | "practices";
 

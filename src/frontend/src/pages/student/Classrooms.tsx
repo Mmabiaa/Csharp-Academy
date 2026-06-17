@@ -6,8 +6,8 @@ import {
   createClassroom,
   joinClassroom,
   fetchCourses,
-} from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+} from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Classrooms() {
   const { token, isTeacher } = useAuth();

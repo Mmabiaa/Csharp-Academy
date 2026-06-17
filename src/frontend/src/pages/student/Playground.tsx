@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { runCode } from "../lib/api";
+import { runCode } from "../../lib/api";
 
 const defaultCode = `// Try C# expressions and Console.WriteLine
 Console.WriteLine("Hello, C# Academy!");

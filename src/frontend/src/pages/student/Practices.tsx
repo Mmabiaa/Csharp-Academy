@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchAllPractices } from "../lib/api";
+import { fetchAllPractices } from "../../lib/api";
 
 const difficultyLabel = (d: number) => (d === 1 ? "Beginner" : d === 2 ? "Intermediate" : "Advanced");
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { createCourse, fetchAdminDashboard } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { createCourse, fetchAdminDashboard } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AdminDashboard() {
   const { token, isAdmin } = useAuth();

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { askAssistant } from "../lib/api";
+import { askAssistant } from "../../lib/api";
 
 interface Message {
   role: "user" | "assistant";

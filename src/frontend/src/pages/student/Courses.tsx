@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { fetchCourses } from '../lib/api';
+import { fetchCourses } from '../../lib/api';
 import { BookOpen, Clock, Star } from 'lucide-react';
 
 const levelConfig: Record<string, { color: string; bg: string; border: string }> = {

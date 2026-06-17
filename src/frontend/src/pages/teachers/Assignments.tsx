@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchMyAssignments, submitAssignment } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
-import CodeEditor from "../components/CodeEditor";
+import { fetchMyAssignments, submitAssignment } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
+import CodeEditor from "../../components/CodeEditor";
 
 export default function Assignments() {
   const { token, isAuthenticated } = useAuth();
