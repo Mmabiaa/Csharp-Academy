@@ -15,6 +15,8 @@ export default function Assistant() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [aiStatus, setAiStatus] = useState<"online" | "offline" | "error">("offline");
+  const [statusMessage, setStatusMessage] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,6 +34,12 @@ export default function Assistant() {
 
     try {
       const response = await askAssistant(userMessage, lessonContext);
+      setAiStatus(response.usedAiProvider ? "online" : response.error ? "error" : "offline");
+      setStatusMessage(
+        response.usedAiProvider
+          ? "Powered by OpenAI"
+          : response.error ?? "Offline tutor mode — set OPENAI_API_KEY in src/backend/.env"
+      );
       setMessages((prev) => [...prev, { role: "assistant", content: response.reply }]);
     } catch {
       setMessages((prev) => [
@@ -46,8 +54,13 @@ export default function Assistant() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12 flex flex-col h-[calc(100vh-8rem)]">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Learning Assistant</h1>
-      <p className="text-gray-600 mb-4">
+      <p className="text-gray-600 mb-2">
         {lessonContext ? `Context: ${lessonContext}` : "Ask questions about C# concepts, syntax, and best practices."}
+      </p>
+      <p className={`text-xs mb-4 ${
+        aiStatus === "online" ? "text-green-600" : aiStatus === "error" ? "text-amber-600" : "text-gray-500"
+      }`}>
+        {aiStatus === "online" ? "🟢" : aiStatus === "error" ? "🟡" : "⚪"} {statusMessage || "Checking AI status..."}
       </p>
 
       <div className="flex-1 overflow-y-auto bg-white rounded-lg shadow-md p-4 mb-4 space-y-4">

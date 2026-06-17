@@ -225,6 +225,7 @@ export interface CodeExecutionResult {
 export interface AiAssistantResponse {
   reply: string;
   usedAiProvider: boolean;
+  error?: string | null;
 }
 
 export interface Certificate {

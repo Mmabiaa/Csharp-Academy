@@ -26,15 +26,21 @@ public class AiQuizGenerationService : IAiQuizGenerationService
     public async Task<GeneratedQuizData> GenerateAsync(
         string lessonTitle, string lessonContent, int questionCount, CancellationToken cancellationToken = default)
     {
-        var apiKey = _configuration["OPENAI_API_KEY"];
+        var apiKey = OpenAiClient.GetApiKey(_configuration);
         if (string.IsNullOrWhiteSpace(apiKey))
         {
+            _logger.LogWarning("OPENAI_API_KEY is not set — using fallback quiz.");
             return GenerateFallbackQuiz(lessonTitle, questionCount);
         }
 
         try
         {
             return await CallOpenAiAsync(apiKey, lessonTitle, lessonContent, questionCount, cancellationToken);
+        }
+        catch (OpenAiException ex)
+        {
+            _logger.LogWarning("OpenAI quiz generation failed: {Message}", ex.Message);
+            return GenerateFallbackQuiz(lessonTitle, questionCount);
         }
         catch (Exception ex)
         {
@@ -60,7 +66,7 @@ public class AiQuizGenerationService : IAiQuizGenerationService
 
         var body = new
         {
-            model = _configuration["OPENAI_MODEL"] ?? "gpt-4o-mini",
+            model = OpenAiClient.GetModel(_configuration),
             messages = new[]
             {
                 new { role = "system", content = systemPrompt },
@@ -75,7 +81,13 @@ public class AiQuizGenerationService : IAiQuizGenerationService
             new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"),
             cancellationToken);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogWarning("OpenAI quiz API returned {Status}: {Body}", (int)response.StatusCode, errorBody);
+            throw new OpenAiException($"OpenAI returned {(int)response.StatusCode}");
+        }
+
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
         using var doc = JsonDocument.Parse(json);
         var content = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()

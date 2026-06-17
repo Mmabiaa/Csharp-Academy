@@ -1,6 +1,3 @@
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using CsharpAcademy.Application.Common.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -25,61 +22,58 @@ public class AiAssistantService : IAiAssistantService
 
     public async Task<AiAssistantResponse> GetResponseAsync(AiAssistantRequest request, CancellationToken cancellationToken = default)
     {
-        var apiKey = _configuration["OPENAI_API_KEY"];
-        if (!string.IsNullOrWhiteSpace(apiKey))
+        var apiKey = OpenAiClient.GetApiKey(_configuration);
+        if (string.IsNullOrWhiteSpace(apiKey))
         {
-            try
-            {
-                var reply = await CallOpenAiAsync(apiKey, request, cancellationToken);
-                return new AiAssistantResponse { Reply = reply, UsedAiProvider = true };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "OpenAI request failed, falling back to local assistant.");
-            }
+            _logger.LogWarning("OPENAI_API_KEY is not set — using offline tutor.");
+            return OfflineResponse(request);
         }
 
-        return new AiAssistantResponse
+        try
         {
-            Reply = GetLocalResponse(request.Message, request.LessonContext),
-            UsedAiProvider = false
-        };
-    }
+            var client = _httpClientFactory.CreateClient();
+            var systemPrompt = "You are a helpful C# programming tutor for beginners. " +
+                "Give clear, concise explanations with short code examples when helpful. " +
+                (request.LessonContext is not null ? $"The student is studying: {request.LessonContext}. " : "");
 
-    private async Task<string> CallOpenAiAsync(string apiKey, AiAssistantRequest request, CancellationToken cancellationToken)
-    {
-        var client = _httpClientFactory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            var reply = await OpenAiClient.ChatAsync(
+                client,
+                apiKey,
+                OpenAiClient.GetModel(_configuration),
+                systemPrompt,
+                request.Message,
+                maxTokens: 500,
+                cancellationToken);
 
-        var systemPrompt = "You are a helpful C# programming tutor for beginners. " +
-            "Give clear, concise explanations with short code examples when helpful. " +
-            (request.LessonContext is not null ? $"The student is studying: {request.LessonContext}. " : "");
-
-        var body = new
+            return new AiAssistantResponse { Reply = reply, UsedAiProvider = true };
+        }
+        catch (OpenAiException ex)
         {
-            model = _configuration["OPENAI_MODEL"] ?? "gpt-4o-mini",
-            messages = new[]
+            _logger.LogWarning("OpenAI error: {Message}", ex.Message);
+            return new AiAssistantResponse
             {
-                new { role = "system", content = systemPrompt },
-                new { role = "user", content = request.Message }
-            },
-            max_tokens = 500
-        };
-
-        var response = await client.PostAsync(
-            "https://api.openai.com/v1/chat/completions",
-            new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"),
-            cancellationToken);
-
-        response.EnsureSuccessStatusCode();
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        using var doc = JsonDocument.Parse(json);
-        return doc.RootElement
-            .GetProperty("choices")[0]
-            .GetProperty("message")
-            .GetProperty("content")
-            .GetString() ?? "I couldn't generate a response.";
+                Reply = $"⚠️ **AI unavailable:** {ex.Message}\n\n---\n\n{GetLocalResponse(request.Message, request.LessonContext)}",
+                UsedAiProvider = false,
+                Error = ex.Message
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "OpenAI request failed unexpectedly.");
+            return new AiAssistantResponse
+            {
+                Reply = $"⚠️ **AI connection error:** {ex.Message}\n\n---\n\n{GetLocalResponse(request.Message, request.LessonContext)}",
+                UsedAiProvider = false,
+                Error = ex.Message
+            };
+        }
     }
+
+    private static AiAssistantResponse OfflineResponse(AiAssistantRequest request) => new()
+    {
+        Reply = GetLocalResponse(request.Message, request.LessonContext),
+        UsedAiProvider = false
+    };
 
     private static string GetLocalResponse(string message, string? lessonContext)
     {
@@ -104,10 +98,10 @@ public class AiAssistantService : IAiAssistantService
         if (lower.Contains("hello") || lower.Contains("hi"))
         {
             return "Hello! I'm your C# learning assistant. Ask me about variables, classes, loops, or any C# concept!" + context +
-                   "\n\n*Tip: Set `OPENAI_API_KEY` in your `.env` file for AI-powered responses.*";
+                   "\n\n*Tip: Set `OPENAI_API_KEY` in `src/backend/.env` for AI-powered responses.*";
         }
 
         return "I'm here to help you learn C#! Try asking about:\n- Variables and data types\n- Classes and objects\n- Loops and conditionals\n- Methods and functions" + context +
-               "\n\n*Running in offline tutor mode. Add `OPENAI_API_KEY` to `.env` for full AI assistance.*";
+               "\n\n*Running in offline tutor mode. Add `OPENAI_API_KEY` to `src/backend/.env` for full AI assistance.*";
     }
 }

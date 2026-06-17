@@ -9,11 +9,22 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 // Walk up from the working directory to find src/backend/.env
-Env.TraversePath().Load();
+var envPath = Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
+
+// Log OpenAI config status at startup (never log the key itself)
+var openAiKey = builder.Configuration["OPENAI_API_KEY"]?.Trim();
+if (!string.IsNullOrEmpty(openAiKey))
+{
+    Console.WriteLine($"[Config] OPENAI_API_KEY loaded (ends with ...{openAiKey[^4..]})");
+}
+else
+{
+    Console.WriteLine("[Config] OPENAI_API_KEY not set — AI features will use offline fallback.");
+}
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

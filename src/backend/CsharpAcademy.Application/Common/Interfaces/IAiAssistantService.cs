@@ -15,4 +15,5 @@ public class AiAssistantResponse
 {
     public string Reply { get; set; } = string.Empty;
     public bool UsedAiProvider { get; set; }
+    public string? Error { get; set; }
 }
