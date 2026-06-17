@@ -1,6 +1,7 @@
 using CsharpAcademy.Application.Common.Interfaces;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using System.Reflection;
 
 namespace CsharpAcademy.Infrastructure.Services;
 
@@ -36,9 +37,24 @@ public class RoslynCodeExecutionService : ICodeExecutionService
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(5));
 
+            var references = new[]
+            {
+                typeof(object).Assembly,
+                typeof(Console).Assembly,
+                typeof(Enumerable).Assembly,
+                typeof(List<>).Assembly,
+                Assembly.Load("System.Runtime"),
+                Assembly.Load("System.Collections")
+            };
+
             var options = ScriptOptions.Default
-                .AddReferences(typeof(object).Assembly, typeof(Console).Assembly)
-                .AddImports("System", "System.Linq", "System.Collections.Generic");
+                .AddReferences(references)
+                .AddImports(
+                    "System",
+                    "System.Linq",
+                    "System.Collections.Generic",
+                    "System.Collections"
+                );
 
             var wrapped = code.Contains("return ", StringComparison.Ordinal) || code.Contains("Console.Write", StringComparison.Ordinal)
                 ? code

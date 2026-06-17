@@ -1,25 +1,25 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import Courses from "./pages/Courses";
-import CourseDetail from "./pages/CourseDetail";
-import LessonPage from "./pages/LessonPage";
-import QuizPage from "./pages/QuizPage";
-import Profile from "./pages/Profile";
-import Playground from "./pages/Playground";
-import Assistant from "./pages/Assistant";
-import CertificateVerify from "./pages/CertificateVerify";
-import Leaderboard from "./pages/Leaderboard";
-import Classrooms from "./pages/Classrooms";
-import Analytics from "./pages/Analytics";
-import Practices from "./pages/Practices";
-import AdminDashboard from "./pages/AdminDashboard";
-import TeacherPortal from "./pages/TeacherPortal";
-import Assignments from "./pages/Assignments";
-import Challenges from "./pages/Challenges";
-import ProgressDashboard from "./pages/ProgressDashboard";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Home from "./pages/shared/Home";
+import Courses from "./pages/student/Courses";
+import CourseDetail from "./pages/student/CourseDetail";
+import LessonPage from "./pages/student/LessonPage";
+import QuizPage from "./pages/student/QuizPage";
+import Profile from "./pages/student/Profile";
+import Playground from "./pages/student/Playground";
+import Assistant from "./pages/student/Assistant";
+import CertificateVerify from "./pages/shared/CertificateVerify";
+import Leaderboard from "./pages/student/Leaderboard";
+import Classrooms from "./pages/student/Classrooms";
+import Analytics from "./pages/teachers/Analytics";
+import Practices from "./pages/student/Practices";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import TeacherPortal from "./pages/teachers/TeacherPortal";
+import Assignments from "./pages/teachers/Assignments";
+import Challenges from "./pages/student/Challenges";
+import ProgressDashboard from "./pages/student/ProgressDashboard";
+import Login from "./pages/shared/Login";
+import Register from "./pages/shared/Register";
 
 function App() {
   return (
