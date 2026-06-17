@@ -27,7 +27,7 @@
 - [x] Quizzes with multiple choice, true/false, fill-in-the-blank, and output prediction
 - [x] Quiz submission, scoring, and attempt persistence
 - [x] Pass threshold (70%) with XP rewards
-- [x] AI quiz generation from lesson content (OpenAI + fallback)
+- [x] AI quiz generation from lesson content (Gemini + fallback)
 
 ### Gamification
 - [x] XP system (lessons +10, quizzes +25)
@@ -43,7 +43,7 @@
 - [x] Analytics dashboard (users, enrollments, quiz stats, course performance)
 
 ### Advanced Features
-- [x] AI Learning Assistant (OpenAI when configured, offline tutor fallback)
+- [x] AI Learning Assistant (Google Gemini when configured, offline tutor fallback)
 - [x] Interactive C# Playground (Roslyn script execution)
 - [x] Certificates (auto-issued at 100% course completion, public verification)
 - [x] PDF certificate export (QuestPDF)

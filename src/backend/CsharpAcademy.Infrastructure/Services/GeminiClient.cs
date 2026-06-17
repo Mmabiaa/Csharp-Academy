@@ -12,7 +12,7 @@ internal static class GeminiClient
         configuration["GEMINI_API_KEY"]?.Trim();
 
     public static string GetModel(IConfiguration configuration) =>
-        configuration["GEMINI_MODEL"]?.Trim() ?? "gemini-2.0-flash";
+        configuration["GEMINI_MODEL"]?.Trim() ?? "gemini-1.5-flash";
 
     public static async Task<string> ChatAsync(
         HttpClient client,
