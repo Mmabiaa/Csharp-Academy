@@ -1,60 +1,38 @@
-# Roadmap
+# Product Roadmap
 
-This document outlines the development roadmap for C# Academy.
+This document outlines the strategic development path for **C# Academy**.
 
-## Phase 1: Foundation
-- [x] Project structure and documentation
-- [x] Solution and project setup
-- [x] Clean Architecture implementation
-- [x] Database design and EF Core setup
-- [x] Authentication and authorization (JWT)
+## ✅ Released: v1.0.0 (The Foundation)
+All core modules for a professional learning experience are now live:
+- [x] **Core Architecture**: Clean Architecture, MySQL, .NET 10.
+- [x] **Learning Engine**: Courses, Modules, Lessons, and Progress tracking.
+- [x] **Assessment Suite**: Quizzes, Coding Challenges, and AI Generation.
+- [x] **Classroom Management**: Assignments, Grading, and Teacher Portal.
+- [x] **AI Ecosystem**: Gemini-powered Tutor and Practice feedback.
+- [x] **Gamification**: XP, Badges, Streaks, and Leaderboards.
+- [x] **Multimedia**: YouTube integration and Voice narration.
 
-## Phase 2: Learning Core
-- [x] Courses with sections and topics
-- [x] Modules with learning objectives
-- [x] Lessons with types and durations
-- [x] Progress tracking dashboard
+---
 
-## Phase 3: Assessment
-- [x] Quizzes
-- [x] Question types (multiple choice, true/false, fill-in-the-blank, output prediction)
-- [x] Quiz attempts and scoring
-- [x] AI quiz generation (Gemini)
-- [x] Standalone coding challenges
+## 🚀 Upcoming: v1.1.0 (Advanced Feedback)
+Focusing on deeper AI integration and real-time interaction.
+- [ ] **Inline Code Explanation**: Click-to-explain on any code block in lessons.
+- [ ] **Real-time Notifications**: Alerts for graded assignments and streak resets.
+- [ ] **Enhanced AI Feedback**: Smarter hints in the coding playground.
 
-## Phase 4: Classroom & Assignments
-- [x] Teachers and classrooms
-- [x] Assignment creation and submission
-- [x] Grading with feedback
-- [x] Teacher portal
+---
 
-## Phase 5: Gamification
-- [x] XP system
-- [x] Badges/achievements (including Challenge Master)
-- [x] Streaks and leaderboards
-- [x] Practice and challenge XP rewards
+## 🛠 Strategic Goals (Long-term)
 
-## Phase 6: AI Features
-- [x] AI learning assistant (Gemini chat tutor)
-- [x] Quiz generation
-- [ ] Inline code explanation (click-to-explain code blocks)
+### Phase: Platform Expansion
+- [ ] **OAuth Integration**: Login with GitHub, Google, and Microsoft.
+- [ ] **Mobile PWA**: Full offline support for learning on the go.
+- [ ] **Localization**: Support for multiple languages.
 
-## Phase 7: Learning Experience
-- [x] Guided step-by-step tutorials
-- [x] Hands-on coding practices
-- [x] Best practices per lesson
-- [x] Voice narration (browser TTS)
-- [x] YouTube video lessons
+### Phase: Community & Collaboration
+- [ ] **Discussion Forums**: Lesson-specific threads for peer helping.
+- [ ] **Peer Code Reviews**: Structured reviews between students.
+- [ ] **Live Competitions**: Scheduled coding blitzes with community ranking.
 
-## Phase 8: Platform & Admin
-- [x] Admin content management panel
-- [x] Analytics dashboard
-- [x] Professional dark UI (Codecademy / Microsoft Learn inspired)
-- [ ] Real-time notifications
-- [ ] OAuth social login
-- [ ] Mobile PWA
-
-## Phase 9: Community
-- [ ] Discussion forums
-- [ ] Peer code reviews
-- [ ] Live coding competitions
+---
+*Last Updated: 2026-06-18*

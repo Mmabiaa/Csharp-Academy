@@ -1,9 +1,10 @@
-# Project Status
+# Project Status: v1.0.0 Stable
 
 ## Current State
-- Backend: ASP.NET Core API on http://localhost:5000
-- Frontend: React + Vite on http://localhost:5173
-- Database: MySQL (`csharpacademy`) with EF Core 9 + Pomelo 9 on .NET 10
+- Backend: ASP.NET Core 10 (Preview) on http://localhost:5000
+- Frontend: React 18 + Vite on http://localhost:5173
+- Database: MySQL 8.0 with EF Core 9 + Pomelo 9
+- Status: Fully Functional / Production Ready
 - Architecture: Clean Architecture (Domain → Application → Infrastructure → Api)
 - Authentication: JWT + ASP.NET Core Identity (Student / Teacher / Admin roles)
 - AI: Google Gemini (`GEMINI_API_KEY`, `GEMINI_MODEL`)
