@@ -1,3 +1,488 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#f7f7f7] text-neutral-800 font-sans;
+  }
+}
+
+@layer components {
+  /* Duolingo-style buttons */
+  .duo-btn {
+    @apply px-6 py-3 rounded-xl font-bold text-white transition-all;
+  }
+  .duo-btn-primary {
+    @apply bg-[#58CC02] shadow-[0_4px_0_#46A301] active:shadow-[0_2px_0_#46A301] active:translate-y-[2px];
+  }
+  .duo-btn-secondary {
+    @apply bg-[#1CB0F6] shadow-[0_4px_0_#0A8CCF] active:shadow-[0_2px_0_#0A8CCF] active:translate-y-[2px];
+  }
+  .duo-btn-accent {
+    @apply bg-[#FF9600] shadow-[0_4px_0_#CC7800] active:shadow-[0_2px_0_#CC7800] active:translate-y-[2px];
+  }
+  .duo-btn-danger {
+    @apply bg-[#FF4B4B] shadow-[0_4px_0_#D63A3A] active:shadow-[0_2px_0_#D63A3A] active:translate-y-[2px];
+  }
+  .duo-btn-disabled {
+    @apply bg-neutral-300 shadow-neutral-500 text-neutral-500 cursor-not-allowed;
+  }
+
+  /* Duolingo-style cards */
+  .duo-card {
+    @apply bg-white border border-[#e5e5e5] rounded-xl p-6 shadow-[0_2px_0_#00000008];
+  }
+}
+
+
+/* ============================================================
+   Duolingo-style additions — layer on top of existing duo-card /
+   duo-btn classes already defined in index.css. Import this file
+   once, e.g. in main.tsx: import "./duo-additions.css";
+   ============================================================ */
+
+:root {
+  --duo-green: #58cc02;
+  --duo-green-dark: #46a302;
+  --duo-green-press: #3d8f01;
+  --duo-blue: #1cb0f6;
+  --duo-blue-dark: #1899d6;
+  --duo-red: #ff4b4b;
+  --duo-red-dark: #ea2b2b;
+  --duo-yellow: #ffc800;
+  --duo-yellow-dark: #e6b400;
+  --duo-purple: #ce82ff;
+  --duo-purple-dark: #a568cc;
+  --duo-fox: #ff9600;
+  --duo-eel: #4b4b4b;
+  --duo-wolf: #777777;
+  --duo-swan: #e5e5e5;
+  --duo-polar: #ddf4ff;
+}
+
+/* ---------- Chunky 3D buttons (Duolingo's signature press) ---------- */
+.duo-btn3d {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  border-radius: 16px;
+  padding: 14px 24px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.05s ease, opacity 0.15s ease;
+  user-select: none;
+}
+.duo-btn3d:active:not(:disabled) {
+  transform: translateY(4px);
+}
+.duo-btn3d:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.duo-btn3d-green {
+  background: var(--duo-green);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--duo-green-dark);
+}
+.duo-btn3d-green:active:not(:disabled) { box-shadow: 0 0 0 var(--duo-green-dark); }
+
+.duo-btn3d-blue {
+  background: var(--duo-blue);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--duo-blue-dark);
+}
+.duo-btn3d-blue:active:not(:disabled) { box-shadow: 0 0 0 var(--duo-blue-dark); }
+
+.duo-btn3d-yellow {
+  background: var(--duo-yellow);
+  color: #4b3a00;
+  box-shadow: 0 4px 0 var(--duo-yellow-dark);
+}
+.duo-btn3d-yellow:active:not(:disabled) { box-shadow: 0 0 0 var(--duo-yellow-dark); }
+
+.duo-btn3d-white {
+  background: #fff;
+  color: var(--duo-eel);
+  border: 2px solid var(--duo-swan);
+  box-shadow: 0 4px 0 var(--duo-swan);
+}
+.duo-btn3d-white:active:not(:disabled) { box-shadow: 0 0 0 var(--duo-swan); }
+
+.duo-btn3d-outline-green {
+  background: #fff;
+  color: var(--duo-green);
+  border: 2px solid var(--duo-green);
+  box-shadow: 0 4px 0 #d7ffb8;
+}
+.duo-btn3d-outline-green:active:not(:disabled) { box-shadow: 0 0 0 #d7ffb8; }
+
+/* ---------- Progress bar (rounded, striped fill) ---------- */
+.duo-progress-track {
+  width: 100%;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--duo-swan);
+  overflow: hidden;
+  position: relative;
+}
+.duo-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #6fda03 0%, var(--duo-green) 100%);
+  position: relative;
+  transition: width 0.4s ease;
+}
+.duo-progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  right: 6px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* ---------- XP pill ---------- */
+.duo-xp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 12px;
+  color: #946800;
+  background: #fff4d6;
+  border: 1.5px solid var(--duo-yellow);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+/* ---------- Difficulty / level pill badges ---------- */
+.duo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  border: 2px solid transparent;
+}
+.duo-badge-green { background: #d7ffb8; color: var(--duo-green-dark); }
+.duo-badge-yellow { background: #fff1c2; color: #946800; }
+.duo-badge-red { background: #ffdfe0; color: var(--duo-red-dark); }
+.duo-badge-blue { background: var(--duo-polar); color: var(--duo-blue-dark); }
+.duo-badge-gray { background: #f7f7f7; color: var(--duo-wolf); border-color: var(--duo-swan); }
+
+/* ---------- Lesson node circle (path-style) ---------- */
+.duo-node {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 18px;
+  flex-shrink: 0;
+  border: 3px solid transparent;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
+}
+.duo-node-done {
+  background: var(--duo-yellow);
+  color: #946800;
+  box-shadow: 0 4px 0 var(--duo-yellow-dark);
+}
+.duo-node-todo {
+  background: #fff;
+  border-color: var(--duo-swan);
+  color: var(--duo-wolf);
+  box-shadow: 0 4px 0 var(--duo-swan);
+}
+
+/* ---------- Streak flame day cell ---------- */
+.duo-day {
+  width: 40px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-weight: 800;
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+.duo-day-done { background: var(--duo-green); color: #fff; }
+.duo-day-today {
+  background: #fff;
+  border: 2.5px dashed var(--duo-blue);
+  color: var(--duo-blue);
+}
+.duo-day-future { background: #f7f7f7; color: #afafaf; border: 2px solid var(--duo-swan); }
+
+/* ---------- Mascot-style empty / banner panel ---------- */
+.duo-panel {
+  border-radius: 20px;
+  border: 2px solid var(--duo-swan);
+  background: #fff;
+  padding: 24px;
+}
+
+/* ---------- Card hover lift, Duolingo timing ---------- */
+.duo-card-hover {
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.duo-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.04);
+}
+
+@keyframes duo-pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.duo-pop { animation: duo-pop 0.3s ease-out; }
+
+@keyframes duo-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.duo-bounce { animation: duo-bounce 1.6s ease-in-out infinite; }
+
+/* ============================================================
+   Duolingo-style additions — layer on top of existing duo-card /
+   duo-btn classes already defined in index.css. Import this file
+   once, e.g. in main.tsx: import "./duo-additions.css";
+   ============================================================ */
+
+:root {
+  --duo-green: #58cc02;
+  --duo-green-dark: #46a302;
+  --duo-green-press: #3d8f01;
+  --duo-blue: #1cb0f6;
+  --duo-blue-dark: #1899d6;
+  --duo-red: #ff4b4b;
+  --duo-red-dark: #ea2b2b;
+  --duo-yellow: #ffc800;
+  --duo-yellow-dark: #e6b400;
+  --duo-purple: #ce82ff;
+  --duo-purple-dark: #a568cc;
+  --duo-fox: #ff9600;
+  --duo-eel: #4b4b4b;
+  --duo-wolf: #777777;
+  --duo-swan: #e5e5e5;
+  --duo-polar: #ddf4ff;
+}
+
+/* ---------- Chunky 3D buttons (Duolingo's signature press) ---------- */
+.duo-btn3d {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  border-radius: 16px;
+  padding: 14px 24px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.05s ease, opacity 0.15s ease;
+  user-select: none;
+}
+.duo-btn3d:active:not(:disabled) {
+  transform: translateY(4px);
+}
+.duo-btn3d:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.duo-btn3d-green {
+  background: var(--duo-green);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--duo-green-dark);
+}
+.duo-btn3d-green:active:not(:disabled) { box-shadow: 0 0 0 var(--duo-green-dark); }
+
+.duo-btn3d-blue {
+  background: var(--duo-blue);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--duo-blue-dark);
+}
+.duo-btn3d-blue:active:not(:disabled) { box-shadow: 0 0 0 var(--duo-blue-dark); }
+
+.duo-btn3d-yellow {
+  background: var(--duo-yellow);
+  color: #4b3a00;
+  box-shadow: 0 4px 0 var(--duo-yellow-dark);
+}
+.duo-btn3d-yellow:active:not(:disabled) { box-shadow: 0 0 0 var(--duo-yellow-dark); }
+
+.duo-btn3d-white {
+  background: #fff;
+  color: var(--duo-eel);
+  border: 2px solid var(--duo-swan);
+  box-shadow: 0 4px 0 var(--duo-swan);
+}
+.duo-btn3d-white:active:not(:disabled) { box-shadow: 0 0 0 var(--duo-swan); }
+
+.duo-btn3d-outline-green {
+  background: #fff;
+  color: var(--duo-green);
+  border: 2px solid var(--duo-green);
+  box-shadow: 0 4px 0 #d7ffb8;
+}
+.duo-btn3d-outline-green:active:not(:disabled) { box-shadow: 0 0 0 #d7ffb8; }
+
+/* ---------- Progress bar (rounded, striped fill) ---------- */
+.duo-progress-track {
+  width: 100%;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--duo-swan);
+  overflow: hidden;
+  position: relative;
+}
+.duo-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #6fda03 0%, var(--duo-green) 100%);
+  position: relative;
+  transition: width 0.4s ease;
+}
+.duo-progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  right: 6px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* ---------- XP pill ---------- */
+.duo-xp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 12px;
+  color: #946800;
+  background: #fff4d6;
+  border: 1.5px solid var(--duo-yellow);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+/* ---------- Difficulty / level pill badges ---------- */
+.duo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  border: 2px solid transparent;
+}
+.duo-badge-green { background: #d7ffb8; color: var(--duo-green-dark); }
+.duo-badge-yellow { background: #fff1c2; color: #946800; }
+.duo-badge-red { background: #ffdfe0; color: var(--duo-red-dark); }
+.duo-badge-blue { background: var(--duo-polar); color: var(--duo-blue-dark); }
+.duo-badge-gray { background: #f7f7f7; color: var(--duo-wolf); border-color: var(--duo-swan); }
+.duo-badge-purple { background: #eeedfe; color: #534ab7; }
+
+/* ---------- Lesson node circle (path-style) ---------- */
+.duo-node {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 18px;
+  flex-shrink: 0;
+  border: 3px solid transparent;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
+}
+.duo-node-done {
+  background: var(--duo-yellow);
+  color: #946800;
+  box-shadow: 0 4px 0 var(--duo-yellow-dark);
+}
+.duo-node-todo {
+  background: #fff;
+  border-color: var(--duo-swan);
+  color: var(--duo-wolf);
+  box-shadow: 0 4px 0 var(--duo-swan);
+}
+
+/* ---------- Streak flame day cell ---------- */
+.duo-day {
+  width: 40px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-weight: 800;
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+.duo-day-done { background: var(--duo-green); color: #fff; }
+.duo-day-today {
+  background: #fff;
+  border: 2.5px dashed var(--duo-blue);
+  color: var(--duo-blue);
+}
+.duo-day-future { background: #f7f7f7; color: #afafaf; border: 2px solid var(--duo-swan); }
+
+/* ---------- Mascot-style empty / banner panel ---------- */
+.duo-panel {
+  border-radius: 20px;
+  border: 2px solid var(--duo-swan);
+  background: #fff;
+  padding: 24px;
+}
+
+/* ---------- Card hover lift, Duolingo timing ---------- */
+.duo-card-hover {
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.duo-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.04);
+}
+
+@keyframes duo-pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.duo-pop { animation: duo-pop 0.3s ease-out; }
+
+@keyframes duo-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.duo-bounce { animation: duo-bounce 1.6s ease-in-out infinite; }

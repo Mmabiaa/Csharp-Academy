@@ -1,22 +1,56 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Home from "./pages/shared/Home";
+import Courses from "./pages/student/Courses";
+import CourseDetail from "./pages/student/CourseDetail";
+import LessonPage from "./pages/student/LessonPage";
+import QuizPage from "./pages/student/QuizPage";
+import Profile from "./pages/student/Profile";
+import Playground from "./pages/student/Playground";
+import Assistant from "./pages/student/Assistant";
+import CertificateVerify from "./pages/shared/CertificateVerify";
+import Leaderboard from "./pages/student/Leaderboard";
+import Classrooms from "./pages/student/Classrooms";
+import Analytics from "./pages/teachers/Analytics";
+import Practices from "./pages/student/Practices";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import TeacherPortal from "./pages/teachers/TeacherPortal";
+import Assignments from "./pages/teachers/Assignments";
+import Challenges from "./pages/student/Challenges";
+import ProgressDashboard from "./pages/student/ProgressDashboard";
+import Login from "./pages/shared/Login";
+import Register from "./pages/shared/Register";
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">C# Academy</h1>
-          <p className="text-gray-600 mt-2">Intelligent C# Learning Environment</p>
-        </div>
-      </header>
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Welcome!</h2>
-            <p className="text-gray-600">Your journey to mastering C# starts here.</p>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/:id" element={<CourseDetail />} />
+          <Route path="/practices" element={<Practices />} />
+          <Route path="/challenges" element={<Challenges />} />
+          <Route path="/lessons/:id" element={<LessonPage />} />
+          <Route path="/lessons/:id/quiz" element={<QuizPage />} />
+          <Route path="/playground" element={<Playground />} />
+          <Route path="/assistant" element={<Assistant />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/classrooms" element={<Classrooms />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/progress" element={<ProgressDashboard />} />
+          <Route path="/assignments" element={<Assignments />} />
+          <Route path="/teacher" element={<TeacherPortal />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/certificates/:code" element={<CertificateVerify />} />
+          <Route path="/certificates" element={<CertificateVerify />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
 }
 
-export default App
+export default App;
