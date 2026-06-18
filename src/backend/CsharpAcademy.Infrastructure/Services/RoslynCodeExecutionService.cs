@@ -2,6 +2,8 @@ using CsharpAcademy.Application.Common.Interfaces;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System.Reflection;
+using System.IO;
+using System.Threading;
 
 namespace CsharpAcademy.Infrastructure.Services;
 
@@ -12,6 +14,8 @@ public class RoslynCodeExecutionService : ICodeExecutionService
         "System.IO", "System.Net", "System.Diagnostics.Process",
         "System.Reflection", "File.", "Directory.", "Console.Read"
     ];
+
+    private static readonly SemaphoreSlim _executionSemaphore = new SemaphoreSlim(1, 1);
 
     public async Task<CodeExecutionResult> ExecuteAsync(string code, CancellationToken cancellationToken = default)
     {
@@ -32,38 +36,56 @@ public class RoslynCodeExecutionService : ICodeExecutionService
             }
         }
 
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(5));
+
         try
         {
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(TimeSpan.FromSeconds(5));
+            await _executionSemaphore.WaitAsync(cts.Token);
+            var sw = new StringWriter();
+            var originalOut = Console.Out;
+            Console.SetOut(sw);
 
-            var references = new[]
+            try
             {
-                typeof(object).Assembly,
-                typeof(Console).Assembly,
-                typeof(Enumerable).Assembly,
-                typeof(List<>).Assembly,
-                Assembly.Load("System.Runtime"),
-                Assembly.Load("System.Collections")
-            };
+                var references = new[]
+                {
+                    typeof(object).Assembly,
+                    typeof(Console).Assembly,
+                    typeof(Enumerable).Assembly,
+                    typeof(List<>).Assembly,
+                    Assembly.Load("System.Runtime"),
+                    Assembly.Load("System.Collections")
+                };
 
-            var options = ScriptOptions.Default
-                .AddReferences(references)
-                .AddImports(
-                    "System",
-                    "System.Linq",
-                    "System.Collections.Generic",
-                    "System.Collections"
-                );
+                var options = ScriptOptions.Default
+                    .AddReferences(references)
+                    .AddImports(
+                        "System",
+                        "System.Linq",
+                        "System.Collections.Generic",
+                        "System.Collections"
+                    );
 
-            var wrapped = code.Contains("return ", StringComparison.Ordinal) || code.Contains("Console.Write", StringComparison.Ordinal)
-                ? code
-                : $"return ({code});";
+                var wrapped = code.Contains("return ", StringComparison.Ordinal) || code.Contains("Console.Write", StringComparison.Ordinal)
+                    ? code
+                    : $"return ({code});";
 
-            var result = await CSharpScript.EvaluateAsync<object?>(wrapped, options, cancellationToken: cts.Token);
-            var output = result?.ToString() ?? "(no output)";
+                var result = await CSharpScript.EvaluateAsync<object?>(wrapped, options, cancellationToken: cts.Token);
+                var consoleOutput = sw.ToString();
 
-            return new CodeExecutionResult { Success = true, Output = output };
+                // If code printed to console, use that. Otherwise use the return value.
+                var finalOutput = !string.IsNullOrWhiteSpace(consoleOutput)
+                    ? consoleOutput
+                    : (result?.ToString() ?? "(no output)");
+
+                return new CodeExecutionResult { Success = true, Output = finalOutput.TrimEnd() };
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
+                _executionSemaphore.Release();
+            }
         }
         catch (CompilationErrorException ex)
         {
