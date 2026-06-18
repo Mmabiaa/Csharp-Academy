@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createCourse, fetchAdminDashboard } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { Users, BookOpen, Trophy, FileText, Zap } from "lucide-react";
 
 export default function AdminDashboard() {
   const { token, isAdmin } = useAuth();
@@ -35,80 +36,118 @@ export default function AdminDashboard() {
 
   if (!token) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <p className="text-slate-400">
-          <Link to="/login" className="text-indigo-400 hover:underline">Sign in</Link> as admin to access this panel.
-        </p>
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Admin Panel
+          </h1>
+          <p className="text-neutral-600 font-semibold">
+            <Link to="/login" className="text-[#58CC02] font-black hover:underline">Sign in</Link> as admin to access this panel.
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <p className="text-slate-400">Admin access required. Demo: admin@academy.com / Admin123!</p>
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Admin Panel
+          </h1>
+          <div className="duo-card bg-[#FF4B4B]/10 border-[#FF4B4B]/30">
+            <p className="text-[#FF4B4B] font-black">Admin access required. Demo: admin@academy.com / Admin123!</p>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (isLoading) return <div className="max-w-6xl mx-auto px-4 py-12 text-slate-400">Loading admin panel...</div>;
-  if (error || !data) return <div className="max-w-6xl mx-auto px-4 py-12 text-red-400">Failed to load dashboard.</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div className="h-16 w-64 bg-neutral-200 rounded-xl" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="duo-card animate-pulse">
+              <div className="h-24" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div className="h-16 w-64 bg-neutral-200 rounded-xl" />
+        <div className="duo-card bg-[#FF4B4B]/10 border-[#FF4B4B]/30">
+          <p className="text-[#FF4B4B] font-black">Failed to load dashboard.</p>
+        </div>
+      </div>
+    );
+  }
 
   const stats = [
-    { label: "Users", value: data.totalUsers, color: "from-blue-500 to-cyan-500" },
-    { label: "Courses", value: data.totalCourses, color: "from-violet-500 to-purple-500" },
-    { label: "Enrollments", value: data.totalEnrollments, color: "from-emerald-500 to-teal-500" },
-    { label: "Assignments", value: data.totalAssignments, color: "from-amber-500 to-orange-500" },
-    { label: "Challenges", value: data.totalChallenges, color: "from-pink-500 to-rose-500" },
+    { label: "Users", value: data.totalUsers, icon: Users, color: "text-[#1CB0F6]" },
+    { label: "Courses", value: data.totalCourses, icon: BookOpen, color: "text-[#58CC02]" },
+    { label: "Enrollments", value: data.totalEnrollments, icon: Users, color: "text-[#FFC800]" },
+    { label: "Assignments", value: data.totalAssignments, icon: FileText, color: "text-[#FF9600]" },
+    { label: "Challenges", value: data.totalChallenges, icon: Trophy, color: "text-purple-600" },
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+    <div className="space-y-6 pb-24 md:pb-0">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
-          <p className="text-slate-400 mt-1">Platform overview and course management</p>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Admin Panel
+          </h1>
+          <p className="text-neutral-600 font-semibold">Platform overview and course management</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm font-medium"
+          className="duo-btn duo-btn-primary"
         >
           {showForm ? "Cancel" : "+ New Course"}
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl bg-slate-900 border border-slate-800 p-5">
-            <p className={`text-3xl font-bold bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>
-              {s.value}
-            </p>
-            <p className="text-sm text-slate-400 mt-1">{s.label}</p>
+          <div key={s.label} className="duo-card p-4 text-center">
+            <div className="w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <s.icon className={`w-6 h-6 ${s.color}`} />
+            </div>
+            <p className="text-2xl font-black text-neutral-900 mb-1">{s.value}</p>
+            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">{s.label}</p>
           </div>
         ))}
       </div>
 
       {showForm && (
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 mb-8 space-y-4">
-          <h2 className="text-lg font-semibold">Create Course</h2>
+        <div className="duo-card space-y-4">
+          <h2 className="text-lg font-black text-neutral-900">Create Course</h2>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Course title"
-            className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white"
+            className="w-full px-4 py-3 rounded-xl border border-[#e5e5e5] font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description"
             rows={3}
-            className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white"
+            className="w-full px-4 py-3 rounded-xl border border-[#e5e5e5] font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
           />
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
-              className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white"
+              className="px-4 py-3 rounded-xl border border-[#e5e5e5] font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
             >
               <option>Beginner</option>
               <option>Intermediate</option>
@@ -118,45 +157,52 @@ export default function AdminDashboard() {
               type="number"
               value={hours}
               onChange={(e) => setHours(Number(e.target.value))}
-              className="w-24 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white"
+              className="w-24 px-4 py-3 rounded-xl border border-[#e5e5e5] font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
             />
-            <span className="text-slate-400 self-center text-sm">estimated hours</span>
+            <span className="text-neutral-500 self-center text-sm font-bold">estimated hours</span>
           </div>
           <button
             onClick={() => createMutation.mutate()}
             disabled={!title || createMutation.isPending}
-            className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 font-medium"
+            className="duo-btn duo-btn-primary"
           >
             {createMutation.isPending ? "Creating..." : "Create Course"}
           </button>
         </div>
       )}
 
-      <div className="rounded-xl bg-slate-900 border border-slate-800 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800">
-          <h2 className="font-semibold">Recent Users</h2>
+      <div className="duo-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-[#e5e5e5] font-black text-neutral-900">
+          Recent Users
         </div>
         <table className="w-full text-sm">
-          <thead className="text-slate-400 border-b border-slate-800">
+          <thead className="text-neutral-500 border-b border-[#e5e5e5] font-black">
             <tr>
               <th className="text-left px-6 py-3">Name</th>
               <th className="text-left px-6 py-3">Email</th>
-              <th className="text-right px-6 py-3">XP</th>
+              <th className="text-right px-6 py-3 flex items-center justify-end gap-1">
+                <Zap className="w-4 h-4" />
+                XP
+              </th>
             </tr>
           </thead>
           <tbody>
             {data.recentUsers.map((u) => (
-              <tr key={u.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                <td className="px-6 py-3">{u.name}</td>
-                <td className="px-6 py-3 text-slate-400">{u.email}</td>
-                <td className="px-6 py-3 text-right text-indigo-400">{u.xp}</td>
+              <tr key={u.id} className="border-b border-[#e5e5e5]/50 hover:bg-neutral-50 transition-colors">
+                <td className="px-6 py-3 font-semibold text-neutral-900">{u.name}</td>
+                <td className="px-6 py-3 text-neutral-600 font-semibold">{u.email}</td>
+                <td className="px-6 py-3 text-right text-[#FFC800] font-black">{u.xp}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {message && <p className="mt-4 text-sm text-emerald-400">{message}</p>}
+      {message && (
+        <div className="duo-card bg-[#58CC02]/10 border-[#58CC02]/30">
+          <p className="text-[#58CC02] font-black">{message}</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,44 +4,33 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-black antialiased font-sans;
+    @apply bg-[#f7f7f7] text-neutral-800 font-sans;
   }
 }
 
 @layer components {
-  .card {
-    @apply bg-white border border-gray-200 rounded-lg shadow-card p-6 transition-all hover:shadow-soft;
+  /* Duolingo-style buttons */
+  .duo-btn {
+    @apply px-6 py-3 rounded-xl font-bold text-white transition-all;
   }
-  .card-hover {
-    @apply hover:border-gray-300 hover:translate-y-[-2px];
+  .duo-btn-primary {
+    @apply bg-[#58CC02] shadow-[0_4px_0_#46A301] active:shadow-[0_2px_0_#46A301] active:translate-y-[2px];
   }
-  .btn {
-    @apply px-5 py-2.5 rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-gray-300;
+  .duo-btn-secondary {
+    @apply bg-[#1CB0F6] shadow-[0_4px_0_#0A8CCF] active:shadow-[0_2px_0_#0A8CCF] active:translate-y-[2px];
   }
-  .btn-primary {
-    @apply bg-black text-white hover:bg-gray-800;
+  .duo-btn-accent {
+    @apply bg-[#FF9600] shadow-[0_4px_0_#CC7800] active:shadow-[0_2px_0_#CC7800] active:translate-y-[2px];
   }
-  .btn-secondary {
-    @apply bg-white text-black border border-gray-200 hover:bg-gray-50;
+  .duo-btn-danger {
+    @apply bg-[#FF4B4B] shadow-[0_4px_0_#D63A3A] active:shadow-[0_2px_0_#D63A3A] active:translate-y-[2px];
   }
-  .input {
-    @apply w-full px-4 py-2 border border-gray-200 rounded-md focus:border-black focus:outline-none transition-colors;
-  }
-  .sidebar-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-black hover:bg-gray-50;
-  }
-  .sidebar-link.active {
-    @apply bg-black text-white hover:bg-gray-800;
+  .duo-btn-disabled {
+    @apply bg-neutral-300 shadow-neutral-500 text-neutral-500 cursor-not-allowed;
   }
 
-  .lesson-content p { @apply mb-4 text-gray-700 leading-relaxed; }
-  .lesson-content pre { @apply bg-gray-900 text-gray-100 p-5 rounded-md overflow-x-auto mb-4 text-sm font-mono; }
-  .lesson-content code { @apply font-mono; }
-  .lesson-content p code { @apply bg-gray-100 px-2 py-1 rounded text-black border border-gray-200 text-xs; }
-  .lesson-content h1, .lesson-content h2, .lesson-content h3 { @apply text-black font-bold mb-3 mt-6 font-serif; }
-  .lesson-content h1 { @apply text-3xl; }
-  .lesson-content h2 { @apply text-2xl; }
-  .lesson-content h3 { @apply text-xl; }
-  .lesson-content ul { @apply list-disc list-inside text-gray-700 mb-4 space-y-1; }
-  .lesson-content ol { @apply list-decimal list-inside text-gray-700 mb-4 space-y-1; }
+  /* Duolingo-style cards */
+  .duo-card {
+    @apply bg-white border border-[#e5e5e5] rounded-xl p-6 shadow-[0_2px_0_#00000008];
+  }
 }

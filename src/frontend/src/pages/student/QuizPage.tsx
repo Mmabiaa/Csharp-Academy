@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { fetchQuiz, submitQuiz } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
 
 function isTextQuestion(type: string) {
   return type === "FillInTheBlank";
@@ -14,7 +15,9 @@ export default function QuizPage() {
   const { token, isAuthenticated } = useAuth();
   const [optionAnswers, setOptionAnswers] = useState<Record<number, number>>({});
   const [textAnswers, setTextAnswers] = useState<Record<number, string>>({});
-  const [result, setResult] = useState<Awaited<ReturnType<typeof submitQuiz>> | null>(null);
+  const [result, setResult] = useState<Awaited<
+    ReturnType<typeof submitQuiz>
+  > | null>(null);
 
   const { data: quiz, isLoading, error } = useQuery({
     queryKey: ["quiz", lessonId],
@@ -23,54 +26,130 @@ export default function QuizPage() {
   });
 
   const submitMutation = useMutation({
-    mutationFn: () => submitQuiz(lessonId, optionAnswers, textAnswers, token!),
+    mutationFn: () =>
+      submitQuiz(lessonId, optionAnswers, textAnswers, token!),
     onSuccess: (data) => setResult(data),
   });
 
   if (isLoading) {
-    return <div className="max-w-2xl mx-auto px-4 py-12"><p>Loading quiz...</p></div>;
+    return (
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div className="h-10 w-40 bg-neutral-200 rounded-xl" />
+        <div className="duo-card animate-pulse">
+          <div className="h-40" />
+        </div>
+      </div>
+    );
   }
 
   if (error || !quiz) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <p className="text-red-600">No quiz found for this lesson.</p>
-        <Link to={`/lessons/${lessonId}`} className="text-blue-600 hover:underline mt-4 inline-block">Back to lesson</Link>
+      <div className="space-y-6 pb-24 md:pb-0">
+        <Link
+          to={`/lessons/${lessonId}`}
+          className="inline-flex items-center gap-2 text-neutral-600 font-bold hover:text-[#58CC02] text-sm"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back to lesson
+        </Link>
+        <div className="duo-card bg-[#FF4B4B]/10 border-[#FF4B4B]/30">
+          <p className="text-[#FF4B4B] font-black">No quiz found for this lesson.</p>
+        </div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <p className="text-gray-600 mb-4">You must be signed in to take this quiz.</p>
-        <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link>
+      <div className="space-y-6 pb-24 md:pb-0">
+        <Link
+          to={`/lessons/${lessonId}`}
+          className="inline-flex items-center gap-2 text-neutral-600 font-bold hover:text-[#58CC02] text-sm"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back to lesson
+        </Link>
+        <div className="duo-card">
+          <p className="text-neutral-700 font-semibold mb-4">
+            You must be signed in to take this quiz.
+          </p>
+          <Link to="/login" className="duo-btn duo-btn-primary">
+            Sign in
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (result) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Quiz Results</h1>
-        <div className={`p-6 rounded-lg mb-6 ${result.passed ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
-          <p className="text-2xl font-semibold mb-2">
-            {result.passed ? "Passed!" : "Not quite — keep studying!"}
+      <div className="space-y-6 pb-24 md:pb-0">
+        <Link
+          to={`/lessons/${lessonId}`}
+          className="inline-flex items-center gap-2 text-neutral-600 font-bold hover:text-[#58CC02] text-sm"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back to lesson
+        </Link>
+        <div className="text-center">
+          <h1 className="text-3xl font-black text-neutral-900 mb-2">
+            Quiz Results
+          </h1>
+        </div>
+        <div
+          className={`duo-card border-2 ${
+            result.passed
+              ? "bg-[#58CC02]/10 border-[#58CC02]/30"
+              : "bg-[#FF4B4B]/10 border-[#FF4B4B]/30"
+          }`}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            {result.passed ? (
+              <CheckCircle2 className="w-10 h-10 text-[#58CC02]" />
+            ) : (
+              <XCircle className="w-10 h-10 text-[#FF4B4B]" />
+            )}
+            <p className="text-2xl font-black text-neutral-900">
+              {result.passed ? "Passed!" : "Not quite — keep studying!"}
+            </p>
+          </div>
+          <p className="text-neutral-700 font-semibold mb-2">
+            Score: {result.score} / {result.totalQuestions}
           </p>
-          <p className="text-gray-700">Score: {result.score} / {result.totalQuestions}</p>
-          {result.xpEarned > 0 && <p className="text-gray-700">+{result.xpEarned} XP (Total: {result.totalXp})</p>}
+          {result.xpEarned > 0 && (
+            <p className="text-neutral-700 font-semibold">
+              +{result.xpEarned} XP (Total: {result.totalXp})
+            </p>
+          )}
           {result.newBadges.length > 0 && (
-            <p className="text-gray-700 mt-2">New badges: {result.newBadges.join(", ")}</p>
+            <p className="text-neutral-700 font-semibold mt-2">
+              New badges: {result.newBadges.join(", ")}
+            </p>
           )}
         </div>
-        <ul className="space-y-3 mb-6">
+        <div className="space-y-3">
           {result.questionResults.map((qr) => (
-            <li key={qr.questionId} className={`p-3 rounded ${qr.isCorrect ? "bg-green-50" : "bg-red-50"}`}>
-              {qr.isCorrect ? "✓ Correct" : "✗ Incorrect"}
-            </li>
+            <div
+              key={qr.questionId}
+              className={`duo-card border-2 ${
+                qr.isCorrect
+                  ? "bg-[#58CC02]/10 border-[#58CC02]/30"
+                  : "bg-[#FF4B4B]/10 border-[#FF4B4B]/30"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {qr.isCorrect ? (
+                  <CheckCircle2 className="w-5 h-5 text-[#58CC02]" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-[#FF4B4B]" />
+                )}
+                <span className="font-black text-neutral-900">
+                  {qr.isCorrect ? "Correct" : "Incorrect"}
+                </span>
+              </div>
+            </div>
           ))}
-        </ul>
-        <Link to={`/lessons/${lessonId}`} className="text-blue-600 hover:underline">Back to lesson</Link>
+        </div>
       </div>
     );
   }
@@ -82,46 +161,69 @@ export default function QuizPage() {
   );
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
-      <Link to={`/lessons/${lessonId}`} className="text-blue-600 hover:underline text-sm mb-4 inline-block">
-        &larr; Back to lesson
+    <div className="space-y-6 pb-24 md:pb-0">
+      <Link
+        to={`/lessons/${lessonId}`}
+        className="inline-flex items-center gap-2 text-neutral-600 font-bold hover:text-[#58CC02] text-sm"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        Back to lesson
       </Link>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">{quiz.title}</h1>
-
-      <div className="space-y-8">
+      <div className="text-center">
+        <h1 className="text-2xl md:text-3xl font-black text-neutral-900">
+          {quiz.title}
+        </h1>
+      </div>
+      <div className="space-y-4">
         {quiz.questions.map((question, index) => (
-          <div key={question.id} className="bg-white p-6 rounded-lg shadow-md">
-            <p className="font-medium text-gray-900 mb-1">{index + 1}. {question.text}</p>
+          <div key={question.id} className="duo-card">
+            <p className="font-black text-neutral-900 mb-3">
+              {index + 1}. {question.text}
+            </p>
             {question.type === "OutputPrediction" && (
-              <p className="text-xs text-purple-600 mb-3">Output prediction — select the correct output</p>
+              <p className="text-xs font-bold text-purple-600 mb-4">
+                Output prediction — select the correct output
+              </p>
             )}
             {isTextQuestion(question.type) ? (
               <input
                 type="text"
                 value={textAnswers[question.id] ?? ""}
-                onChange={(e) => setTextAnswers((prev) => ({ ...prev, [question.id]: e.target.value }))}
+                onChange={(e) =>
+                  setTextAnswers((prev) => ({
+                    ...prev,
+                    [question.id]: e.target.value,
+                  }))
+                }
                 placeholder="Type your answer"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-mono font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
               />
             ) : (
-              <div className="space-y-2 mt-4">
+              <div className="space-y-3">
                 {question.options.map((option) => (
                   <label
                     key={option.id}
-                    className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
                       optionAnswers[question.id] === option.id
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-[#58CC02] bg-[#58CC02]/10"
+                        : "border-[#e5e5e5] bg-neutral-50 hover:border-[#58CC02]/30 hover:bg-neutral-100"
                     }`}
                   >
                     <input
                       type="radio"
                       name={`question-${question.id}`}
                       checked={optionAnswers[question.id] === option.id}
-                      onChange={() => setOptionAnswers((prev) => ({ ...prev, [question.id]: option.id }))}
-                      className="text-blue-600"
+                      onChange={() =>
+                        setOptionAnswers((prev) => ({
+                          ...prev,
+                          [question.id]: option.id,
+                        }))
+                      }
+                      className="text-[#58CC02]"
                     />
-                    <span className="font-mono text-sm">{option.text}</span>
+                    <span className="font-mono text-sm font-semibold text-neutral-800">
+                      {option.text}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -129,11 +231,10 @@ export default function QuizPage() {
           </div>
         ))}
       </div>
-
       <button
         onClick={() => submitMutation.mutate()}
         disabled={!allAnswered || submitMutation.isPending}
-        className="mt-8 w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
+        className="w-full duo-btn duo-btn-primary"
       >
         {submitMutation.isPending ? "Submitting..." : "Submit Quiz"}
       </button>

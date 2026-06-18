@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { runCode } from "../../lib/api";
+import CodeEditor from "../../components/CodeEditor";
 
 const defaultCode = `// Try C# expressions and Console.WriteLine
 Console.WriteLine("Hello, C# Academy!");
@@ -33,34 +34,45 @@ export default function Playground() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">C# Playground</h1>
-      <p className="text-gray-600 mb-6">
-        Write and run C# code snippets. Use <code className="bg-gray-100 px-1 rounded">Console.WriteLine()</code> for output.
-      </p>
+    <div className="space-y-6 pb-24 md:pb-0">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+          C# Playground
+        </h1>
+        <p className="text-neutral-600 font-semibold">
+          Write and run C# code snippets. Use{" "}
+          <code className="bg-neutral-100 px-2 py-1 rounded text-sm font-bold">
+            Console.WriteLine()
+          </code>{" "}
+          for output.
+        </p>
+      </div>
 
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        rows={12}
-        className="w-full font-mono text-sm bg-gray-900 text-green-400 p-4 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        spellCheck={false}
-      />
+      <div className="duo-card space-y-4">
+        <CodeEditor value={code} onChange={setCode} rows={16} />
+        <button
+          onClick={handleRun}
+          disabled={loading}
+          className="duo-btn duo-btn-primary"
+        >
+          {loading ? "Running..." : "Run Code"}
+        </button>
 
-      <button
-        onClick={handleRun}
-        disabled={loading}
-        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium mb-4"
-      >
-        {loading ? "Running..." : "Run Code"}
-      </button>
-
-      {(output || error) && (
-        <div className={`p-4 rounded-lg font-mono text-sm ${error ? "bg-red-50 text-red-800 border border-red-200" : "bg-gray-100 text-gray-800"}`}>
-          <p className="font-sans font-medium mb-2">{error ? "Error" : "Output"}</p>
-          <pre className="whitespace-pre-wrap">{error || output}</pre>
-        </div>
-      )}
+        {(output || error) && (
+          <div
+            className={`p-4 rounded-xl font-mono text-sm border ${
+              error
+                ? "bg-[#FF4B4B]/10 border-[#FF4B4B]/30 text-[#FF4B4B]"
+                : "bg-neutral-100 border-[#e5e5e5] text-neutral-800"
+            }`}
+          >
+            <p className="font-sans font-black mb-2">
+              {error ? "Error" : "Output"}
+            </p>
+            <pre className="whitespace-pre-wrap">{error || output}</pre>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

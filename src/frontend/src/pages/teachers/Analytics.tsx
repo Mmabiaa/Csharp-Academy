@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchAnalyticsDashboard } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { Users, BookOpen, Award, GraduationCap, TrendingUp } from "lucide-react";
 
 export default function Analytics() {
   const { token, isTeacher } = useAuth();
@@ -14,72 +15,110 @@ export default function Analytics() {
 
   if (!token) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-12">
-        <p className="text-gray-600">
-          <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link> to view analytics.
-        </p>
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Analytics
+          </h1>
+          <p className="text-neutral-600 font-semibold">
+            <Link to="/login" className="text-[#58CC02] font-black hover:underline">Sign in</Link> to view analytics.
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!isTeacher) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-12">
-        <p className="text-gray-600">Analytics are available to teachers only.</p>
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Analytics
+          </h1>
+          <div className="duo-card bg-[#FF4B4B]/10 border-[#FF4B4B]/30">
+            <p className="text-[#FF4B4B] font-black">Analytics are available to teachers only.</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (isLoading) {
-    return <div className="max-w-5xl mx-auto px-4 py-12"><p>Loading analytics...</p></div>;
+    return (
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div className="h-16 w-64 bg-neutral-200 rounded-xl" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="duo-card animate-pulse">
+              <div className="h-24" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (error || !data) {
-    return <div className="max-w-5xl mx-auto px-4 py-12"><p className="text-red-600">Failed to load analytics.</p></div>;
+    return (
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div className="h-16 w-64 bg-neutral-200 rounded-xl" />
+        <div className="duo-card bg-[#FF4B4B]/10 border-[#FF4B4B]/30">
+          <p className="text-[#FF4B4B] font-black">Failed to load analytics.</p>
+        </div>
+      </div>
+    );
   }
 
   const stats = [
-    { label: "Total Users", value: data.totalUsers, color: "text-blue-600" },
-    { label: "Enrollments", value: data.totalEnrollments, color: "text-green-600" },
-    { label: "Quiz Attempts", value: data.totalQuizAttempts, color: "text-purple-600" },
-    { label: "Classrooms", value: data.totalClassrooms, color: "text-orange-600" },
-    { label: "Certificates", value: data.certificatesIssued, color: "text-indigo-600" },
-    { label: "Avg Completion", value: `${data.averageCourseCompletion.toFixed(1)}%`, color: "text-teal-600" },
-    { label: "Quiz Pass Rate", value: `${data.quizPassRate.toFixed(1)}%`, color: "text-pink-600" },
+    { label: "Total Users", value: data.totalUsers, icon: Users, color: "text-[#1CB0F6]" },
+    { label: "Enrollments", value: data.totalEnrollments, icon: BookOpen, color: "text-[#58CC02]" },
+    { label: "Quiz Attempts", value: data.totalQuizAttempts, icon: Award, color: "text-[#FFC800]" },
+    { label: "Classrooms", value: data.totalClassrooms, icon: GraduationCap, color: "text-[#FF9600]" },
+    { label: "Certificates", value: data.certificatesIssued, icon: Award, color: "text-purple-600" },
+    { label: "Avg Completion", value: `${data.averageCourseCompletion.toFixed(1)}%`, icon: TrendingUp, color: "text-teal-600" },
   ];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics Dashboard</h1>
+    <div className="space-y-6 pb-24 md:pb-0">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+          Analytics Dashboard
+        </h1>
+      </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <div key={s.label} className="bg-white p-4 rounded-lg shadow-md text-center">
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-sm text-gray-600">{s.label}</p>
+          <div key={s.label} className="duo-card p-4 text-center">
+            <div className="w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <s.icon className={`w-6 h-6 ${s.color}`} />
+            </div>
+            <p className="text-2xl font-black text-neutral-900 mb-1">{s.value}</p>
+            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">{s.label}</p>
           </div>
         ))}
       </div>
 
       <section>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Course Performance</h2>
+        <h2 className="text-xl font-black text-neutral-900 mb-4">Course Performance</h2>
         {data.courseStats.length === 0 ? (
-          <p className="text-gray-500">No course data yet.</p>
+          <div className="duo-card text-center py-8">
+            <p className="text-neutral-600 font-semibold">No course data yet.</p>
+          </div>
         ) : (
           <div className="space-y-4">
             {data.courseStats.map((course) => (
-              <div key={course.courseId} className="bg-white p-4 rounded-lg shadow-md">
+              <div key={course.courseId} className="duo-card">
                 <div className="flex justify-between items-center mb-2">
-                  <p className="font-medium text-gray-900">{course.courseTitle}</p>
-                  <span className="text-sm text-gray-600">{course.enrollmentCount} enrolled</span>
+                  <p className="font-black text-neutral-900">{course.courseTitle}</p>
+                  <span className="text-sm font-bold text-neutral-600">{course.enrollmentCount} enrolled</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-neutral-200 rounded-full h-3">
                   <div
-                    className="bg-blue-600 h-2 rounded-full"
+                    className="bg-[#58CC02] h-3 rounded-full transition-all"
                     style={{ width: `${Math.min(course.averageCompletion, 100)}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{course.averageCompletion.toFixed(1)}% avg completion</p>
+                <p className="text-xs font-bold text-neutral-500 mt-1">{course.averageCompletion.toFixed(1)}% avg completion</p>
               </div>
             ))}
           </div>

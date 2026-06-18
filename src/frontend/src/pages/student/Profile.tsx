@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchUserProfile, fetchCertificates, getCertificatePdfUrl } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { Star, Flame, Trophy, Award, BookOpen, ArrowRight } from "lucide-react";
 
 export default function Profile() {
   const { token, isAuthenticated } = useAuth();
@@ -20,116 +21,204 @@ export default function Profile() {
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <p className="text-gray-600">
-          <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link> to view your profile.
+      <div className="max-w-lg mx-auto py-12 text-center">
+        <p className="text-neutral-600 text-lg font-semibold mb-6">
+          <Link to="/login" className="text-[#58CC02] font-black hover:underline">
+            Log in
+          </Link>{" "}
+          to view your profile
         </p>
       </div>
     );
   }
 
   if (isLoading) {
-    return <div className="max-w-3xl mx-auto px-4 py-12"><p>Loading profile...</p></div>;
+    return (
+      <div className="max-w-3xl mx-auto py-12">
+        <div className="duo-card animate-pulse">
+          <div className="h-16 w-16 bg-neutral-200 rounded-full mx-auto mb-4" />
+          <div className="h-8 w-1/2 bg-neutral-200 rounded-xl mx-auto mb-2" />
+          <div className="h-5 w-1/3 bg-neutral-200 rounded-lg mx-auto" />
+        </div>
+      </div>
+    );
   }
 
   if (error || !profile) {
-    return <div className="max-w-3xl mx-auto px-4 py-12"><p className="text-red-600">Failed to load profile.</p></div>;
+    return (
+      <div className="max-w-lg mx-auto py-12">
+        <div className="duo-card bg-[#FF4B4B]/10 border-[#FF4B4B]/30">
+          <p className="text-[#FF4B4B] font-black text-lg">
+            Failed to load profile
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        {profile.firstName} {profile.lastName}
-      </h1>
-      <p className="text-gray-600 mb-8">{profile.email}</p>
+    <div className="space-y-6 pb-24 md:pb-0">
+      {/* Profile Header */}
+      <div className="text-center mb-8">
+        <div className="w-24 h-24 bg-[#58CC02] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_4px_0_#46A301]">
+          <span className="text-4xl font-black text-white">
+            {profile.firstName[0]}
+            {profile.lastName[0]}
+          </span>
+        </div>
+        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-1">
+          {profile.firstName} {profile.lastName}
+        </h1>
+        <p className="text-neutral-600 font-semibold">{profile.email}</p>
+      </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-lg shadow-md text-center">
-          <p className="text-2xl font-bold text-blue-600">{profile.xp}</p>
-          <p className="text-sm text-gray-600">Total XP</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="duo-card p-5 text-center">
+          <div className="w-10 h-10 bg-[#FFC800]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+            <Star className="w-6 h-6 text-[#FFC800]" fill="#FFC800" />
+          </div>
+          <p className="text-3xl font-black text-neutral-900 mb-1">
+            {profile.xp}
+          </p>
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+            XP
+          </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md text-center">
-          <p className="text-2xl font-bold text-orange-500">{profile.currentStreak}</p>
-          <p className="text-sm text-gray-600">Day Streak</p>
+        <div className="duo-card p-5 text-center">
+          <div className="w-10 h-10 bg-[#FF9600]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+            <Flame className="w-6 h-6 text-[#FF9600]" fill="#FF9600" />
+          </div>
+          <p className="text-3xl font-black text-neutral-900 mb-1">
+            {profile.currentStreak}
+          </p>
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+            Current Streak
+          </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md text-center">
-          <p className="text-2xl font-bold text-purple-600">{profile.maxStreak}</p>
-          <p className="text-sm text-gray-600">Best Streak</p>
+        <div className="duo-card p-5 text-center">
+          <div className="w-10 h-10 bg-[#1CB0F6]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+            <Trophy className="w-6 h-6 text-[#1CB0F6]" fill="#1CB0F6" />
+          </div>
+          <p className="text-3xl font-black text-neutral-900 mb-1">
+            {profile.maxStreak}
+          </p>
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+            Best Streak
+          </p>
         </div>
       </div>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Badges</h2>
+      {/* Badges */}
+      <div className="duo-card mb-6">
+        <h2 className="font-black text-lg text-neutral-900 mb-4 flex items-center gap-2">
+          <Award className="w-6 h-6 text-[#FFC800]" fill="#FFC800" />
+          Badges
+        </h2>
         {profile.badges.length === 0 ? (
-          <p className="text-gray-500">No badges yet. Complete lessons and quizzes to earn them!</p>
+          <p className="text-neutral-600 font-semibold text-sm">
+            No badges yet — keep learning!
+          </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {profile.badges.map((badge) => (
-              <div key={badge.id} className="bg-white p-4 rounded-lg shadow-md border-l-4 border-yellow-400">
-                <p className="font-semibold text-gray-900">{badge.name}</p>
-                <p className="text-sm text-gray-600">{badge.description}</p>
+              <div
+                key={badge.id}
+                className="bg-neutral-50 p-4 rounded-xl border border-[#e5e5e5]"
+              >
+                <p className="font-black text-neutral-900 mb-1">
+                  {badge.name}
+                </p>
+                <p className="text-xs font-semibold text-neutral-600">
+                  {badge.description}
+                </p>
               </div>
             ))}
           </div>
         )}
-      </section>
+      </div>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Certificates</h2>
+      {/* Certificates */}
+      <div className="duo-card mb-6">
+        <h2 className="font-black text-lg text-neutral-900 mb-4 flex items-center gap-2">
+          <Trophy className="w-6 h-6 text-[#58CC02]" fill="#58CC02" />
+          Certificates
+        </h2>
         {!certificates || certificates.length === 0 ? (
-          <p className="text-gray-500">Complete a course to earn a certificate.</p>
+          <p className="text-neutral-600 font-semibold text-sm">
+            Complete a course to earn a certificate
+          </p>
         ) : (
           <div className="space-y-3">
             {certificates.map((cert) => (
               <div
                 key={cert.id}
-                className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200"
+                className="bg-[#1CB0F6]/5 border border-[#1CB0F6]/20 p-4 rounded-xl"
               >
-                <Link
-                  to={`/certificates/${cert.certificateCode}`}
-                  className="block hover:opacity-90"
-                >
-                  <p className="font-medium text-gray-900">🎓 {cert.courseTitle}</p>
-                  <p className="text-sm text-gray-600">
-                    Issued {new Date(cert.issuedAt).toLocaleDateString()} · Code: {cert.certificateCode}
-                  </p>
-                </Link>
-                <a
-                  href={getCertificatePdfUrl(cert.certificateCode)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-2 text-sm text-blue-600 hover:underline"
-                >
-                  Download PDF
-                </a>
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="font-black text-neutral-900">
+                      {cert.courseTitle}
+                    </p>
+                    <p className="text-xs font-semibold text-neutral-600">
+                      Issued {new Date(cert.issuedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    to={`/certificates/${cert.certificateCode}`}
+                    className="duo-btn duo-btn-secondary text-xs py-2 px-4"
+                  >
+                    View
+                  </Link>
+                  <a
+                    href={getCertificatePdfUrl(cert.certificateCode)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="duo-btn duo-btn-primary text-xs py-2 px-4"
+                  >
+                    Download PDF
+                  </a>
+                </div>
               </div>
             ))}
           </div>
         )}
-      </section>
+      </div>
 
-      <section>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">My Courses</h2>
+      {/* My Courses */}
+      <div>
+        <h2 className="font-black text-lg text-neutral-900 mb-4 flex items-center gap-2">
+          <BookOpen className="w-6 h-6 text-[#58CC02]" fill="#58CC02" />
+          My Courses
+        </h2>
         {profile.enrollments.length === 0 ? (
-          <p className="text-gray-500">
-            Not enrolled in any courses yet.{" "}
-            <Link to="/courses" className="text-blue-600 hover:underline">Browse courses</Link>
-          </p>
+          <div className="duo-card text-center py-8">
+            <p className="text-neutral-600 font-semibold text-sm mb-4">
+              Not enrolled in any courses yet
+            </p>
+            <Link to="/courses" className="duo-btn duo-btn-primary">
+              Browse Courses
+            </Link>
+          </div>
         ) : (
           <div className="space-y-3">
             {profile.enrollments.map((e) => (
               <Link
                 key={e.courseId}
                 to={`/courses/${e.courseId}`}
-                className="block bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                className="duo-card hover:border-[#58CC02] hover:translate-y-[-2px] transition-all"
               >
-                <div className="flex justify-between items-center mb-2">
-                  <p className="font-medium text-gray-900">{e.courseTitle}</p>
-                  <span className="text-sm text-gray-600">{e.completionPercentage}%</span>
+                <div className="flex justify-between items-center mb-3">
+                  <p className="font-black text-neutral-900">{e.courseTitle}</p>
+                  <span className="text-lg font-black text-[#58CC02]">
+                    {e.completionPercentage}%
+                  </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-neutral-100 rounded-full h-3">
                   <div
-                    className="bg-blue-600 h-2 rounded-full transition-all"
+                    className="bg-[#58CC02] h-3 rounded-full transition-all"
                     style={{ width: `${e.completionPercentage}%` }}
                   />
                 </div>
@@ -137,7 +226,7 @@ export default function Profile() {
             ))}
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }

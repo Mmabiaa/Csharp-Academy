@@ -1,237 +1,169 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCourses, fetchChallenges, fetchLeaderboard, type Course, type Challenge, type LeaderboardEntry } from "../../lib/api";
+import { fetchCourses } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import {
+  ArrowRight,
   BookOpen,
   Trophy,
-  TrendingUp,
-  Users,
-  ArrowRight,
+  Flame,
+  Calendar,
+  Clock,
 } from "lucide-react";
 
 export default function Home() {
-  const { isAuthenticated, user } = useAuth();
-  const { data: courses, isLoading: coursesLoading } = useQuery<Course[], Error>({
+  const { isAuthenticated } = useAuth();
+  const { data: courses, isLoading } = useQuery({
     queryKey: ["courses"],
-    queryFn: () => fetchCourses(),
-  });
-  const { data: challenges, isLoading: challengesLoading } = useQuery<Challenge[], Error>({
-    queryKey: ["challenges"],
-    queryFn: () => fetchChallenges(),
-  });
-  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardEntry[], Error>({
-    queryKey: ["leaderboard"],
-    queryFn: () => fetchLeaderboard(),
+    queryFn: fetchCourses,
   });
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-  };
-
-  const stats = [
-    {
-      label: "Available Courses",
-      value: courses?.length || "—",
-      icon: BookOpen,
-      href: "/courses",
-    },
-    {
-      label: "Coding Challenges",
-      value: challenges?.length || "—",
-      icon: Trophy,
-      href: "/challenges",
-    },
-    {
-      label: "Active Students",
-      value: "—",
-      icon: Users,
-      href: "/leaderboard",
-    },
-    {
-      label: "XP Earned",
-      value: user?.xp || 0,
-      icon: TrendingUp,
-      href: "/progress",
-      authOnly: true,
-    },
-  ];
+  const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
+  const todayIndex = new Date().getDay();
 
   return (
-    <div className="space-y-12">
-      {/* Header */}
-      <div className="flex flex-col gap-4">
-        <div className="text-xs uppercase tracking-widest text-gray-500 font-semibold">
-          Dashboard
-        </div>
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-5xl font-serif font-bold tracking-tight text-black">
-            {getGreeting()},{" "}
-            {isAuthenticated ? user?.firstName || "Learner" : "Learner"}.
+    <div className="space-y-8 pb-24 md:pb-0">
+      {/* Top Section */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-1">
+            {isAuthenticated ? "Let's keep learning!" : "Welcome!"}
           </h1>
-          <span className="text-4xl font-serif italic text-gray-600">
-            Welcome.
-          </span>
+          <p className="text-neutral-600 font-semibold">
+            {isAuthenticated
+              ? "Continue your journey today"
+              : "Start learning C# today"}
+          </p>
         </div>
-        <p className="text-gray-600 text-lg max-w-2xl">
-          Start learning C# today. Build practical projects, practice coding
-          challenges, and track your progress.
-        </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats
-          .filter((s) => !s.authOnly || isAuthenticated)
-          .map((stat: {
-            label: string;
-            value: number | string;
-            icon: React.ComponentType<{ className?: string }>;
-            href: string;
-            authOnly?: boolean;
-          }, index: number) => {
-            const Icon = stat.icon;
-            return (
-              <Link
-                key={index}
-                to={stat.href}
-                className="card card-hover group"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 group-hover:text-black transition-all" />
-                </div>
-                <div className="mt-6">
-                  <div className="text-4xl font-serif font-bold text-black">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-gray-500 uppercase tracking-wider mt-1">
-                    {stat.label}
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Featured Courses */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-serif font-semibold">
-              Featured Courses
+      {/* Streak Section */}
+      <div className="duo-card mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <Flame className="w-8 h-8 text-[#FF9600]" fill="#FF9600" />
+          <div>
+            <h2 className="font-black text-xl text-neutral-900">
+              5 Day Streak
             </h2>
-            <Link
-              to="/courses"
-              className="text-sm font-medium text-gray-600 hover:text-black flex items-center gap-2"
-            >
-              Browse all <ArrowRight className="w-4 h-4" />
-            </Link>
+            <p className="text-sm font-semibold text-neutral-600">
+              Keep it up!
+            </p>
           </div>
+        </div>
+        <div className="flex items-center justify-between gap-1">
+          {weekDays.map((day, index) => (
+            <div
+              key={index}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold transition-all ${
+                index < todayIndex
+                  ? "bg-[#58CC02] text-white"
+                  : index === todayIndex
+                  ? "bg-[#1CB0F6] text-white animate-pulse"
+                  : "bg-neutral-100 text-neutral-400"
+              }`}
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {coursesLoading ? (
-              [1, 2].map((i: number) => (
-                <div key={i} className="card animate-pulse">
-                  <div className="h-32 bg-gray-100 rounded mb-4" />
-                  <div className="h-5 bg-gray-100 rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-gray-100 rounded w-full mb-1" />
-                  <div className="h-4 bg-gray-100 rounded w-2/3" />
-                </div>
-              ))
-            ) : courses?.slice(0, 4).map((course: Course) => (
+      {/* Continue Learning */}
+      {courses && courses.length > 0 && (
+        <Link
+          to={`/courses/${courses[0].id}`}
+          className="duo-card mb-8 hover:translate-y-[-2px] transition-all block"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-[#58CC02] rounded-xl flex items-center justify-center">
+                <BookOpen className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h3 className="font-black text-lg text-neutral-900">
+                  {courses[0].title}
+                </h3>
+                <p className="text-sm font-semibold text-neutral-600">
+                  {courses[0].description}
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-neutral-400" />
+          </div>
+        </Link>
+      )}
+
+      {/* All Courses */}
+      <div>
+        <h2 className="font-black text-lg text-neutral-900 mb-4">
+          All Courses
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="duo-card animate-pulse"
+              >
+                <div className="h-9 w-1/2 bg-neutral-200 rounded-lg mb-3" />
+                <div className="h-5 w-full bg-neutral-200 rounded mb-2" />
+                <div className="h-5 w-2/3 bg-neutral-200 rounded" />
+              </div>
+            ))
+          ) : (
+            courses?.map((course) => (
               <Link
                 key={course.id}
                 to={`/courses/${course.id}`}
-                className="card card-hover"
+                className="duo-card hover:border-[#58CC02] hover:translate-y-[-2px] transition-all"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="inline-block px-3 py-1 text-xs font-medium uppercase tracking-wider border border-gray-200 rounded-full text-gray-600">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="px-3 py-1 bg-neutral-100 rounded-lg text-xs font-bold text-neutral-700">
                     {course.level}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-xs font-bold text-neutral-600 flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
                     {course.estimatedHours}h
                   </span>
                 </div>
-                <h3 className="text-xl font-serif font-semibold mb-2">
+                <h3 className="text-lg font-black text-neutral-900 mb-1">
                   {course.title}
                 </h3>
-                <p className="text-gray-600 text-sm line-clamp-2">
+                <p className="text-sm font-semibold text-neutral-600">
                   {course.description}
                 </p>
               </Link>
-            ))}
-          </div>
+            ))
+          )}
         </div>
+      </div>
 
-        {/* Leaderboard */}
-        <div className="space-y-6">
+      {/* Challenges Section */}
+      <div>
+        <h2 className="font-black text-lg text-neutral-900 mb-4">
+          Coding Challenges
+        </h2>
+        <Link
+          to="/challenges"
+          className="duo-card bg-[#FFC800]/10 border-[#FFC800]/30 hover:border-[#FFC800]/50 hover:translate-y-[-2px] transition-all"
+        >
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-serif font-semibold">Leaderboard</h2>
-            <Link
-              to="/leaderboard"
-              className="text-sm font-medium text-gray-600 hover:text-black flex items-center gap-2"
-            >
-              See all <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="card">
-            {leaderboardLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i: number) => (
-                  <div key={i} className="flex items-center gap-4 animate-pulse">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-100 rounded w-1/2 mb-1" />
-                      <div className="h-3 bg-gray-100 rounded w-1/4" />
-                    </div>
-                    <div className="w-16 h-4 bg-gray-100 rounded" />
-                  </div>
-                ))}
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-[#FFC800] rounded-xl flex items-center justify-center">
+                <Trophy className="w-7 h-7 text-white" />
               </div>
-            ) : (
-              <div className="space-y-4">
-                {leaderboard?.slice(0, 5).map((entry: LeaderboardEntry, index: number) => (
-                  <div
-                    key={entry.userId}
-                    className="flex items-center justify-between py-2"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                          index === 0
-                            ? "bg-black text-white"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {index + 1}
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium">
-                          {entry.displayName}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {entry.xp} XP
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {(!leaderboard || leaderboard.length === 0) && (
-                  <p className="text-gray-500 text-sm text-center py-8">
-                    No leaderboard data yet.
-                  </p>
-                )}
+              <div>
+                <h3 className="font-black text-lg text-neutral-900">
+                  Test your skills
+                </h3>
+                <p className="text-sm font-semibold text-neutral-700">
+                  Solve problems and earn XP!
+                </p>
               </div>
-            )}
+            </div>
+            <ArrowRight className="w-5 h-5 text-[#FFC800]" />
           </div>
-        </div>
+        </Link>
       </div>
     </div>
   );

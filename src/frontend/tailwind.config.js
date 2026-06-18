@@ -7,30 +7,47 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['Nunito', 'sans-serif'],
         serif: ['Georgia', 'Cambria', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
-        'black': '#000000',
-        'white': '#FFFFFF',
-        'gray': {
-          50: '#F9F9F9',
-          100: '#F0F0F0',
-          200: '#E5E5E5',
-          300: '#D4D4D4',
-          400: '#A3A3A3',
-          500: '#737373',
-          600: '#525252',
-          700: '#404040',
-          800: '#262626',
-          900: '#171717',
-          950: '#0A0A0A',
+        primary: {
+          DEFAULT: '#58CC02',
+          dark: '#46A301',
         },
+        secondary: {
+          DEFAULT: '#1CB0F6',
+          dark: '#0A8CCF',
+        },
+        accent: {
+          DEFAULT: '#FF9600',
+        },
+        danger: {
+          DEFAULT: '#FF4B4B',
+        },
+        warning: {
+          DEFAULT: '#FFC800',
+        },
+        neutral: {
+          50: '#F7F7F7',
+          100: '#E5E5E5',
+          200: '#D4D4D4',
+          300: '#B4B4B4',
+          400: '#999999',
+          500: '#787878',
+          600: '#5E5E5E',
+          700: '#4A4A4A',
+          800: '#2F2F2F',
+          900: '#1A1A1A',
+        },
+        white: '#FFFFFF',
+        black: '#000000',
       },
       boxShadow: {
-        'soft': '0 1px 3px rgba(0, 0, 0, 0.05)',
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+        'duo-bottom': '0 4px 0 #00000015',
+        'duo-button': '0 4px 0',
+        'duo-button-pressed': '0 2px 0',
       },
     },
   },

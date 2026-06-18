@@ -11,6 +11,7 @@ import {
   getFileUrl,
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { Download, Trash2, UploadCloud } from "lucide-react";
 
 export default function Classrooms() {
   const { token, isTeacher } = useAuth();
@@ -64,22 +65,34 @@ export default function Classrooms() {
 
   if (!token) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <p className="text-gray-600">
-          <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link> to manage classrooms.
-        </p>
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Classrooms
+          </h1>
+          <p className="text-neutral-600 font-semibold">
+            <Link to="/login" className="text-[#58CC02] font-black hover:underline">Sign in</Link> to manage classrooms.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Classrooms</h1>
+    <div className="space-y-6 pb-24 md:pb-0">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Classrooms
+          </h1>
+          <p className="text-neutral-600 font-semibold">
+            Join or create study groups
+          </p>
+        </div>
         {isTeacher && (
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium"
+            className="duo-btn duo-btn-primary"
           >
             {showCreate ? "Cancel" : "Create Classroom"}
           </button>
@@ -92,32 +105,40 @@ export default function Classrooms() {
             e.preventDefault();
             createMutation.mutate();
           }}
-          className="bg-white p-6 rounded-lg shadow-md mb-8 space-y-4"
+          className="duo-card space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-black text-neutral-700 mb-1">
+              Name
+            </label>
             <input
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              placeholder="Enter classroom name"
+              className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-black text-neutral-700 mb-1">
+              Description
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              placeholder="Describe your classroom"
+              className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
               rows={3}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Linked Course (optional)</label>
+            <label className="block text-sm font-black text-neutral-700 mb-1">
+              Linked Course (optional)
+            </label>
             <select
               value={courseId}
               onChange={(e) => setCourseId(e.target.value ? Number(e.target.value) : "")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
             >
               <option value="">None</option>
               {courses?.map((c) => (
@@ -128,7 +149,7 @@ export default function Classrooms() {
           <button
             type="submit"
             disabled={createMutation.isPending}
-            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+            className="duo-btn duo-btn-primary"
           >
             {createMutation.isPending ? "Creating..." : "Create"}
           </button>
@@ -141,57 +162,85 @@ export default function Classrooms() {
             e.preventDefault();
             joinMutation.mutate();
           }}
-          className="bg-white p-6 rounded-lg shadow-md mb-8 flex gap-2"
+          className="duo-card flex flex-wrap gap-3 items-end"
         >
-          <input
-            required
-            value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-            placeholder="Enter join code"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md font-mono uppercase"
-          />
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-black text-neutral-700 mb-1">
+              Join Code
+            </label>
+            <input
+              required
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              placeholder="Enter join code"
+              className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-mono font-black text-neutral-800 uppercase focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
+            />
+          </div>
           <button
             type="submit"
             disabled={joinMutation.isPending}
-            className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50"
+            className="duo-btn bg-purple-600 shadow-[0_4px_0_#4C1D95]"
           >
-            Join
+            {joinMutation.isPending ? "Joining..." : "Join"}
           </button>
         </form>
       )}
 
       {message && (
-        <p className={`mb-4 text-sm ${message.includes("success") || message.includes("created") ? "text-green-600" : "text-red-600"}`}>
-          {message}
-        </p>
+        <div className={`duo-card border-2 ${
+          message.includes("success") || message.includes("created") 
+            ? "bg-[#58CC02]/10 border-[#58CC02]/30" 
+            : "bg-[#FF4B4B]/10 border-[#FF4B4B]/30"
+        }`}>
+          <p className={`text-sm font-black ${
+            message.includes("success") || message.includes("created") 
+              ? "text-[#58CC02]" 
+              : "text-[#FF4B4B]"
+          }`}>
+            {message}
+          </p>
+        </div>
       )}
 
       {isLoading ? (
-        <p>Loading classrooms...</p>
+        <div className="space-y-4">
+          <div className="duo-card animate-pulse">
+            <div className="h-40" />
+          </div>
+          <div className="duo-card animate-pulse">
+            <div className="h-40" />
+          </div>
+        </div>
       ) : !classrooms?.length ? (
-        <p className="text-gray-500">
-          {isTeacher ? "No classrooms yet. Create one to get started." : "You haven't joined any classrooms yet."}
-        </p>
+        <div className="duo-card text-center py-8">
+          <p className="text-neutral-600 font-semibold">
+            {isTeacher ? "No classrooms yet. Create one to get started." : "You haven't joined any classrooms yet."}
+          </p>
+        </div>
       ) : (
         <div className="space-y-4">
           {classrooms.map((c) => (
-            <div key={c.id} className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex justify-between items-start mb-2">
-                <h2 className="text-xl font-semibold text-gray-900">{c.name}</h2>
+            <div key={c.id} className="duo-card">
+              <div className="flex flex-wrap justify-between items-start gap-3 mb-2">
+                <h2 className="text-xl font-black text-neutral-900">{c.name}</h2>
                 {isTeacher && (
-                  <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">Code: {c.joinCode}</span>
+                  <span className="text-sm font-mono font-black bg-neutral-100 text-neutral-800 px-3 py-1 rounded-xl">
+                    Code: {c.joinCode}
+                  </span>
                 )}
               </div>
-              <p className="text-gray-600 mb-2">{c.description || "No description"}</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-neutral-600 font-semibold mb-2">
+                {c.description || "No description"}
+              </p>
+              <p className="text-xs font-bold text-neutral-500">
                 Teacher: {c.teacherName}
                 {c.courseTitle && ` · Course: ${c.courseTitle}`}
                 · {c.memberCount} member{c.memberCount !== 1 ? "s" : ""}
               </p>
               {c.members.length > 0 && isTeacher && (
-                <ul className="mt-4 border-t pt-3 space-y-1">
+                <ul className="mt-4 border-t border-[#e5e5e5] pt-3 space-y-1">
                   {c.members.map((m) => (
-                    <li key={m.userId} className="text-sm text-gray-700">
+                    <li key={m.userId} className="text-sm font-semibold text-neutral-700">
                       {m.name} ({m.email})
                     </li>
                   ))}
@@ -199,9 +248,9 @@ export default function Classrooms() {
               )}
 
               {/* Classroom Files Section */}
-              <div className="mt-6 border-t pt-4">
+              <div className="mt-6 border-t border-[#e5e5e5] pt-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <h3 className="font-black text-neutral-900 flex items-center gap-2">
                     Classroom Files
                   </h3>
                   {isTeacher && (
@@ -224,8 +273,9 @@ export default function Classrooms() {
                       />
                       <label
                         htmlFor={`file-upload-${c.id}`}
-                        className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm font-medium border border-gray-300"
+                        className="cursor-pointer duo-btn bg-neutral-200 text-neutral-800 shadow-[0_4px_0_#9CA3AF] flex items-center gap-2"
                       >
+                        <UploadCloud className="w-4 h-4" />
                         Upload File
                       </label>
                     </div>
@@ -237,17 +287,17 @@ export default function Classrooms() {
                     {c.attachments.map((file) => (
                       <div
                         key={file.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 group"
+                        className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl border border-[#e5e5e5]"
                       >
                         <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="p-2 bg-white rounded border border-gray-200 text-gray-400">
+                          <div className="p-2 bg-white rounded-xl border border-[#e5e5e5] text-neutral-500 font-black text-xs">
                             {file.fileType.toUpperCase()}
                           </div>
                           <div className="overflow-hidden">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-black text-neutral-900 truncate">
                               {file.fileName}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs font-bold text-neutral-500">
                               {(file.fileSize / 1024 / 1024).toFixed(2)} MB
                             </p>
                           </div>
@@ -257,12 +307,10 @@ export default function Classrooms() {
                             href={getFileUrl(file.fileUrl)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                            className="p-2 text-neutral-500 hover:text-[#1CB0F6] transition-colors"
                             title="Download"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
+                            <Download className="w-5 h-5" />
                           </a>
                           {isTeacher && (
                             <button
@@ -276,12 +324,10 @@ export default function Classrooms() {
                                   }
                                 }
                               }}
-                              className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                              className="p-2 text-neutral-500 hover:text-[#FF4B4B] transition-colors"
                               title="Delete"
                             >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
+                              <Trash2 className="w-5 h-5" />
                             </button>
                           )}
                         </div>
@@ -289,7 +335,9 @@ export default function Classrooms() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">No files shared yet.</p>
+                  <p className="text-sm font-semibold text-neutral-500 italic">
+                    No files shared yet.
+                  </p>
                 )}
               </div>
             </div>

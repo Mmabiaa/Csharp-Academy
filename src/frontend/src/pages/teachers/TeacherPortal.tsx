@@ -10,6 +10,7 @@ import {
   getFileUrl,
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { GraduationCap, FileText, CheckCircle2, Send } from "lucide-react";
 
 export default function TeacherPortal() {
   const { token, isTeacher } = useAuth();
@@ -77,89 +78,143 @@ export default function TeacherPortal() {
 
   if (!token) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-12 text-slate-400">
-        <Link to="/login" className="text-indigo-400 hover:underline">Sign in</Link> as a teacher.
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Teacher Portal
+          </h1>
+          <p className="text-neutral-600 font-semibold">
+            <Link to="/login" className="text-[#58CC02] font-black hover:underline">Sign in</Link> as a teacher.
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!isTeacher) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-12 text-slate-400">
-        Teacher access required. Demo: teacher@academy.com / Teacher123!
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Teacher Portal
+          </h1>
+          <div className="duo-card bg-[#FF4B4B]/10 border-[#FF4B4B]/30">
+            <p className="text-[#FF4B4B] font-black">
+              Teacher access required. Demo: teacher@academy.com / Teacher123!
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
+  const stats = [
+    { label: "Classrooms", value: dashboard?.classroomCount ?? 0, icon: GraduationCap, color: "text-[#1CB0F6]" },
+    { label: "Assignments", value: dashboard?.assignmentCount ?? 0, icon: FileText, color: "text-[#58CC02]" },
+    { label: "Pending Grading", value: dashboard?.pendingGrading ?? 0, icon: CheckCircle2, color: "text-[#FFC800]" },
+  ];
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+    <div className="space-y-6 pb-24 md:pb-0">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Teacher Portal</h1>
-          <p className="text-slate-400 mt-1">Manage assignments and grade student work</p>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Teacher Portal
+          </h1>
+          <p className="text-neutral-600 font-semibold">
+            Manage assignments and grade student work
+          </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm font-medium"
+          className="duo-btn duo-btn-primary"
         >
           {showForm ? "Cancel" : "+ New Assignment"}
         </button>
       </div>
 
       {dashboard && (
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          {[
-            { label: "Classrooms", value: dashboard.classroomCount },
-            { label: "Assignments", value: dashboard.assignmentCount },
-            { label: "Pending Grading", value: dashboard.pendingGrading },
-          ].map((s) => (
-            <div key={s.label} className="rounded-xl bg-slate-900 border border-slate-800 p-5 text-center">
-              <p className="text-3xl font-bold text-indigo-400">{s.value}</p>
-              <p className="text-sm text-slate-400">{s.label}</p>
+        <div className="grid grid-cols-3 gap-4">
+          {stats.map((s) => (
+            <div key={s.label} className="duo-card p-5 text-center">
+              <div className="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <s.icon className={`w-6 h-6 ${s.color}`} />
+              </div>
+              <p className="text-3xl font-black text-neutral-900 mb-1">{s.value}</p>
+              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">{s.label}</p>
             </div>
           ))}
         </div>
       )}
 
       {showForm && (
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 mb-8 space-y-3">
-          <h2 className="font-semibold">Create Assignment</h2>
+        <div className="duo-card space-y-4">
+          <h2 className="font-black text-lg text-neutral-900">Create Assignment</h2>
           {(["title", "description", "instructions"] as const).map((field) => (
-            <input
-              key={field}
-              value={form[field]}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-              className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700"
-            />
-          ))}
-          <div className="flex flex-wrap gap-3">
-            <input
-              type="number"
-              value={form.courseId}
-              onChange={(e) => setForm({ ...form, courseId: Number(e.target.value) })}
-              className="w-24 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700"
-              placeholder="Course ID"
-            />
-            <input
-              type="date"
-              value={form.dueDate}
-              onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-              className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700"
-            />
-            <label className="flex items-center gap-2 text-sm text-slate-300">
+            <div key={field}>
+              <label className="block text-sm font-black text-neutral-700 mb-1">
+                {field.charAt(0).toUpperCase() + field.slice(1)}
+              </label>
               <input
-                type="checkbox"
-                checked={form.requiresCode}
-                onChange={(e) => setForm({ ...form, requiresCode: e.target.checked })}
+                value={form[field]}
+                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
               />
+            </div>
+          ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm font-black text-neutral-700 mb-1">
+                Course ID
+              </label>
+              <input
+                type="number"
+                value={form.courseId}
+                onChange={(e) => setForm({ ...form, courseId: Number(e.target.value) })}
+                className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
+                placeholder="Course ID"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-black text-neutral-700 mb-1">
+                Due Date
+              </label>
+              <input
+                type="date"
+                value={form.dueDate}
+                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-black text-neutral-700 mb-1">
+                Max Points
+              </label>
+              <input
+                type="number"
+                value={form.maxPoints}
+                onChange={(e) => setForm({ ...form, maxPoints: Number(e.target.value) })}
+                className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="requiresCode"
+              checked={form.requiresCode}
+              onChange={(e) => setForm({ ...form, requiresCode: e.target.checked })}
+              className="w-5 h-5 text-[#58CC02]"
+            />
+            <label htmlFor="requiresCode" className="text-sm font-bold text-neutral-700">
               Requires code
             </label>
           </div>
           <button
             onClick={() => createMutation.mutate()}
             disabled={!form.title || createMutation.isPending}
-            className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50"
+            className="duo-btn duo-btn-primary"
           >
             Create
           </button>
@@ -167,18 +222,20 @@ export default function TeacherPortal() {
       )}
 
       <div className="grid lg:grid-cols-2 gap-6">
-        <div className="rounded-xl bg-slate-900 border border-slate-800">
-          <div className="px-5 py-4 border-b border-slate-800 font-semibold">Your Assignments</div>
-          <ul className="divide-y divide-slate-800">
+        <div className="duo-card overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#e5e5e5] font-black text-neutral-900">
+            Your Assignments
+          </div>
+          <ul className="divide-y divide-[#e5e5e5]">
             {(assignments ?? []).map((a) => (
               <li key={a.id}>
                 <button
                   onClick={() => setSelectedAssignment(a.id)}
-                  className={`w-full text-left px-5 py-4 hover:bg-slate-800/50 ${selectedAssignment === a.id ? "bg-indigo-900/30" : ""
+                  className={`w-full text-left px-5 py-4 hover:bg-neutral-50 transition-colors ${selectedAssignment === a.id ? "bg-[#E6F7FF]" : ""
                     }`}
                 >
-                  <p className="font-medium">{a.title}</p>
-                  <p className="text-sm text-slate-400">
+                  <p className="font-black text-neutral-900">{a.title}</p>
+                  <p className="text-xs font-bold text-neutral-500">
                     {a.submissionCount} submissions · {a.maxPoints} pts
                     {a.dueDate && ` · Due ${new Date(a.dueDate).toLocaleDateString()}`}
                   </p>
@@ -186,26 +243,40 @@ export default function TeacherPortal() {
               </li>
             ))}
             {!assignments?.length && (
-              <li className="px-5 py-8 text-slate-500 text-sm text-center">No assignments yet.</li>
+              <li className="px-5 py-8 text-neutral-500 text-sm text-center font-semibold">
+                No assignments yet.
+              </li>
             )}
           </ul>
         </div>
 
-        <div className="rounded-xl bg-slate-900 border border-slate-800">
-          <div className="px-5 py-4 border-b border-slate-800 font-semibold">Submissions</div>
+        <div className="duo-card overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#e5e5e5] font-black text-neutral-900">
+            Submissions
+          </div>
           {!selectedAssignment ? (
-            <p className="px-5 py-8 text-slate-500 text-sm text-center">Select an assignment to view submissions.</p>
+            <p className="px-5 py-8 text-neutral-500 text-sm text-center font-semibold">
+              Select an assignment to view submissions.
+            </p>
           ) : (
-            <ul className="divide-y divide-slate-800 max-h-96 overflow-y-auto">
+            <ul className="divide-y divide-[#e5e5e5] max-h-96 overflow-y-auto">
               {(submissions ?? []).map((s) => (
                 <li key={s.id} className="px-5 py-4">
                   <div className="flex justify-between items-start gap-2">
-                    <div>
-                      <p className="font-medium">{s.studentName || `User #${s.userId}`}</p>
-                      <p className="text-xs text-slate-500">{new Date(s.submittedAt).toLocaleString()}</p>
-                      <pre className="mt-2 text-xs bg-slate-800 p-2 rounded overflow-x-auto max-h-24">{s.content}</pre>
+                    <div className="flex-1">
+                      <p className="font-black text-neutral-900">
+                        {s.studentName || `User #${s.userId}`}
+                      </p>
+                      <p className="text-xs font-bold text-neutral-500">
+                        {new Date(s.submittedAt).toLocaleString()}
+                      </p>
+                      <pre className="mt-3 text-xs font-mono bg-neutral-100 p-3 rounded-xl overflow-x-auto max-h-24">
+                        {s.content}
+                      </pre>
                       {s.grade !== null && (
-                        <p className="mt-2 text-sm text-emerald-400">Grade: {s.grade} — {s.feedback}</p>
+                        <p className="mt-3 text-sm font-black text-[#58CC02]">
+                          Grade: {s.grade} — {s.feedback}
+                        </p>
                       )}
 
                       {s.attachments?.length > 0 && (
@@ -216,7 +287,7 @@ export default function TeacherPortal() {
                               href={getFileUrl(file.fileUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs px-2 py-1 rounded bg-slate-800 border border-slate-700 hover:border-indigo-500 text-slate-300 transition-colors truncate max-w-[150px]"
+                              className="text-xs font-black px-3 py-1.5 rounded-xl bg-neutral-100 border border-[#e5e5e5] hover:border-[#58CC02] text-neutral-800 transition-colors truncate max-w-[150px]"
                               title={file.fileName}
                             >
                               📎 {file.fileName}
@@ -228,7 +299,7 @@ export default function TeacherPortal() {
                     {s.status === "Submitted" && (
                       <button
                         onClick={() => setGradingId(s.id)}
-                        className="shrink-0 px-3 py-1 text-xs rounded bg-amber-600 hover:bg-amber-500"
+                        className="shrink-0 px-3 py-1.5 text-xs font-black rounded-xl bg-[#FFC800] text-neutral-900"
                       >
                         Grade
                       </button>
@@ -237,7 +308,9 @@ export default function TeacherPortal() {
                 </li>
               ))}
               {!submissions?.length && (
-                <li className="px-5 py-8 text-slate-500 text-sm text-center">No submissions yet.</li>
+                <li className="px-5 py-8 text-neutral-500 text-sm text-center font-semibold">
+                  No submissions yet.
+                </li>
               )}
             </ul>
           )}
@@ -246,31 +319,45 @@ export default function TeacherPortal() {
 
       {gradingId && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-md space-y-4">
-            <h3 className="font-semibold">Grade Submission</h3>
-            <input
-              type="number"
-              value={grade}
-              onChange={(e) => setGrade(Number(e.target.value))}
-              className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700"
-              placeholder="Grade"
-            />
-            <textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              rows={3}
-              className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700"
-              placeholder="Feedback"
-            />
+          <div className="duo-card w-full max-w-md space-y-4">
+            <h3 className="font-black text-lg text-neutral-900">Grade Submission</h3>
+            <div>
+              <label className="block text-sm font-black text-neutral-700 mb-1">
+                Grade
+              </label>
+              <input
+                type="number"
+                value={grade}
+                onChange={(e) => setGrade(Number(e.target.value))}
+                className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
+                placeholder="Grade"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-black text-neutral-700 mb-1">
+                Feedback
+              </label>
+              <textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                rows={3}
+                className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
+                placeholder="Feedback"
+              />
+            </div>
             <div className="flex gap-3">
               <button
                 onClick={() => gradeMutation.mutate()}
                 disabled={gradeMutation.isPending}
-                className="flex-1 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500"
+                className="flex-1 duo-btn duo-btn-primary"
               >
+                <Send className="w-4 h-4 mr-2" />
                 Submit Grade
               </button>
-              <button onClick={() => setGradingId(null)} className="px-4 py-2 rounded-lg border border-slate-700">
+              <button
+                onClick={() => setGradingId(null)}
+                className="px-4 py-3 rounded-xl border border-[#e5e5e5] font-black text-neutral-700"
+              >
                 Cancel
               </button>
             </div>
@@ -278,7 +365,11 @@ export default function TeacherPortal() {
         </div>
       )}
 
-      {message && <p className="mt-4 text-sm text-emerald-400">{message}</p>}
+      {message && (
+        <div className="duo-card bg-[#58CC02]/10 border-[#58CC02]/30">
+          <p className="text-[#58CC02] font-black">{message}</p>
+        </div>
+      )}
     </div>
   );
 }

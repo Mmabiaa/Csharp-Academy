@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { fetchMyAssignments, submitAssignment, uploadAttachment, getFileUrl, deleteAttachment } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import CodeEditor from "../../components/CodeEditor";
+import { FileText, CheckCircle2, AlertCircle, UploadCloud, Trash2, Download } from "lucide-react";
 
 export default function Assignments() {
   const { user, token, isAuthenticated } = useAuth();
@@ -31,18 +32,49 @@ export default function Assignments() {
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-slate-400">
-        <Link to="/login" className="text-indigo-400 hover:underline">Sign in</Link> to view assignments.
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+            Assignments
+          </h1>
+          <p className="text-neutral-600 font-semibold">
+            <Link to="/login" className="text-[#58CC02] font-black hover:underline">Sign in</Link> to view assignments.
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (isLoading) return <div className="max-w-4xl mx-auto px-4 py-12 text-slate-400">Loading assignments...</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pb-24 md:pb-0">
+        <div className="h-16 w-64 bg-neutral-200 rounded-xl" />
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <div className="duo-card animate-pulse">
+              <div className="h-32" />
+            </div>
+          </div>
+          <div className="lg:col-span-2">
+            <div className="duo-card animate-pulse">
+              <div className="h-96" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-2">Assignments</h1>
-      <p className="text-slate-400 mb-8">Submit your work and track grades from your teachers.</p>
+    <div className="space-y-6 pb-24 md:pb-0">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+          Assignments
+        </h1>
+        <p className="text-neutral-600 font-semibold">
+          Submit your work and track grades from your teachers.
+        </p>
+      </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="space-y-2">
@@ -57,56 +89,75 @@ export default function Assignments() {
                   setContent(submitted?.content ?? "");
                   setMessage("");
                 }}
-                className={`w-full text-left p-4 rounded-xl border transition-colors ${active?.id === a.id
-                  ? "border-indigo-500 bg-indigo-900/20"
-                  : "border-slate-800 bg-slate-900 hover:border-slate-700"
+                className={`w-full text-left p-4 rounded-xl border transition-all ${active?.id === a.id
+                  ? "border-[#58CC02] bg-[#58CC02]/10 translate-y-[-2px]"
+                  : "border-[#e5e5e5] bg-white hover:border-[#58CC02]/50 hover:translate-y-[-2px]"
                   }`}
               >
-                <p className="font-medium">{a.title}</p>
-                <p className="text-xs text-slate-400 mt-1">{a.courseTitle}</p>
+                <p className="font-black text-neutral-900">{a.title}</p>
+                <p className="text-xs font-bold text-neutral-500 mt-1">{a.courseTitle}</p>
                 <div className="flex gap-2 mt-2">
                   {submitted ? (
-                    <span className="text-xs px-2 py-0.5 rounded bg-emerald-900/50 text-emerald-400">
+                    <span className="text-xs font-black px-3 py-1.5 rounded-xl bg-[#58CC02]/10 text-[#58CC00] border border-[#58CC02]/30">
                       {submitted.status === "Graded" ? `Graded: ${submitted.grade}` : "Submitted"}
                     </span>
                   ) : isLate ? (
-                    <span className="text-xs px-2 py-0.5 rounded bg-red-900/50 text-red-400">Overdue</span>
+                    <span className="text-xs font-black px-3 py-1.5 rounded-xl bg-[#FF4B4B]/10 text-[#FF4B4B] border border-[#FF4B4B]/30">
+                      Overdue
+                    </span>
                   ) : (
-                    <span className="text-xs px-2 py-0.5 rounded bg-amber-900/50 text-amber-400">Pending</span>
+                    <span className="text-xs font-black px-3 py-1.5 rounded-xl bg-[#FFC800]/10 text-[#FFC800] border border-[#FFC800]/30">
+                      Pending
+                    </span>
                   )}
                 </div>
               </button>
             );
           })}
           {!assignments?.length && (
-            <p className="text-slate-500 text-sm p-4">No assignments available. Join a classroom or enroll in a course.</p>
+            <div className="duo-card text-center py-8">
+              <p className="text-neutral-600 font-semibold">
+                No assignments available. Join a classroom or enroll in a course.
+              </p>
+            </div>
           )}
         </div>
 
         {active && (
-          <div className="lg:col-span-2 rounded-xl bg-slate-900 border border-slate-800 p-6 space-y-4">
+          <div className="lg:col-span-2 duo-card space-y-4">
             <div>
-              <h2 className="text-xl font-semibold">{active.title}</h2>
-              <p className="text-slate-400 mt-1">{active.description}</p>
+              <h2 className="text-xl font-black text-neutral-900">{active.title}</h2>
+              <p className="text-neutral-600 font-semibold mt-1">{active.description}</p>
               {active.dueDate && (
-                <p className="text-sm text-slate-500 mt-2">
+                <p className="text-xs font-bold text-neutral-500 mt-2">
                   Due: {new Date(active.dueDate).toLocaleDateString()} · {active.maxPoints} points
                 </p>
               )}
             </div>
 
-            <div className="rounded-lg bg-slate-800/50 p-4">
-              <h3 className="text-sm font-medium text-slate-300 mb-2">Instructions</h3>
-              <p className="text-sm text-slate-400 whitespace-pre-wrap mb-4">{active.instructions}</p>
+            <div className="border border-[#e5e5e5] rounded-xl p-4">
+              <h3 className="text-sm font-black text-neutral-800 mb-2 flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Instructions
+              </h3>
+              <p className="text-sm font-semibold text-neutral-700 whitespace-pre-wrap mb-4">{active.instructions}</p>
 
               {active.attachments?.filter(a => a.uploadedById !== user?.userId).length > 0 && (
-                <div className="space-y-2 border-t border-slate-700 pt-3">
-                  <p className="text-xs text-slate-500 uppercase tracking-wider">Instruction Files</p>
+                <div className="space-y-2 border-t border-[#e5e5e5] pt-3">
+                  <p className="text-xs font-black text-neutral-500 uppercase tracking-wider">Instruction Files</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {active.attachments.filter(a => a.uploadedById !== user?.userId).map(file => (
-                      <div key={file.id} className="flex items-center justify-between p-2 bg-slate-800 rounded border border-slate-700">
-                        <span className="text-sm truncate max-w-[150px]">{file.fileName}</span>
-                        <a href={getFileUrl(file.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 text-xs">Download</a>
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl border border-[#e5e5e5]">
+                        <span className="text-sm font-black text-neutral-800 truncate max-w-[150px]">{file.fileName}</span>
+                        <a
+                          href={getFileUrl(file.fileUrl)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#1CB0F6] font-black text-xs flex items-center gap-1"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download
+                        </a>
                       </div>
                     ))}
                   </div>
@@ -115,25 +166,41 @@ export default function Assignments() {
             </div>
 
             {active.mySubmission?.status === "Graded" ? (
-              <div className="rounded-lg border border-emerald-800 bg-emerald-900/20 p-4">
-                <p className="text-emerald-400 font-medium">Grade: {active.mySubmission.grade} / {active.maxPoints}</p>
+              <div className="border border-[#58CC02]/30 bg-[#58CC02]/10 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle2 className="w-5 h-5 text-[#58CC02]" />
+                  <p className="font-black text-[#58CC02]">
+                    Grade: {active.mySubmission.grade} / {active.maxPoints}
+                  </p>
+                </div>
                 {active.mySubmission.feedback && (
-                  <p className="text-sm text-slate-300 mt-2">{active.mySubmission.feedback}</p>
+                  <p className="text-sm font-semibold text-neutral-700 mt-2">{active.mySubmission.feedback}</p>
                 )}
-                <pre className="mt-3 text-xs bg-slate-800 p-3 rounded overflow-x-auto">{active.mySubmission.content}</pre>
+                <pre className="mt-3 text-xs font-mono bg-white p-3 rounded-xl border border-[#e5e5e5] overflow-x-auto">{active.mySubmission.content}</pre>
               </div>
             ) : active.mySubmission ? (
-              <div className="rounded-lg border border-slate-700 p-4">
-                <p className="text-amber-400 text-sm mb-4">Submitted — awaiting grade</p>
-                <pre className="mb-4 text-xs bg-slate-800 p-3 rounded overflow-x-auto">{active.mySubmission.content}</pre>
+              <div className="border border-[#e5e5e5] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertCircle className="w-5 h-5 text-[#FFC800]" />
+                  <p className="text-sm font-black text-neutral-800">Submitted — awaiting grade</p>
+                </div>
+                <pre className="mb-4 text-xs font-mono bg-neutral-50 p-3 rounded-xl border border-[#e5e5e5] overflow-x-auto">{active.mySubmission.content}</pre>
 
                 {active.mySubmission.attachments?.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider">Attachments</p>
+                    <p className="text-xs font-black text-neutral-500 uppercase tracking-wider">Attachments</p>
                     {active.mySubmission.attachments.map(file => (
-                      <div key={file.id} className="flex items-center justify-between p-2 bg-slate-800 rounded border border-slate-700">
-                        <span className="text-sm truncate">{file.fileName}</span>
-                        <a href={getFileUrl(file.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 text-sm">Download</a>
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl border border-[#e5e5e5]">
+                        <span className="text-sm font-black text-neutral-800 truncate">{file.fileName}</span>
+                        <a
+                          href={getFileUrl(file.fileUrl)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#1CB0F6] font-black text-xs flex items-center gap-1"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download
+                        </a>
                       </div>
                     ))}
                   </div>
@@ -149,16 +216,16 @@ export default function Assignments() {
                     onChange={(e) => setContent(e.target.value)}
                     rows={10}
                     placeholder="Write your submission..."
-                    className="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 font-mono text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-[#e5e5e5] font-mono text-sm font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
                   />
                 )}
 
                 <div className="space-y-4">
-                  <div className="flex flex-wrap gap-4 items-center">
+                  <div className="flex flex-wrap gap-3 items-center">
                     <button
                       onClick={() => submitMutation.mutate()}
                       disabled={(!content.trim() && !active.attachments?.length) || submitMutation.isPending}
-                      className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 font-medium"
+                      className="duo-btn duo-btn-primary"
                     >
                       {submitMutation.isPending ? "Submitting..." : "Submit Assignment"}
                     </button>
@@ -171,17 +238,6 @@ export default function Assignments() {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file && active) {
-                            // First submit or get an existing submission to attach to?
-                            // Actually, I should probably allow attaching to the "intent" or just handle it in the backend differently.
-                            // In this case, I'll submit first or require content.
-                            // Better: The backend supports uploading to assignmentId or submissionId.
-                            // If they haven't submitted yet, I can't upload to submissionId.
-                            // I'll change the backend to handle "pending" attachments or just upload to assignmentId as "student upload".
-                            // But wait, my entity has SubmissionId.
-                            // Let's just submit the content first, then allow adding files to the submission.
-                            // OR, the student can upload files to the Assignment with their userId, and I'll link them.
-                            // Current implementation: uploadAttachment(userId, classroomId, assignmentId, submissionId, file).
-                            // I'll upload to assignmentId and the backend will know who uploaded it.
                             try {
                               await uploadAttachment(token!, file, { assignmentId: active.id });
                               queryClient.invalidateQueries({ queryKey: ["my-assignments"] });
@@ -193,8 +249,9 @@ export default function Assignments() {
                       />
                       <label
                         htmlFor="assignment-file"
-                        className="cursor-pointer px-4 py-2 rounded-lg border border-slate-700 hover:bg-slate-800 text-sm"
+                        className="cursor-pointer duo-btn bg-neutral-200 text-neutral-800 shadow-[0_4px_0_#9CA3AF] flex items-center gap-2"
                       >
+                        <UploadCloud className="w-4 h-4" />
                         Attach File
                       </label>
                     </div>
@@ -202,13 +259,21 @@ export default function Assignments() {
 
                   {active.attachments?.some(a => a.uploadedById === user?.userId) && (
                     <div className="space-y-2">
-                      <p className="text-xs text-slate-500 uppercase tracking-wider">Your Attachments</p>
+                      <p className="text-xs font-black text-neutral-500 uppercase tracking-wider">Your Attachments</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {active.attachments.filter(a => a.uploadedById === user?.userId).map(file => (
-                          <div key={file.id} className="flex items-center justify-between p-2 bg-slate-800 rounded border border-slate-700">
-                            <span className="text-sm truncate max-w-[150px]">{file.fileName}</span>
+                          <div key={file.id} className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl border border-[#e5e5e5]">
+                            <span className="text-sm font-black text-neutral-800 truncate max-w-[150px]">{file.fileName}</span>
                             <div className="flex gap-2">
-                              <a href={getFileUrl(file.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 text-xs">View</a>
+                              <a
+                                href={getFileUrl(file.fileUrl)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#1CB0F6] font-black text-xs flex items-center gap-1"
+                              >
+                                <Download className="w-4 h-4" />
+                                View
+                              </a>
                               <button
                                 onClick={async () => {
                                   if (confirm("Remove this file?")) {
@@ -220,8 +285,9 @@ export default function Assignments() {
                                     }
                                   }
                                 }}
-                                className="text-red-500 hover:text-red-400 text-xs"
+                                className="text-[#FF4B4B] font-black text-xs flex items-center gap-1"
                               >
+                                <Trash2 className="w-4 h-4" />
                                 Remove
                               </button>
                             </div>
@@ -237,7 +303,11 @@ export default function Assignments() {
         )}
       </div>
 
-      {message && <p className="mt-4 text-sm text-emerald-400">{message}</p>}
+      {message && (
+        <div className="duo-card bg-[#58CC02]/10 border-[#58CC02]/30">
+          <p className="text-[#58CC02] font-black">{message}</p>
+        </div>
+      )}
     </div>
   );
 }

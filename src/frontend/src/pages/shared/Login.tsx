@@ -27,79 +27,73 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="space-y-8">
-        <div className="space-y-3">
-          <div className="text-xs uppercase tracking-widest text-gray-500 font-semibold">
-            Account
+    <div className="max-w-md mx-auto py-12 px-4">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
+          Welcome back
+        </h1>
+        <p className="text-neutral-600 font-semibold">
+          Log in to continue your journey
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="bg-[#FF4B4B]/10 border border-[#FF4B4B]/30 text-[#FF4B4B] font-semibold px-4 py-3 rounded-xl">
+            {error}
           </div>
-          <h1 className="text-5xl font-serif font-bold tracking-tight text-black">
-            Sign In
-          </h1>
-          <p className="text-gray-600">
-            Access your dashboard and continue learning.
+        )}
+
+        <div className="space-y-2">
+          <label htmlFor="email" className="text-sm font-bold text-neutral-700">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="password" className="text-sm font-bold text-neutral-700">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            className="w-full px-4 py-3 border border-[#e5e5e5] rounded-xl font-semibold text-neutral-800 focus:outline-none focus:border-[#58CC02] focus:ring-4 focus:ring-[#58CC02]/10 transition-all"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full duo-btn duo-btn-primary"
+        >
+          {loading ? "Logging in..." : "Log in"}
+        </button>
+
+        <div className="text-center pt-2">
+          <p className="text-neutral-600 font-semibold">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="text-[#58CC02] font-black hover:underline"
+            >
+              Sign up
+            </Link>
           </p>
         </div>
-        <form onSubmit={handleSubmit} className="card space-y-6">
-          {error && (
-            <div className="p-4 border border-gray-300 bg-gray-50 text-sm text-gray-700">
-              {error}
-            </div>
-          )}
-          <div className="space-y-2">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div className="space-y-2">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input"
-              placeholder="Enter your password"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary w-full"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-          <div className="pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-600 text-center">
-              Don't have an account?{" "}
-              <Link
-                to="/register"
-                className="font-medium text-black hover:underline"
-              >
-                Create one for free
-              </Link>
-            </p>
-          </div>
-        </form>
-      </div>
+      </form>
     </div>
   );
 }
