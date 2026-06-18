@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { runCode } from "../../lib/api";
 import CodeEditor from "../../components/CodeEditor";
+import { Play, FlaskConical, AlertTriangle } from "lucide-react";
 
 const defaultCode = `// Try C# expressions and Console.WriteLine
 Console.WriteLine("Hello, C# Academy!");
@@ -36,12 +37,13 @@ export default function Playground() {
   return (
     <div className="space-y-6 pb-24 md:pb-0">
       <div>
-        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
-          C# Playground
+        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-1 flex items-center gap-2">
+          <FlaskConical className="w-7 h-7 text-[#CE82FF]" />
+          C# playground
         </h1>
-        <p className="text-neutral-600 font-semibold">
+        <p className="text-neutral-600 font-bold">
           Write and run C# code snippets. Use{" "}
-          <code className="bg-neutral-100 px-2 py-1 rounded text-sm font-bold">
+          <code className="bg-neutral-100 px-2 py-1 rounded-lg text-sm font-black text-neutral-700">
             Console.WriteLine()
           </code>{" "}
           for output.
@@ -53,21 +55,29 @@ export default function Playground() {
         <button
           onClick={handleRun}
           disabled={loading}
-          className="duo-btn duo-btn-primary"
+          className="duo-btn3d duo-btn3d-green"
         >
-          {loading ? "Running..." : "Run Code"}
+          <Play className="w-4 h-4" />
+          {loading ? "Running..." : "Run code"}
         </button>
 
         {(output || error) && (
           <div
-            className={`p-4 rounded-xl font-mono text-sm border ${
+            className={`p-4 rounded-2xl font-mono text-sm border-2 ${
               error
-                ? "bg-[#FF4B4B]/10 border-[#FF4B4B]/30 text-[#FF4B4B]"
-                : "bg-neutral-100 border-[#e5e5e5] text-neutral-800"
+                ? "bg-[#FFEFEF] border-[#FF4B4B]/40 text-[#CC3A3A]"
+                : "bg-neutral-900 border-neutral-800 text-[#7FE787]"
             }`}
           >
-            <p className="font-sans font-black mb-2">
-              {error ? "Error" : "Output"}
+            <p className="font-sans font-black mb-2 flex items-center gap-2 uppercase tracking-wide text-xs">
+              {error ? (
+                <>
+                  <AlertTriangle className="w-4 h-4" />
+                  Error
+                </>
+              ) : (
+                "Output"
+              )}
             </p>
             <pre className="whitespace-pre-wrap">{error || output}</pre>
           </div>
