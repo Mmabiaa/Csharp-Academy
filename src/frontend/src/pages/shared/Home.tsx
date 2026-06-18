@@ -21,11 +21,40 @@ export default function Home() {
 
   const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
   const todayIndex = new Date().getDay();
-  // Convert JS Sunday(0)-based index to a Monday-first index for the strip
   const mondayFirstIndex = (todayIndex + 6) % 7;
+  const streakDays = 5;
 
   return (
     <div className="space-y-8 pb-24 md:pb-0">
+      <style>{`
+        @keyframes duo-flame-dance {
+          0%, 100% { transform: rotate(-8deg) scale(1); }
+          25% { transform: rotate(8deg) scale(1.1); }
+          50% { transform: rotate(-5deg) scale(1.05); }
+          75% { transform: rotate(6deg) scale(1.08); }
+        }
+        @keyframes duo-book-flip {
+          0%, 100% { transform: scaleX(1) rotate(0deg); }
+          30% { transform: scaleX(0.85) rotate(-6deg); }
+          60% { transform: scaleX(1.08) rotate(3deg); }
+        }
+        @keyframes duo-trophy-wobble {
+          0%, 100% { transform: rotate(0deg) scale(1); }
+          25% { transform: rotate(-10deg) scale(1.1); }
+          50% { transform: rotate(10deg) scale(1.1); }
+          75% { transform: rotate(-5deg) scale(1.05); }
+        }
+        @keyframes duo-sparkle-pop {
+          0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+          40% { transform: scale(1.25) rotate(15deg); opacity: 0.9; }
+          70% { transform: scale(0.95) rotate(-5deg); opacity: 1; }
+        }
+        .duo-home-flame-icon { animation: duo-flame-dance 2.4s ease-in-out infinite; }
+        .duo-continue-card:hover .duo-book-icon { animation: duo-book-flip 0.5s ease-in-out; }
+        .duo-challenge-card:hover .duo-trophy-icon { animation: duo-trophy-wobble 0.55s ease-in-out; }
+        .duo-course-link:hover .duo-course-book { animation: duo-book-flip 0.5s ease-in-out; }
+      `}</style>
+
       {/* Top Section */}
       <div className="flex items-start justify-between gap-4 mb-2">
         <div>
@@ -48,37 +77,61 @@ export default function Home() {
         )}
       </div>
 
-      {/* Streak Section — mascot-style banner */}
-      <div className="duo-panel relative overflow-hidden">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-14 h-14 rounded-2xl bg-[#FFF1C2] flex items-center justify-center shrink-0 duo-bounce">
-            <Flame className="w-8 h-8 text-[#FF9600]" fill="#FF9600" />
+      {/* Streak Section */}
+      <div
+        className="duo-panel relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, #FFFBEA 0%, #FFF3CC 55%, #FFE7A8 100%)",
+        }}
+      >
+        <Flame
+          className="absolute -right-6 -top-6 w-40 h-40 text-[#FF9600] opacity-10 rotate-12"
+          fill="currentColor"
+        />
+
+        <div className="relative flex items-center gap-4 mb-6">
+          {/* Animated flame bubble */}
+          <div className="w-16 h-16 rounded-full bg-[#FF9600] flex items-center justify-center shrink-0 shadow-[0_4px_0_#CC7800]">
+            <Flame
+              className="w-9 h-9 text-white duo-home-flame-icon"
+              fill="white"
+            />
           </div>
           <div>
-            <h2 className="font-black text-xl text-neutral-900">
-              5 day streak!
-            </h2>
-            <p className="text-sm font-bold text-neutral-500">
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-black text-[#CC7800] leading-none">
+                {streakDays}
+              </span>
+              <span className="font-black text-lg text-neutral-900">day streak!</span>
+            </div>
+            <p className="text-sm font-bold text-neutral-600 mt-1">
               You're on fire — don't break it today
             </p>
           </div>
         </div>
-        <div className="flex items-center justify-between gap-2">
-          {weekDays.map((day, index) => (
-            <div
-              key={index}
-              className={`duo-day ${
-                index < mondayFirstIndex
-                  ? "duo-day-done"
-                  : index === mondayFirstIndex
-                  ? "duo-day-today"
-                  : "duo-day-future"
-              }`}
-            >
-              {index < mondayFirstIndex && <Flame className="w-3.5 h-3.5" fill="currentColor" />}
-              <span>{day}</span>
-            </div>
-          ))}
+
+        <p className="relative text-xs font-black text-[#946800]/70 uppercase tracking-wider mb-3">
+          This week
+        </p>
+        <div className="relative flex items-center justify-between gap-2">
+          {weekDays.map((day, index) => {
+            const done = index < mondayFirstIndex;
+            const today = index === mondayFirstIndex;
+            return (
+              <div
+                key={index}
+                className={`duo-day !rounded-full !w-11 !h-11 !gap-0 ${
+                  done ? "duo-day-done" : today ? "duo-day-today" : "duo-day-future"
+                }`}
+              >
+                {done ? (
+                  <Flame className="w-4.5 h-4.5" fill="currentColor" />
+                ) : (
+                  <span className="text-xs">{day}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -86,12 +139,12 @@ export default function Home() {
       {courses && courses.length > 0 && (
         <Link
           to={`/courses/${courses[0].id}`}
-          className="duo-card duo-card-hover mb-2 block border-2 border-[#58CC02]/30 bg-[#58CC02]/5"
+          className="duo-card duo-card-hover mb-2 block border-2 border-[#58CC02]/30 bg-[#58CC02]/5 duo-continue-card"
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
               <div className="w-14 h-14 bg-[#58CC02] rounded-2xl flex items-center justify-center shrink-0 shadow-[0_4px_0_#46A302]">
-                <BookOpen className="w-7 h-7 text-white" />
+                <BookOpen className="w-7 h-7 text-white duo-book-icon" />
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase tracking-wide text-[#46A302] mb-0.5">
@@ -133,11 +186,11 @@ export default function Home() {
               <Link
                 key={course.id}
                 to={`/courses/${course.id}`}
-                className="duo-card duo-card-hover hover:border-[#58CC02]"
+                className="duo-card duo-card-hover hover:border-[#58CC02] duo-course-link"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-11 h-11 bg-[#1CB0F6] rounded-xl flex items-center justify-center shadow-[0_3px_0_#1899D6]">
-                    <BookOpen className="w-6 h-6 text-white" />
+                    <BookOpen className="w-6 h-6 text-white duo-course-book" />
                   </div>
                   <span className="duo-badge duo-badge-gray">
                     <Clock className="w-3 h-3" />
@@ -165,12 +218,12 @@ export default function Home() {
         </h2>
         <Link
           to="/challenges"
-          className="duo-card duo-card-hover block border-2 border-[#FFC800]/40 bg-[#FFF8E1]"
+          className="duo-card duo-card-hover block border-2 border-[#FFC800]/40 bg-[#FFF8E1] duo-challenge-card"
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-[#FFC800] rounded-2xl flex items-center justify-center shrink-0 shadow-[0_4px_0_#E6B400]">
-                <Trophy className="w-7 h-7 text-white" />
+                <Trophy className="w-7 h-7 text-white duo-trophy-icon" />
               </div>
               <div>
                 <h3 className="font-black text-lg text-neutral-900">

@@ -11,14 +11,40 @@ import {
   Star,
   ChevronUp,
   ChevronDown,
+  BookOpen,
+  Video,
+  Compass,
+  Code2,
+  HelpCircle,
+  FileText,
 } from "lucide-react";
 
-const lessonTypeIcon: Record<string, string> = {
-  Reading: "📖",
-  Video: "🎬",
-  Practice: "💻",
-  Interactive: "🎮",
-  Quiz: "❓",
+// Lesson type → animated icon bubble
+const LessonTypeIcon = ({ type, done }: { type?: string; done: boolean }) => {
+  const map: Record<string, { icon: React.ElementType; bg: string; shadow: string }> = {
+    Reading: { icon: BookOpen, bg: "bg-[#1CB0F6]", shadow: "shadow-[0_2px_0_#1899D6]" },
+    Video:   { icon: Video,    bg: "bg-[#FF9600]", shadow: "shadow-[0_2px_0_#CC7800]" },
+    Practice:{ icon: Code2,    bg: "bg-[#CE82FF]", shadow: "shadow-[0_2px_0_#A568CC]" },
+    Interactive:{ icon: Compass, bg: "bg-[#FF4B4B]", shadow: "shadow-[0_2px_0_#CC3A3A]" },
+    Quiz:    { icon: HelpCircle, bg: "bg-[#FFC800]", shadow: "shadow-[0_2px_0_#E6B400]" },
+  };
+  const fallback = { icon: FileText, bg: "bg-neutral-300", shadow: "shadow-[0_2px_0_#b0b0b0]" };
+  const entry = (type && map[type]) ? map[type] : fallback;
+  const Icon = entry.icon;
+
+  if (done) {
+    return (
+      <span className="duo-node duo-node-done !w-9 !h-9 !text-base">
+        <CheckCircle2 className="w-4 h-4" />
+      </span>
+    );
+  }
+
+  return (
+    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${entry.bg} ${entry.shadow} duo-lesson-type-icon`}>
+      <Icon className="w-4 h-4 text-white" />
+    </div>
+  );
 };
 
 const levelBadge: Record<string, string> = {
@@ -61,12 +87,8 @@ export default function CourseDetail() {
     return (
       <div className="space-y-6 pb-24 md:pb-0">
         <div className="h-6 w-32 bg-neutral-200 rounded-xl animate-pulse" />
-        <div className="duo-card animate-pulse">
-          <div className="h-32" />
-        </div>
-        <div className="duo-card animate-pulse">
-          <div className="h-40" />
-        </div>
+        <div className="duo-card animate-pulse"><div className="h-32" /></div>
+        <div className="duo-card animate-pulse"><div className="h-40" /></div>
       </div>
     );
   }
@@ -74,10 +96,7 @@ export default function CourseDetail() {
   if (error || !course) {
     return (
       <div className="space-y-6 pb-24 md:pb-0">
-        <Link
-          to="/courses"
-          className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm"
-        >
+        <Link to="/courses" className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm">
           <ArrowLeft className="w-5 h-5" />
           Back to courses
         </Link>
@@ -86,9 +105,7 @@ export default function CourseDetail() {
             <Lock className="w-8 h-8 text-[#FF4B4B]" />
           </div>
           <p className="text-[#CC3A3A] font-black text-lg">Course not found</p>
-          <p className="text-sm font-bold text-[#CC3A3A]/70 mt-1">
-            It may have moved or no longer exists.
-          </p>
+          <p className="text-sm font-bold text-[#CC3A3A]/70 mt-1">It may have moved or no longer exists.</p>
         </div>
       </div>
     );
@@ -97,17 +114,32 @@ export default function CourseDetail() {
   const completedSet = new Set(progress?.completedLessonIds ?? []);
   const totalLessons = course.modules.reduce((n, m) => n + m.lessons.length, 0);
   const completedLessons = course.modules.reduce(
-    (n, m) => n + m.lessons.filter((l) => completedSet.has(l.id)).length,
-    0
+    (n, m) => n + m.lessons.filter((l) => completedSet.has(l.id)).length, 0
   );
 
   return (
     <div className="space-y-6 pb-24 md:pb-0">
+      <style>{`
+        @keyframes duo-lesson-icon-hover {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          40% { transform: scale(1.15) rotate(-6deg); }
+          70% { transform: scale(1.08) rotate(4deg); }
+        }
+        .duo-lesson-row:hover .duo-lesson-type-icon {
+          animation: duo-lesson-icon-hover 0.45s ease-in-out;
+        }
+        @keyframes duo-module-star {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          40% { transform: scale(1.2) rotate(20deg); }
+          70% { transform: scale(0.95) rotate(-5deg); }
+        }
+        .duo-module-btn:hover .duo-module-star {
+          animation: duo-module-star 0.5s ease-in-out;
+        }
+      `}</style>
+
       {/* Back Button */}
-      <Link
-        to="/courses"
-        className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm"
-      >
+      <Link to="/courses" className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm">
         <ArrowLeft className="w-5 h-5" />
         Back to courses
       </Link>
@@ -115,46 +147,25 @@ export default function CourseDetail() {
       {/* Course Info Card */}
       <div className="duo-card">
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className={`duo-badge ${levelBadge[course.level] ?? "duo-badge-gray"}`}>
-            {course.level}
-          </span>
-          <span className="duo-badge duo-badge-gray">
-            <Clock className="w-3 h-3" />
-            {course.estimatedHours} hours
-          </span>
-          <span className="duo-badge duo-badge-gray">
-            <Star className="w-3 h-3" />
-            {totalLessons} lessons
-          </span>
+          <span className={`duo-badge ${levelBadge[course.level] ?? "duo-badge-gray"}`}>{course.level}</span>
+          <span className="duo-badge duo-badge-gray"><Clock className="w-3 h-3" />{course.estimatedHours} hours</span>
+          <span className="duo-badge duo-badge-gray"><Star className="w-3 h-3" />{totalLessons} lessons</span>
         </div>
-        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
-          {course.title}
-        </h1>
-        <p className="text-neutral-600 font-bold text-sm leading-relaxed mb-6">
-          {course.description}
-        </p>
+        <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">{course.title}</h1>
+        <p className="text-neutral-600 font-bold text-sm leading-relaxed mb-6">{course.description}</p>
 
-        {/* Progress Bar */}
         {progress?.isEnrolled && (
           <div className="mb-6">
             <div className="flex justify-between text-sm font-black text-neutral-700 mb-2">
-              <span>
-                {completedLessons}/{totalLessons} lessons complete
-              </span>
-              <span className="text-[#46A302]">
-                {progress.completionPercentage.toFixed(0)}%
-              </span>
+              <span>{completedLessons}/{totalLessons} lessons complete</span>
+              <span className="text-[#46A302]">{progress.completionPercentage.toFixed(0)}%</span>
             </div>
             <div className="duo-progress-track">
-              <div
-                className="duo-progress-fill"
-                style={{ width: `${progress.completionPercentage}%` }}
-              />
+              <div className="duo-progress-fill" style={{ width: `${progress.completionPercentage}%` }} />
             </div>
           </div>
         )}
 
-        {/* Enroll Section */}
         <div>
           {isAuthenticated ? (
             progress?.isEnrolled ? (
@@ -172,13 +183,7 @@ export default function CourseDetail() {
                   {enrollMutation.isPending ? "Enrolling..." : "Start course — it's free"}
                 </button>
                 {enrollMessage && (
-                  <span
-                    className={`text-sm font-black ${
-                      enrollMessage.includes("Success")
-                        ? "text-[#46A302]"
-                        : "text-[#FF4B4B]"
-                    }`}
-                  >
+                  <span className={`text-sm font-black ${enrollMessage.includes("Success") ? "text-[#46A302]" : "text-[#FF4B4B]"}`}>
                     {enrollMessage}
                   </span>
                 )}
@@ -186,12 +191,7 @@ export default function CourseDetail() {
             )
           ) : (
             <p className="text-neutral-600 font-bold text-sm">
-              <Link
-                to="/login"
-                className="text-[#58CC02] font-black hover:underline"
-              >
-                Sign in
-              </Link>{" "}
+              <Link to="/login" className="text-[#58CC02] font-black hover:underline">Sign in</Link>{" "}
               to enroll and track progress.
             </p>
           )}
@@ -207,39 +207,29 @@ export default function CourseDetail() {
           return (
             <div key={module.id} className="duo-card !p-0 overflow-hidden">
               <button
-                onClick={() =>
-                  setExpandedModule(expandedModule === module.id ? null : module.id)
-                }
-                className="w-full flex items-center justify-between p-5 text-left hover:bg-neutral-50 transition-colors"
+                onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}
+                className="w-full flex items-center justify-between p-5 text-left hover:bg-neutral-50 transition-colors duo-module-btn"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-sm ${
-                      moduleDone
-                        ? "bg-[#FFC800] text-[#946800] shadow-[0_3px_0_#E6B400]"
-                        : "bg-neutral-100 text-neutral-400 border-2 border-neutral-200"
-                    }`}
-                  >
-                    {moduleDone ? <CheckCircle2 className="w-5 h-5" /> : <Star className="w-5 h-5" />}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-sm ${
+                    moduleDone
+                      ? "bg-[#FFC800] text-[#946800] shadow-[0_3px_0_#E6B400]"
+                      : "bg-neutral-100 text-neutral-400 border-2 border-neutral-200"
+                  }`}>
+                    {moduleDone
+                      ? <CheckCircle2 className="w-5 h-5" />
+                      : <Star className="w-5 h-5 duo-module-star" />}
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-black text-neutral-900 truncate">{module.title}</h3>
-                    <p className="text-xs font-bold text-neutral-400 mt-0.5">
-                      {module.lessons.length} topics
-                    </p>
+                    <p className="text-xs font-bold text-neutral-400 mt-0.5">{module.lessons.length} topics</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   {moduleDone && (
-                    <span className="duo-badge duo-badge-green hidden sm:inline-flex">
-                      Complete
-                    </span>
+                    <span className="duo-badge duo-badge-green hidden sm:inline-flex">Complete</span>
                   )}
-                  {isOpen ? (
-                    <ChevronUp className="w-5 h-5 text-neutral-400" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-neutral-400" />
-                  )}
+                  {isOpen ? <ChevronUp className="w-5 h-5 text-neutral-400" /> : <ChevronDown className="w-5 h-5 text-neutral-400" />}
                 </div>
               </button>
 
@@ -253,24 +243,15 @@ export default function CourseDetail() {
                   <ul className="divide-y divide-neutral-100">
                     {module.lessons.map((lesson) => {
                       const done = completedSet.has(lesson.id);
-                      const icon = lessonTypeIcon[lesson.type ?? ""] ?? "📄";
                       return (
                         <li key={lesson.id}>
                           <Link
                             to={`/lessons/${lesson.id}`}
-                            className="flex items-center gap-3 py-3 hover:bg-neutral-50 rounded-xl px-2 -mx-2 transition-colors"
+                            className="flex items-center gap-3 py-3 hover:bg-neutral-50 rounded-xl px-2 -mx-2 transition-colors duo-lesson-row"
                           >
-                            <span
-                              className={`duo-node ${done ? "duo-node-done" : "duo-node-todo"} !w-9 !h-9 !text-base`}
-                            >
-                              {done ? <CheckCircle2 className="w-4 h-4" /> : icon}
-                            </span>
+                            <LessonTypeIcon type={lesson.type} done={done} />
                             <div className="flex-1 min-w-0">
-                              <span
-                                className={`font-bold ${
-                                  done ? "text-[#46A302]" : "text-neutral-800"
-                                }`}
-                              >
+                              <span className={`font-bold ${done ? "text-[#46A302]" : "text-neutral-800"}`}>
                                 {lesson.title}
                               </span>
                               {lesson.durationMinutes ? (
