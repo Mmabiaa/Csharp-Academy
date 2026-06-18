@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useState, useEffect } from "react";
 import {
   fetchLesson,
@@ -43,6 +44,12 @@ const tabIcon: Record<Tab, string> = {
   practice: "💻",
   practices: "✅",
 };
+
+// The lesson title is already shown in the page header, so if the markdown
+// body opens with a redundant H1 of the same title, drop just that line.
+function stripLeadingHeading(markdown: string): string {
+  return markdown.trim().replace(/^#\s+.+(?:\r?\n)+/, "");
+}
 
 export default function LessonPage() {
   const { id } = useParams<{ id: string }>();
@@ -261,7 +268,9 @@ export default function LessonPage() {
       {/* Tab Content */}
       {tab === "read" && (
         <article className="duo-card lesson-content">
-          <ReactMarkdown>{lesson.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {stripLeadingHeading(lesson.content)}
+          </ReactMarkdown>
         </article>
       )}
 
@@ -443,7 +452,9 @@ export default function LessonPage() {
               <ShieldCheck className="w-5 h-5 text-[#FFC800]" />
               Best practices
             </h2>
-            <ReactMarkdown>{lesson.bestPractices}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {stripLeadingHeading(lesson.bestPractices)}
+            </ReactMarkdown>
           </div>
         </article>
       )}
