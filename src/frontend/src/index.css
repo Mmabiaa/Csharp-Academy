@@ -486,3 +486,262 @@
   50% { transform: translateY(-6px); }
 }
 .duo-bounce { animation: duo-bounce 1.6s ease-in-out infinite; }
+
+/* ============================================================
+   Lesson markdown content styling — gives headings, lists,
+   code blocks, tables, and blockquotes inside ReactMarkdown
+   output real visual hierarchy in the Duolingo style.
+
+   Depends on the CSS variables defined in duo-additions.css
+   (--duo-green, --duo-blue-dark, --duo-yellow, --duo-swan,
+   --duo-wolf, --duo-polar) — import this file alongside or
+   after duo-additions.css, e.g. in main.tsx:
+     import "./duo-additions.css";
+     import "./lesson-content.css";
+   ============================================================ */
+
+.lesson-content {
+  color: #3c3c3c;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.lesson-content > *:first-child {
+  margin-top: 0;
+}
+.lesson-content > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- Headings ---------- */
+.lesson-content h1,
+.lesson-content h2,
+.lesson-content h3,
+.lesson-content h4 {
+  font-weight: 900;
+  color: #2b2b2b;
+  letter-spacing: -0.01em;
+}
+
+.lesson-content h1 {
+  font-size: 1.6rem;
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--duo-swan);
+}
+
+.lesson-content h2 {
+  font-size: 1.3rem;
+  margin: 2rem 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.lesson-content h2::before {
+  content: "";
+  width: 6px;
+  height: 1.1em;
+  border-radius: 3px;
+  background: var(--duo-green);
+  flex-shrink: 0;
+}
+
+.lesson-content h3 {
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.75rem;
+  color: var(--duo-blue-dark);
+}
+
+.lesson-content h4 {
+  font-size: 0.8rem;
+  margin: 1.25rem 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--duo-wolf);
+}
+
+/* ---------- Paragraphs & inline text ---------- */
+.lesson-content p {
+  margin: 0 0 1rem;
+  font-weight: 600;
+}
+
+.lesson-content strong {
+  font-weight: 800;
+  color: #1f1f1f;
+}
+
+.lesson-content em {
+  color: var(--duo-wolf);
+  font-style: italic;
+}
+
+.lesson-content a {
+  color: var(--duo-green-dark);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: #d7ffb8;
+  text-decoration-thickness: 2px;
+}
+.lesson-content a:hover {
+  color: var(--duo-green);
+}
+
+/* ---------- Lists ---------- */
+.lesson-content ul,
+.lesson-content ol {
+  margin: 0 0 1.25rem;
+  padding-left: 0;
+  list-style: none;
+}
+
+.lesson-content ul li,
+.lesson-content ol li {
+  position: relative;
+  padding-left: 1.85rem;
+  margin-bottom: 0.65rem;
+  font-weight: 600;
+}
+
+.lesson-content li > p {
+  margin: 0;
+}
+
+.lesson-content li > ul,
+.lesson-content li > ol {
+  margin-top: 0.65rem;
+  margin-bottom: 0;
+}
+
+.lesson-content ul li::before {
+  content: "";
+  position: absolute;
+  left: 0.1rem;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--duo-green);
+}
+
+.lesson-content ol {
+  counter-reset: duo-ol;
+}
+.lesson-content ol li {
+  counter-increment: duo-ol;
+}
+.lesson-content ol li::before {
+  content: counter(duo-ol);
+  position: absolute;
+  left: 0;
+  top: -0.05em;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: var(--duo-polar);
+  color: var(--duo-blue-dark);
+  font-size: 0.7rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Inline code & code blocks ---------- */
+.lesson-content code {
+  background: #f0f0f0;
+  color: #c2255c;
+  font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.85em;
+  font-weight: 700;
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+}
+
+.lesson-content pre {
+  background: #2b2d31;
+  border: 2px solid #1f2023;
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem;
+  margin: 0 0 1.5rem;
+  overflow-x: auto;
+}
+
+.lesson-content pre code {
+  background: transparent;
+  color: #7fe787;
+  padding: 0;
+  font-weight: 500;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* ---------- Blockquotes ---------- */
+.lesson-content blockquote {
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1.25rem;
+  border-left: 4px solid var(--duo-yellow);
+  background: #fff8e1;
+  border-radius: 0 14px 14px 0;
+  color: #946800;
+  font-weight: 700;
+}
+.lesson-content blockquote p {
+  margin: 0;
+  color: inherit;
+}
+
+/* ---------- Horizontal rule ---------- */
+.lesson-content hr {
+  border: none;
+  border-top: 2px solid var(--duo-swan);
+  margin: 2rem 0;
+}
+
+/* ---------- Tables (requires remark-gfm) ---------- */
+.lesson-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0 0 1.5rem;
+  border: 2px solid var(--duo-swan);
+  border-radius: 14px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+
+.lesson-content thead {
+  background: #f7f7f7;
+}
+
+.lesson-content th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 900;
+  color: var(--duo-wolf);
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--duo-swan);
+}
+
+.lesson-content td {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.lesson-content tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.lesson-content tbody tr:hover {
+  background: #fafafa;
+}
+
+/* ---------- Images ---------- */
+.lesson-content img {
+  max-width: 100%;
+  border-radius: 16px;
+  border: 2px solid var(--duo-swan);
+}
