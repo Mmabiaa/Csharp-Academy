@@ -33,20 +33,28 @@ import {
   ChevronRight,
   ShieldCheck,
   Lock,
+  BookOpen,
+  Video,
+  Compass,
+  Code2,
+  Star,
 } from "lucide-react";
 
 type Tab = "read" | "video" | "tutorial" | "practice" | "practices";
 
-const tabIcon: Record<Tab, string> = {
-  read: "📖",
-  video: "🎬",
-  tutorial: "🧭",
-  practice: "💻",
-  practices: "✅",
+// Animated icon components per tab — each has its own keyframe personality
+const TabIcon = ({ tab, active }: { tab: Tab; active: boolean }) => {
+  const base = "w-4 h-4 transition-transform";
+  const map: Record<Tab, React.ReactNode> = {
+    read: <BookOpen className={`${base} ${active ? "duo-tab-read-icon" : ""}`} />,
+    video: <Video className={`${base} ${active ? "duo-tab-video-icon" : ""}`} />,
+    tutorial: <Compass className={`${base} ${active ? "duo-tab-compass-icon" : ""}`} />,
+    practice: <Code2 className={`${base} ${active ? "duo-tab-code-icon" : ""}`} />,
+    practices: <Star className={`${base} ${active ? "duo-tab-star-icon" : ""}`} fill={active ? "currentColor" : "none"} />,
+  };
+  return <>{map[tab]}</>;
 };
 
-// The lesson title is already shown in the page header, so if the markdown
-// body opens with a redundant H1 of the same title, drop just that line.
 function stripLeadingHeading(markdown: string): string {
   return markdown.trim().replace(/^#\s+.+(?:\r?\n)+/, "");
 }
@@ -217,6 +225,45 @@ export default function LessonPage() {
 
   return (
     <div className="space-y-6 pb-24 md:pb-0">
+      <style>{`
+        @keyframes duo-tab-read {
+          0%, 100% { transform: scaleX(1) rotate(0deg); }
+          30% { transform: scaleX(0.88) rotate(-5deg); }
+          65% { transform: scaleX(1.07) rotate(3deg); }
+        }
+        @keyframes duo-tab-video {
+          0%, 100% { transform: scale(1); }
+          40% { transform: scale(1.2); }
+          70% { transform: scale(0.95); }
+        }
+        @keyframes duo-tab-compass {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(180deg); }
+        }
+        @keyframes duo-tab-code {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-3px); }
+          75% { transform: translateX(3px); }
+        }
+        @keyframes duo-tab-star {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          40% { transform: scale(1.3) rotate(20deg); }
+          70% { transform: scale(0.95) rotate(-5deg); }
+        }
+        .duo-tab-read-icon { animation: duo-tab-read 0.5s ease-in-out; }
+        .duo-tab-video-icon { animation: duo-tab-video 0.4s ease-in-out; }
+        .duo-tab-compass-icon { animation: duo-tab-compass 0.6s ease-in-out; }
+        .duo-tab-code-icon { animation: duo-tab-code 0.4s ease-in-out; }
+        .duo-tab-star-icon { animation: duo-tab-star 0.5s ease-in-out; }
+
+        @keyframes duo-flame-dance {
+          0%, 100% { transform: rotate(-6deg) scale(1); }
+          25% { transform: rotate(7deg) scale(1.1); }
+          75% { transform: rotate(-4deg) scale(1.05); }
+        }
+        .duo-tutorial-node { animation: duo-flame-dance 2s ease-in-out infinite; }
+      `}</style>
+
       {/* Back Button & Header */}
       <div>
         <Link
@@ -247,7 +294,7 @@ export default function LessonPage() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — icon bubbles instead of emoji */}
       <div className="flex flex-wrap gap-2">
         {availableTabs.map((t) => (
           <button
@@ -259,7 +306,7 @@ export default function LessonPage() {
                 : "duo-btn3d duo-btn3d-white !px-4 !py-2.5 !text-xs"
             }
           >
-            <span aria-hidden="true">{tabIcon[t]}</span>
+            <TabIcon tab={t} active={tab === t} />
             {labels[t]}
           </button>
         ))}
@@ -278,6 +325,9 @@ export default function LessonPage() {
         <div className="space-y-4">
           {videos.length === 0 ? (
             <div className="duo-panel text-center py-10">
+              <div className="w-14 h-14 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Video className="w-7 h-7 text-neutral-400" />
+              </div>
               <p className="text-neutral-500 font-bold">No videos for this lesson.</p>
             </div>
           ) : (
@@ -299,14 +349,19 @@ export default function LessonPage() {
       {tab === "tutorial" && tutorialSteps && (
         <div className="duo-card">
           {tutorialSteps.length === 0 ? (
-            <p className="text-neutral-500 font-bold">No tutorial steps for this lesson.</p>
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-[#DDF4FF] rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Compass className="w-7 h-7 text-[#1CB0F6]" />
+              </div>
+              <p className="text-neutral-500 font-bold">No tutorial steps for this lesson.</p>
+            </div>
           ) : (
             <>
               <div className="flex items-center gap-2 mb-4">
                 {tutorialSteps.map((_, i) => (
                   <div
                     key={i}
-                    className={`h-2 flex-1 rounded-full ${
+                    className={`h-2 flex-1 rounded-full transition-colors ${
                       i <= tutorialStep ? "bg-[#58CC02]" : "bg-neutral-100"
                     }`}
                   />
@@ -368,7 +423,12 @@ export default function LessonPage() {
               to submit practices.
             </p>
           ) : exercises.length === 0 ? (
-            <p className="text-neutral-500 font-bold">No coding exercises for this lesson yet.</p>
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Code2 className="w-7 h-7 text-neutral-400" />
+              </div>
+              <p className="text-neutral-500 font-bold">No coding exercises for this lesson yet.</p>
+            </div>
           ) : (
             <>
               {exercises.length > 1 && (
@@ -449,7 +509,9 @@ export default function LessonPage() {
         <article className="duo-card lesson-content border-l-4 border-[#FFC800] flex gap-3 items-start">
           <div className="flex-1">
             <h2 className="text-xl font-black text-neutral-900 mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#FFC800]" />
+              <div className="w-8 h-8 bg-[#FFC800] rounded-xl flex items-center justify-center shadow-[0_3px_0_#E6B400]">
+                <ShieldCheck className="w-4 h-4 text-white" />
+              </div>
               Best practices
             </h2>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -496,11 +558,13 @@ export default function LessonPage() {
                     }}
                     className="duo-btn3d duo-btn3d-blue"
                   >
+                    <Compass className="w-4 h-4" />
                     Start tutorial
                   </button>
                 )}
                 {lesson.hasPractice && (
                   <button onClick={() => switchTab("practice")} className="duo-btn3d duo-btn3d-yellow">
+                    <Code2 className="w-4 h-4" />
                     Code practice
                   </button>
                 )}
