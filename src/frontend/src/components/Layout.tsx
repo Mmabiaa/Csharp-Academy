@@ -55,7 +55,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f7f7f7] flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:flex-col md:w-64 bg-white border-r border-[#e5e5e5] shadow-[0_0_4px_#00000010]">
+      <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:top-0 md:left-0 md:bottom-0 bg-white border-r border-[#e5e5e5] shadow-[0_0_4px_#00000010]">
         {/* Logo */}
         <div className="p-5 border-b border-[#e5e5e5]">
           <div className="flex items-center gap-3">
@@ -126,7 +126,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col md:ml-64">
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b border-[#e5e5e5] sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
