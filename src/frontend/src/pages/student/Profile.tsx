@@ -89,17 +89,35 @@ export default function Profile() {
           40% { transform: rotate(-12deg) scale(1.1); }
           70% { transform: rotate(6deg) scale(1.05); }
         }
-        .duo-stat-card:hover .duo-stat-star  { animation: duo-star-spin    0.5s ease-in-out; }
-        .duo-stat-card:hover .duo-stat-flame { animation: duo-flame-flicker 0.55s ease-in-out; }
-        .duo-stat-card:hover .duo-stat-trophy{ animation: duo-trophy-wobble 0.55s ease-in-out; }
-        .duo-badge-item:hover .duo-award-icon { animation: duo-award-bounce 0.45s ease-in-out; }
-        .duo-cert-item:hover .duo-scroll-icon { animation: duo-scroll-roll  0.5s ease-in-out; }
-        .duo-course-row:hover .duo-book-icon  { animation: duo-book-flip    0.5s ease-in-out; }
+
+        /* Continuous ambient icon animations — always running, hover no longer required */
+        .duo-stat-star   { animation: duo-star-spin    2.2s ease-in-out infinite; }
+        .duo-stat-flame  { animation: duo-flame-flicker 2.4s ease-in-out infinite; }
+        .duo-stat-trophy { animation: duo-trophy-wobble 2.8s ease-in-out infinite; }
+        .duo-award-icon  { animation: duo-award-bounce  2.4s ease-in-out infinite; }
+        .duo-scroll-icon { animation: duo-scroll-roll   2.6s ease-in-out infinite; }
+        .duo-book-icon   { animation: duo-book-flip     2.8s ease-in-out infinite; }
+
+        /* Stagger repeated list icons so they don't pulse in lockstep */
+        .duo-badge-item:nth-child(2n) .duo-award-icon { animation-delay: 0.3s; }
+        .duo-badge-item:nth-child(3n) .duo-award-icon { animation-delay: 0.6s; }
+        .duo-cert-item:nth-child(2n) .duo-scroll-icon { animation-delay: 0.3s; }
+        .duo-cert-item:nth-child(3n) .duo-scroll-icon { animation-delay: 0.6s; }
+        .duo-course-row:nth-child(2n) .duo-book-icon  { animation-delay: 0.3s; }
+        .duo-course-row:nth-child(3n) .duo-book-icon  { animation-delay: 0.6s; }
 
         /* Continuous ambient animations for section headers */
         .duo-section-award { animation: duo-award-bounce 2.6s ease-in-out infinite; }
         .duo-section-trophy{ animation: duo-trophy-wobble 3s ease-in-out infinite; }
         .duo-section-book  { animation: duo-book-flip 3.2s ease-in-out infinite; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .duo-stat-star, .duo-stat-flame, .duo-stat-trophy,
+          .duo-award-icon, .duo-scroll-icon, .duo-book-icon,
+          .duo-section-award, .duo-section-trophy, .duo-section-book {
+            animation: none;
+          }
+        }
       `}</style>
 
       {/* Profile Header */}

@@ -34,7 +34,7 @@ export default function Register() {
     <div className="max-w-md mx-auto py-12 px-4">
       <div className="text-center mb-8">
         <div className="w-20 h-20 rounded-full bg-[#FFF1C2] flex items-center justify-center mx-auto mb-4 shadow-[0_4px_0_#E6B400]">
-          <GraduationCap className="w-10 h-10 text-[#946800]" />
+          <GraduationCap className="w-10 h-10 text-[#946800] duo-bounce" />
         </div>
         <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
           Join C# Academy

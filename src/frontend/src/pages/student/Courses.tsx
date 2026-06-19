@@ -61,11 +61,27 @@ export default function Courses() {
           50% { transform: rotate(12deg) scale(1.12); }
           100% { transform: rotate(0deg) scale(1); }
         }
-        .duo-course-card:hover .duo-course-icon {
-          animation: duo-icon-bounce 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+
+        /* Continuous ambient icon animations — always running, hover no longer required */
+        .duo-course-icon {
+          animation: duo-icon-bounce 2.6s ease-in-out infinite;
         }
-        .duo-course-card:hover .duo-course-icon-zap {
-          animation: duo-icon-spin 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        .duo-course-icon-zap {
+          animation: duo-icon-spin 2.2s ease-in-out infinite;
+        }
+
+        /* Stagger so cards don't all bounce in lockstep */
+        .duo-course-card:nth-child(2n) .duo-course-icon,
+        .duo-course-card:nth-child(2n) .duo-course-icon-zap { animation-delay: 0.3s; }
+        .duo-course-card:nth-child(3n) .duo-course-icon,
+        .duo-course-card:nth-child(3n) .duo-course-icon-zap { animation-delay: 0.6s; }
+        .duo-course-card:nth-child(4n) .duo-course-icon,
+        .duo-course-card:nth-child(4n) .duo-course-icon-zap { animation-delay: 0.9s; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .duo-course-icon, .duo-course-icon-zap {
+            animation: none;
+          }
         }
       `}</style>
 

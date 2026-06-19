@@ -49,10 +49,25 @@ export default function Home() {
           40% { transform: scale(1.25) rotate(15deg); opacity: 0.9; }
           70% { transform: scale(0.95) rotate(-5deg); opacity: 1; }
         }
+
+        /* Continuous ambient icon animations — always running, hover no longer required */
         .duo-home-flame-icon { animation: duo-flame-dance 2.4s ease-in-out infinite; }
-        .duo-continue-card:hover .duo-book-icon { animation: duo-book-flip 0.5s ease-in-out; }
-        .duo-challenge-card:hover .duo-trophy-icon { animation: duo-trophy-wobble 0.55s ease-in-out; }
-        .duo-course-link:hover .duo-course-book { animation: duo-book-flip 0.5s ease-in-out; }
+        .duo-book-icon       { animation: duo-book-flip 2.8s ease-in-out infinite; }
+        .duo-trophy-icon     { animation: duo-trophy-wobble 2.8s ease-in-out infinite; }
+        .duo-course-book     { animation: duo-book-flip 2.6s ease-in-out infinite; }
+        .duo-sparkle-icon    { animation: duo-sparkle-pop 2.4s ease-in-out infinite; }
+        .duo-header-trophy   { animation: duo-trophy-wobble 3s ease-in-out infinite; }
+
+        /* Stagger repeated course-link icons so they don't pulse in lockstep */
+        .duo-course-link:nth-child(2n) .duo-course-book { animation-delay: 0.3s; }
+        .duo-course-link:nth-child(3n) .duo-course-book { animation-delay: 0.6s; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .duo-home-flame-icon, .duo-book-icon, .duo-trophy-icon,
+          .duo-course-book, .duo-sparkle-icon, .duo-header-trophy {
+            animation: none;
+          }
+        }
       `}</style>
 
       {/* Top Section */}
@@ -120,9 +135,8 @@ export default function Home() {
             return (
               <div
                 key={index}
-                className={`duo-day !rounded-full !w-11 !h-11 !gap-0 ${
-                  done ? "duo-day-done" : today ? "duo-day-today" : "duo-day-future"
-                }`}
+                className={`duo-day !rounded-full !w-11 !h-11 !gap-0 ${done ? "duo-day-done" : today ? "duo-day-today" : "duo-day-future"
+                  }`}
               >
                 {done ? (
                   <Flame className="w-4.5 h-4.5" fill="currentColor" />
@@ -169,7 +183,7 @@ export default function Home() {
       {/* All Courses */}
       <div>
         <h2 className="font-black text-lg text-neutral-900 mb-4 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-[#CE82FF]" />
+          <Sparkles className="w-5 h-5 text-[#CE82FF] duo-sparkle-icon" />
           All courses
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,7 +227,7 @@ export default function Home() {
       {/* Challenges Section */}
       <div>
         <h2 className="font-black text-lg text-neutral-900 mb-4 flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-[#FFC800]" />
+          <Trophy className="w-5 h-5 text-[#FFC800] duo-header-trophy" />
           Coding challenges
         </h2>
         <Link
