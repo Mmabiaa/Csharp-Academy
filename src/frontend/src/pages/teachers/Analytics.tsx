@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchAnalyticsDashboard } from "../../lib/api";
+import { fetchAnalyticsDashboard, fetchTeachingAnalytics } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { Users, BookOpen, Award, GraduationCap, TrendingUp, Lock, ShieldAlert, XCircle } from "lucide-react";
 
@@ -8,9 +8,9 @@ export default function Analytics() {
   const { token, isTeacher } = useAuth();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["analytics"],
-    queryFn: () => fetchAnalyticsDashboard(token!),
-    enabled: !!token && isTeacher,
+    queryKey: ["analytics", isTeacher ? "teaching" : "general"],
+    queryFn: () => isTeacher ? fetchTeachingAnalytics(token!) : fetchAnalyticsDashboard(token!),
+    enabled: !!token,
   });
 
   if (!token) {

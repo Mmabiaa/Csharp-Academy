@@ -44,7 +44,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     { path: "/assistant", label: "AI Assistant", icon: MessageSquare, authOnly: true, roles: ["student"] },
     { path: "/profile", label: "Profile", icon: User, authOnly: true },
     { path: "/teacher", label: "Teacher Portal", icon: GraduationCap, roles: ["teacher"], authOnly: true },
-    { path: "/assignments", label: "Assignments", icon: BookOpen, roles: ["teacher"], authOnly: true },
+    { path: "/assignments", label: "Assignments", icon: BookOpen, roles: ["student", "teacher"], authOnly: true },
     { path: "/analytics", label: "Analytics", icon: BarChart3, roles: ["teacher"], authOnly: true },
     { path: "/admin", label: "Admin", icon: LayoutDashboard, roles: ["admin"], authOnly: true },
     { path: "/admin/courses", label: "Manage Courses", icon: BookOpen, roles: ["admin"], authOnly: true },

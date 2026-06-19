@@ -362,6 +362,13 @@ export async function fetchAnalyticsDashboard(token: string): Promise<AnalyticsD
   return handleResponse<AnalyticsDashboard>(response);
 }
 
+export async function fetchTeachingAnalytics(token: string): Promise<AnalyticsDashboard> {
+  const response = await fetch(`${API_BASE_URL}/analytics/teaching`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse<AnalyticsDashboard>(response);
+}
+
 export async function generateQuiz(lessonId: number, token: string, count = 5): Promise<{ quizId: number; questionCount: number; usedAi: boolean }> {
   const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/quiz/generate?count=${count}`, {
     method: "POST",
@@ -550,6 +557,11 @@ export async function fetchMyAssignments(token: string): Promise<Assignment[]> {
 
 export async function fetchTeachingAssignments(token: string): Promise<Assignment[]> {
   const response = await fetch(`${API_BASE_URL}/assignments/teaching`, { headers: authHeaders(token) });
+  return handleResponse(response);
+}
+
+export async function fetchClassroomAssignments(token: string): Promise<Assignment[]> {
+  const response = await fetch(`${API_BASE_URL}/assignments/classroom`, { headers: authHeaders(token) });
   return handleResponse(response);
 }
 
