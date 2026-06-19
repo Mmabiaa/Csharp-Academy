@@ -28,31 +28,36 @@ type NavItem = {
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin, isTeacher } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   const navItems: NavItem[] = [
-    { path: "/", label: "Learn", icon: Home },
-    { path: "/courses", label: "Courses", icon: BookOpen },
-    { path: "/practices", label: "Practice", icon: Code2 },
-    { path: "/challenges", label: "Challenges", icon: Trophy },
-    { path: "/leaderboard", label: "Leaderboard", icon: Award, authOnly: true },
-    { path: "/classrooms", label: "Classrooms", icon: Users, authOnly: true },
-    { path: "/playground", label: "PlayGround", icon: Flame, authOnly: true },
-    { path: "/progress", label: "Progress", icon: BarChart3, authOnly: true },
-    { path: "/assistant", label: "AI Assistant", icon: MessageSquare, authOnly: true },
+    { path: "/", label: "Learn", icon: Home, roles: ["student"] },
+    { path: "/courses", label: "Courses", icon: BookOpen, roles: ["student"] },
+    { path: "/practices", label: "Practice", icon: Code2, roles: ["student"] },
+    { path: "/challenges", label: "Challenges", icon: Trophy, roles: ["student"] },
+    { path: "/leaderboard", label: "Leaderboard", icon: Award, authOnly: true, roles: ["student"] },
+    { path: "/classrooms", label: "Classrooms", icon: Users, authOnly: true, roles: ["student"] },
+    { path: "/playground", label: "PlayGround", icon: Flame, authOnly: true, roles: ["student"] },
+    { path: "/progress", label: "Progress", icon: BarChart3, authOnly: true, roles: ["student"] },
+    { path: "/assistant", label: "AI Assistant", icon: MessageSquare, authOnly: true, roles: ["student"] },
     { path: "/profile", label: "Profile", icon: User, authOnly: true },
-    { path: "/teacher", label: "Teacher Portal", icon: GraduationCap, roles: ["teacher", "admin"], authOnly: true },
-    { path: "/assignments", label: "Assignments", icon: BookOpen, roles: ["teacher", "admin"], authOnly: true },
-    { path: "/analytics", label: "Analytics", icon: BarChart3, roles: ["teacher", "admin"], authOnly: true },
+    { path: "/teacher", label: "Teacher Portal", icon: GraduationCap, roles: ["teacher"], authOnly: true },
+    { path: "/assignments", label: "Assignments", icon: BookOpen, roles: ["teacher"], authOnly: true },
+    { path: "/analytics", label: "Analytics", icon: BarChart3, roles: ["teacher"], authOnly: true },
     { path: "/admin", label: "Admin Dashboard", icon: LayoutDashboard, roles: ["admin"], authOnly: true },
   ];
 
   const isVisible = (item: NavItem) => {
     if (item.authOnly && !isAuthenticated) return false;
-    if (item.roles && !item.roles.some((r) => user?.role?.toLowerCase() === r)) return false;
-    return true;
+    if (!item.roles) return true; // Profile and other common items
+
+    if (isAdmin) return item.roles.includes("admin");
+    if (isTeacher) return item.roles.includes("teacher");
+
+    // Default to student items for students or guests
+    return item.roles.includes("student");
   };
 
   return (
@@ -78,11 +83,10 @@ export default function Layout({ children }: { children: ReactNode }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-black uppercase tracking-wide rounded-2xl transition-colors ${
-                  isActive
-                    ? "bg-[#DDF4FF] text-[#1CB0F6]"
-                    : "text-[#777777] hover:bg-neutral-50"
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-black uppercase tracking-wide rounded-2xl transition-colors ${isActive
+                  ? "bg-[#DDF4FF] text-[#1CB0F6]"
+                  : "text-[#777777] hover:bg-neutral-50"
+                  }`}
               >
                 <Icon className={`w-6 h-6 ${isActive ? "" : "text-neutral-400"}`} strokeWidth={isActive ? 2.5 : 2} />
                 {item.label}
@@ -158,9 +162,8 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex flex-col items-center justify-center py-2 rounded-xl transition-colors ${
-                    isActive ? "text-[#58CC02]" : "text-[#AFAFAF]"
-                  }`}
+                  className={`flex flex-col items-center justify-center py-2 rounded-xl transition-colors ${isActive ? "text-[#58CC02]" : "text-[#AFAFAF]"
+                    }`}
                 >
                   <Icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
                   <span className="text-[10px] font-black mt-1 uppercase tracking-wide">
