@@ -46,7 +46,10 @@ export default function Layout({ children }: { children: ReactNode }) {
     { path: "/teacher", label: "Teacher Portal", icon: GraduationCap, roles: ["teacher"], authOnly: true },
     { path: "/assignments", label: "Assignments", icon: BookOpen, roles: ["teacher"], authOnly: true },
     { path: "/analytics", label: "Analytics", icon: BarChart3, roles: ["teacher"], authOnly: true },
-    { path: "/admin", label: "Admin Dashboard", icon: LayoutDashboard, roles: ["admin"], authOnly: true },
+    { path: "/admin", label: "Admin", icon: LayoutDashboard, roles: ["admin"], authOnly: true },
+    { path: "/admin/courses", label: "Manage Courses", icon: BookOpen, roles: ["admin"], authOnly: true },
+    { path: "/admin/challenges", label: "Manage Challenges", icon: Trophy, roles: ["admin"], authOnly: true },
+    { path: "/admin/practices", label: "Manage Practices", icon: Code2, roles: ["admin"], authOnly: true },
   ];
 
   const isVisible = (item: NavItem) => {

@@ -14,6 +14,9 @@ import Classrooms from "./pages/student/Classrooms";
 import Analytics from "./pages/teachers/Analytics";
 import Practices from "./pages/student/Practices";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminCourses from "./pages/admin/AdminCourses";
+import AdminChallenges from "./pages/admin/AdminChallenges";
+import AdminPractices from "./pages/admin/AdminPractices";
 import TeacherPortal from "./pages/teachers/TeacherPortal";
 import Assignments from "./pages/teachers/Assignments";
 import Challenges from "./pages/student/Challenges";
@@ -43,6 +46,9 @@ function App() {
           <Route path="/assignments" element={<Assignments />} />
           <Route path="/teacher" element={<TeacherPortal />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/courses" element={<AdminCourses />} />
+          <Route path="/admin/challenges" element={<AdminChallenges />} />
+          <Route path="/admin/practices" element={<AdminPractices />} />
           <Route path="/certificates/:code" element={<CertificateVerify />} />
           <Route path="/certificates" element={<CertificateVerify />} />
           <Route path="/login" element={<Login />} />

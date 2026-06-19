@@ -628,6 +628,129 @@ export async function fetchUserProgressSummary(token: string): Promise<UserProgr
   return handleResponse(response);
 }
 
+// --- Admin Management Functions ---
+
+export async function updateCourse(token: string, id: number, data: Partial<Course>): Promise<Course> {
+  const response = await fetch(`${API_BASE_URL}/admin/courses/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteCourse(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/courses/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete course");
+}
+
+export async function createModule(token: string, data: Partial<Module> & { courseId: number }): Promise<Module> {
+  const response = await fetch(`${API_BASE_URL}/admin/modules`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateModule(token: string, id: number, data: Partial<Module>): Promise<Module> {
+  const response = await fetch(`${API_BASE_URL}/admin/modules/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteModule(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/modules/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete module");
+}
+
+export async function createLesson(token: string, data: Partial<LessonDetail> & { moduleId: number }): Promise<LessonDetail> {
+  const response = await fetch(`${API_BASE_URL}/admin/lessons`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateLesson(token: string, id: number, data: Partial<LessonDetail>): Promise<LessonDetail> {
+  const response = await fetch(`${API_BASE_URL}/admin/lessons/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteLesson(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/lessons/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete lesson");
+}
+
+export async function createChallenge(token: string, data: Partial<Challenge>): Promise<Challenge> {
+  const response = await fetch(`${API_BASE_URL}/admin/challenges`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateChallenge(token: string, id: number, data: Partial<Challenge>): Promise<Challenge> {
+  const response = await fetch(`${API_BASE_URL}/admin/challenges/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteChallenge(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/challenges/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete challenge");
+}
+
+export async function createPractice(token: string, data: Partial<CodingExercise>): Promise<CodingExercise> {
+  const response = await fetch(`${API_BASE_URL}/admin/practices`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updatePractice(token: string, id: number, data: Partial<CodingExercise>): Promise<CodingExercise> {
+  const response = await fetch(`${API_BASE_URL}/admin/practices/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deletePractice(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/practices/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete practice");
+}
+
 export async function uploadAttachment(
   token: string,
   file: File,
