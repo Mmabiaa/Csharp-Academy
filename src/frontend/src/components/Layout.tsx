@@ -84,11 +84,13 @@ export default function Layout({ children }: { children: ReactNode }) {
     if (item.authOnly && !isAuthenticated) return false;
     if (!item.roles) return true; // Profile and other common items
 
-    if (isAdmin) return item.roles.includes("admin");
-    if (isTeacher) return item.roles.includes("teacher");
+    const hasRole = (role: string) => item.roles?.some(r => r.toLowerCase() === role.toLowerCase());
+
+    if (isAdmin) return hasRole("admin");
+    if (isTeacher) return hasRole("teacher");
 
     // Default to student items for students or guests
-    return item.roles.includes("student");
+    return hasRole("student");
   };
 
   const roleLabel = isAdmin ? "Admin" : isTeacher ? "Teacher" : "Student";

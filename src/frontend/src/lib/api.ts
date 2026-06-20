@@ -128,6 +128,7 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   profileImageUrl?: string;
+  roles: string[];
   xp: number;
   currentStreak: number;
   maxStreak: number;

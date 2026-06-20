@@ -22,7 +22,13 @@ export default function Register() {
     try {
       const auth = await apiRegister(email, password, firstName, lastName, role);
       login(auth);
-      navigate("/");
+
+      // Role-based redirection
+      if (role.toLowerCase() === "teacher") {
+        navigate("/teacher");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {

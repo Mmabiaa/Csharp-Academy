@@ -1,4 +1,6 @@
 using CsharpAcademy.Domain.Interfaces;
+using CsharpAcademy.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using MediatR;
 
 namespace CsharpAcademy.Application.Users.Queries;
@@ -15,6 +17,7 @@ public class UserProfileDto
     public int Xp { get; set; }
     public int CurrentStreak { get; set; }
     public int MaxStreak { get; set; }
+    public List<string> Roles { get; set; } = new();
     public List<BadgeDto> Badges { get; set; } = new();
     public List<EnrollmentSummaryDto> Enrollments { get; set; } = new();
 }
@@ -37,13 +40,16 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
 {
     private readonly IUserRepository _userRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
+    private readonly UserManager<User> _userManager;
 
     public GetUserProfileQueryHandler(
         IUserRepository userRepository,
-        IEnrollmentRepository enrollmentRepository)
+        IEnrollmentRepository enrollmentRepository,
+        UserManager<User> userManager)
     {
         _userRepository = userRepository;
         _enrollmentRepository = enrollmentRepository;
+        _userManager = userManager;
     }
 
     public async Task<UserProfileDto> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
@@ -53,6 +59,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
 
         var badges = await _userRepository.GetUserBadgesAsync(request.UserId, cancellationToken);
         var enrollments = await _enrollmentRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+        var roles = await _userManager.GetRolesAsync(user);
 
         return new UserProfileDto
         {
@@ -60,6 +67,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
             Email = user.Email ?? string.Empty,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            Roles = roles.ToList(),
             ProfileImageUrl = user.ProfileImageUrl,
             Xp = user.Xp,
             CurrentStreak = user.CurrentStreak,

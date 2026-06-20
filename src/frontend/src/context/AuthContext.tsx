@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
 import { AuthResponse, fetchUserProfile } from "../lib/api";
 
 interface User {
@@ -29,15 +29,26 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const TOKEN_KEY = "csharp_academy_token";
 const USER_KEY = "csharp_academy_user";
 
-function normalizeUser(raw: any): User | null {
-  if (!raw?.userId) return null;
+function normalizeUser(raw: any, existingRoles?: string[]): User | null {
+  // Support both 'userId' (auth response) and 'id' (profile response)
+  const id = raw?.userId ?? raw?.UserId;
+  if (!id) return null;
+
+  // Preserve existing roles if the new data has none (prevents role-stripping on profile refresh)
+  const rawRoles = Array.isArray(raw.roles)
+    ? raw.roles
+    : Array.isArray(raw.Roles)
+      ? raw.Roles
+      : [];
+  const roles = rawRoles.length > 0 ? rawRoles : (existingRoles ?? []);
+
   return {
-    userId: raw.userId,
-    email: raw.email ?? "",
-    firstName: raw.firstName ?? "",
-    lastName: raw.lastName ?? "",
+    userId: id,
+    email: raw.email ?? raw.Email ?? "",
+    firstName: raw.firstName ?? raw.FirstName ?? "",
+    lastName: raw.lastName ?? raw.LastName ?? "",
     profileImageUrl: raw.profileImageUrl ?? raw.ProfileImageUrl,
-    roles: Array.isArray(raw.roles) ? raw.roles : (raw.Roles ?? []),
+    roles,
     xp: raw.xp ?? raw.Xp ?? 0,
     currentStreak: raw.currentStreak ?? raw.CurrentStreak ?? 0,
   };
@@ -55,7 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  // Track whether we just logged in so we skip the redundant profile refresh
+  const justLoggedIn = useRef(false);
+
   const login = (auth: AuthResponse) => {
+    justLoggedIn.current = true;
     setToken(auth.token);
     const userData = normalizeUser(auth)!;
     setUser(userData);
@@ -70,13 +85,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(USER_KEY);
   };
 
-  const refreshUser = async () => {
-    if (!token) return;
+  const refreshUser = async (currentToken?: string) => {
+    const tok = currentToken ?? token;
+    if (!tok) return;
     try {
-      const profile = await fetchUserProfile(token);
-      const userData = normalizeUser(profile)!;
-      setUser(userData);
-      localStorage.setItem(USER_KEY, JSON.stringify(userData));
+      const profile = await fetchUserProfile(tok);
+      setUser((prev) => {
+        // Preserve roles from existing state if profile returns none
+        const userData = normalizeUser(profile, prev?.roles)!;
+        localStorage.setItem(USER_KEY, JSON.stringify(userData));
+        return userData;
+      });
     } catch (error) {
       console.error("Failed to refresh user profile", error);
     }
@@ -89,15 +108,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(USER_KEY, JSON.stringify(newUser));
   };
 
-  // Initial refresh on mount if authenticated
+  // Only run the profile refresh on initial mount (page reload with existing token),
+  // NOT after a fresh login (roles are already correct from the auth response).
   useEffect(() => {
-    if (token) {
-      refreshUser();
+    if (!token) return;
+    if (justLoggedIn.current) {
+      // Skip refresh right after login — user data is already fresh from the auth response
+      justLoggedIn.current = false;
+      return;
     }
+    refreshUser(token);
   }, [token]);
 
-  const isTeacher = (user?.roles ?? []).some((r) => r === "Teacher" || r === "Admin");
-  const isAdmin = (user?.roles ?? []).some((r) => r === "Admin");
+  const isTeacher = (user?.roles ?? []).some((r) => r.toLowerCase() === "teacher" || r.toLowerCase() === "admin");
+  const isAdmin = (user?.roles ?? []).some((r) => r.toLowerCase() === "admin");
 
   return (
     <AuthContext.Provider value={{

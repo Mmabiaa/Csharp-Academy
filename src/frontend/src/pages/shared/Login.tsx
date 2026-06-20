@@ -20,7 +20,18 @@ export default function Login() {
     try {
       const auth = await apiLogin(email, password);
       login(auth);
-      navigate("/");
+
+      // Role-based redirection - handle both roles and Roles from API
+      const rawRoles = auth.roles || (auth as any).Roles || [];
+      const userRoles = rawRoles.map((r: string) => r.toLowerCase());
+
+      if (userRoles.includes("admin")) {
+        navigate("/admin");
+      } else if (userRoles.includes("teacher")) {
+        navigate("/teacher");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -34,7 +45,18 @@ export default function Login() {
     try {
       const auth = await apiGoogleLogin(credentialResponse.credential);
       login(auth);
-      navigate("/");
+
+      // Role-based redirection - handle both roles and Roles from API
+      const rawRoles = auth.roles || (auth as any).Roles || [];
+      const userRoles = rawRoles.map((r: string) => r.toLowerCase());
+
+      if (userRoles.includes("admin")) {
+        navigate("/admin");
+      } else if (userRoles.includes("teacher")) {
+        navigate("/teacher");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google login failed");
     } finally {
