@@ -60,6 +60,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
             Email = user.Email ?? string.Empty,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            ProfileImageUrl = user.ProfileImageUrl,
             Xp = user.Xp,
             CurrentStreak = user.CurrentStreak,
             MaxStreak = user.MaxStreak,
