@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   fetchTeachingAssignments,
   fetchClassroomAssignments,
@@ -11,7 +11,8 @@ import {
   getFileUrl,
   deleteAttachment,
   createAssignment,
-  fetchCourses
+  fetchCourses,
+  fetchClassrooms
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import CodeEditor from "../../components/CodeEditor";
@@ -38,6 +39,9 @@ import {
 export default function Assignments() {
   const { user, token, isTeacher, isAdmin, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const classFilter = searchParams.get("classId");
+
   const [activeId, setActiveId] = useState<number | null>(null);
   const [content, setContent] = useState("");
   const [message, setMessage] = useState("");
@@ -52,14 +56,21 @@ export default function Assignments() {
     description: "",
     instructions: "",
     courseId: 1,
+    classroomId: (classFilter ? Number(classFilter) : undefined) as number | undefined,
     maxPoints: 100,
     requiresCode: true,
     dueDate: "",
   });
 
   const { data: assignments, isLoading } = useQuery({
-    queryKey: ["assignments", isTeacher ? "teaching" : "classroom"],
-    queryFn: () => isTeacher ? fetchTeachingAssignments(token!) : fetchClassroomAssignments(token!),
+    queryKey: ["assignments", isTeacher ? "teaching" : "classroom", classFilter],
+    queryFn: async () => {
+      const all = isTeacher ? await fetchTeachingAssignments(token!) : await fetchClassroomAssignments(token!);
+      if (classFilter) {
+        return all.filter(a => a.classroomId === Number(classFilter));
+      }
+      return all;
+    },
     enabled: !!token,
   });
 
@@ -74,6 +85,12 @@ export default function Assignments() {
   const { data: courses } = useQuery({
     queryKey: ["courses-minimal"],
     queryFn: () => fetchCourses(),
+    enabled: !!token && isTeacher && showCreateForm,
+  });
+
+  const { data: classrooms } = useQuery({
+    queryKey: ["teacher-classrooms"],
+    queryFn: () => fetchClassrooms(token!),
     enabled: !!token && isTeacher && showCreateForm,
   });
 
@@ -166,6 +183,17 @@ export default function Assignments() {
                 className="w-full px-5 py-3 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold"
               >
                 {courses?.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black text-neutral-400 uppercase tracking-widest pl-1">Classroom (Optional)</label>
+              <select
+                value={createForm.classroomId ?? ""}
+                onChange={e => setCreateForm({ ...createForm, classroomId: e.target.value ? Number(e.target.value) : undefined })}
+                className="w-full px-5 py-3 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold"
+              >
+                <option value="">No Classroom (General)</option>
+                {classrooms?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
@@ -262,9 +290,16 @@ export default function Assignments() {
                   </div>
                   <div className="flex gap-2">
                     {isTeacher ? (
-                      <span className="duo-badge duo-badge-blue">
-                        {a.courseTitle || "General"}
-                      </span>
+                      <>
+                        <span className="duo-badge duo-badge-blue">
+                          {a.courseTitle || "General"}
+                        </span>
+                        {a.classroomId && (
+                          <span className="duo-badge duo-badge-gray">
+                            Class ID: {a.classroomId}
+                          </span>
+                        )}
+                      </>
                     ) : (
                       a.mySubmission ? (
                         <span className={`duo-badge ${a.mySubmission.status === 'Graded' ? 'duo-badge-green' : 'duo-badge-yellow'}`}>

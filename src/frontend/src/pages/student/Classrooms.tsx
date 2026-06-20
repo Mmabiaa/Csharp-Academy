@@ -22,6 +22,7 @@ import {
   X,
   KeyRound,
   FileText,
+  BookOpen,
 } from "lucide-react";
 
 export default function Classrooms() {
@@ -220,9 +221,8 @@ export default function Classrooms() {
 
       {message && (
         <div
-          className={`flex items-center gap-2 p-4 rounded-2xl font-black text-sm ${
-            isSuccess ? "bg-[#D7FFB8] text-[#46A302]" : "bg-[#FFDFE0] text-[#CC3A3A]"
-          }`}
+          className={`flex items-center gap-2 p-4 rounded-2xl font-black text-sm ${isSuccess ? "bg-[#D7FFB8] text-[#46A302]" : "bg-[#FFDFE0] text-[#CC3A3A]"
+            }`}
         >
           {isSuccess ? (
             <CheckCircle2 className="w-5 h-5 shrink-0" />
@@ -275,6 +275,13 @@ export default function Classrooms() {
                 <span className="duo-badge duo-badge-green">
                   {c.memberCount} member{c.memberCount !== 1 ? "s" : ""}
                 </span>
+                <Link
+                  to={`/assignments?classId=${c.id}`}
+                  className="duo-badge duo-badge-blue hover:bg-[#1CB0F6] hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <BookOpen className="w-3 h-3" />
+                  View Assignments
+                </Link>
               </div>
 
               {c.members.length > 0 && isTeacher && (

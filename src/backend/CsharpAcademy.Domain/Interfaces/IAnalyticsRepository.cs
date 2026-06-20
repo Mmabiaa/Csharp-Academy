@@ -3,6 +3,7 @@ namespace CsharpAcademy.Domain.Interfaces;
 public interface IAnalyticsRepository
 {
     Task<AnalyticsSnapshot> GetSnapshotAsync(CancellationToken cancellationToken = default);
+    Task<AnalyticsSnapshot> GetTeachingSnapshotAsync(int teacherId, CancellationToken cancellationToken = default);
 }
 
 public class AnalyticsSnapshot

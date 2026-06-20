@@ -50,6 +50,81 @@ public class AdminController : ControllerBase
         });
         return Ok(course);
     }
+
+    [HttpPut("courses/{id}")]
+    public async Task<IActionResult> UpdateCourse(int id, [FromBody] Course course)
+    {
+        if (id > 0)
+        {
+           await _courses.UpdateAsync(course);   
+        }
+        else 
+        {
+            await _courses.CreateAsync(course);
+        }
+        return Ok();
+    }
+
+    [HttpDelete("courses/{id}")]
+    public async Task<IActionResult> DeleteCourse(int id)
+    {
+        await _courses.DeleteAsync(id);
+        return Ok();
+    }
+
+    [HttpPost("modules")]
+    public async Task<ActionResult<CourseModule>> CreateModule([FromServices] IModuleRepository repo, [FromBody] CourseModule module) =>
+        Ok(await repo.CreateAsync(module));
+
+    [HttpPut("modules/{id}")]
+    public async Task<IActionResult> UpdateModule([FromServices] IModuleRepository repo, [FromBody] CourseModule module)
+    {
+        await repo.UpdateAsync(module);
+        return Ok();
+    }
+
+    [HttpDelete("modules/{id}")]
+    public async Task<IActionResult> DeleteModule([FromServices] IModuleRepository repo, int id)
+    {
+        await repo.DeleteAsync(id);
+        return Ok();
+    }
+
+    [HttpPost("lessons")]
+    public async Task<ActionResult<Lesson>> CreateLesson([FromServices] ILessonRepository repo, [FromBody] Lesson lesson) =>
+        Ok(await repo.CreateAsync(lesson));
+
+    [HttpPut("lessons/{id}")]
+    public async Task<IActionResult> UpdateLesson([FromServices] ILessonRepository repo, [FromBody] Lesson lesson)
+    {
+        await repo.UpdateAsync(lesson);
+        return Ok();
+    }
+
+    [HttpDelete("lessons/{id}")]
+    public async Task<IActionResult> DeleteLesson([FromServices] ILessonRepository repo, int id)
+    {
+        await repo.DeleteAsync(id);
+        return Ok();
+    }
+
+    [HttpPost("practices")]
+    public async Task<ActionResult<CodingExercise>> CreatePractice([FromServices] ICodingExerciseRepository repo, [FromBody] CodingExercise ex) =>
+        Ok(await repo.CreateAsync(ex));
+
+    [HttpPut("practices/{id}")]
+    public async Task<IActionResult> UpdatePractice([FromServices] ICodingExerciseRepository repo, [FromBody] CodingExercise ex)
+    {
+        await repo.UpdateAsync(ex);
+        return Ok();
+    }
+
+    [HttpDelete("practices/{id}")]
+    public async Task<IActionResult> DeletePractice([FromServices] ICodingExerciseRepository repo, int id)
+    {
+        await repo.DeleteAsync(id);
+        return Ok();
+    }
 }
 
 [ApiController]
@@ -102,6 +177,11 @@ public class AssignmentsController : ControllerBase
     [Authorize]
     [HttpGet("my")]
     public async Task<ActionResult<List<AssignmentDto>>> MyAssignments() =>
+        Ok(await _mediator.Send(new GetStudentAssignmentsQuery(GetUserId())));
+
+    [Authorize]
+    [HttpGet("classroom")]
+    public async Task<ActionResult<List<AssignmentDto>>> ClassroomAssignments() =>
         Ok(await _mediator.Send(new GetStudentAssignmentsQuery(GetUserId())));
 
     [Authorize(Roles = "Teacher,Admin")]

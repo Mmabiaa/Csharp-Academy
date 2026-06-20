@@ -342,14 +342,34 @@ export default function AdminCourses() {
                                             className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-mono text-sm leading-relaxed"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-neutral-400 uppercase tracking-widest pl-1">Order</label>
-                                        <input
-                                            type="number"
-                                            value={editForm.order}
-                                            onChange={e => setEditForm({ ...editForm, order: parseInt(e.target.value) })}
-                                            className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold"
-                                        />
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-neutral-400 uppercase tracking-widest pl-1">Order</label>
+                                            <input
+                                                type="number"
+                                                value={editForm.order}
+                                                onChange={e => setEditForm({ ...editForm, order: parseInt(e.target.value) })}
+                                                className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-neutral-400 uppercase tracking-widest pl-1">Video URL</label>
+                                            <input
+                                                value={editForm.videoUrl || ""}
+                                                onChange={e => setEditForm({ ...editForm, videoUrl: e.target.value })}
+                                                placeholder="https://youtube.com/..."
+                                                className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-neutral-400 uppercase tracking-widest pl-1">Best Practices</label>
+                                            <textarea
+                                                value={editForm.bestPractices || ""}
+                                                onChange={e => setEditForm({ ...editForm, bestPractices: e.target.value })}
+                                                rows={3}
+                                                className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold text-sm"
+                                            />
+                                        </div>
                                     </div>
                                 </>
                             )}

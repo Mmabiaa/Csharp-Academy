@@ -40,4 +40,27 @@ public class CodingExerciseRepository : ICodingExerciseRepository
             .ThenBy(e => e.Order)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<CodingExercise> CreateAsync(CodingExercise exercise, CancellationToken cancellationToken = default)
+    {
+        _context.CodingExercises.Add(exercise);
+        await _context.SaveChangesAsync(cancellationToken);
+        return exercise;
+    }
+
+    public async Task UpdateAsync(CodingExercise exercise, CancellationToken cancellationToken = default)
+    {
+        _context.CodingExercises.Update(exercise);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var e = await _context.CodingExercises.FindAsync(new object[] { id }, cancellationToken);
+        if (e != null)
+        {
+            _context.CodingExercises.Remove(e);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+    }
 }

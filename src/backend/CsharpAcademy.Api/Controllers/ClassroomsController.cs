@@ -89,8 +89,21 @@ public class AnalyticsController : ControllerBase
     [HttpGet("dashboard")]
     public async Task<ActionResult<AnalyticsSnapshot>> GetDashboard()
     {
-        var result = await _mediator.Send(new GetAnalyticsDashboardQuery());
-        return Ok(result);
+        return Ok(await _mediator.Send(new GetAnalyticsDashboardQuery()));
+    }
+
+    [Authorize(Roles = "Teacher,Admin")]
+    [HttpGet("teaching")]
+    public async Task<ActionResult<AnalyticsSnapshot>> GetTeachingAnalytics()
+    {
+        var teacherId = GetUserId();
+        return Ok(await _mediator.Send(new GetAnalyticsDashboardQuery(teacherId)));
+    }
+
+    private int GetUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return claim is not null && int.TryParse(claim, out var id) ? id : throw new UnauthorizedAccessException();
     }
 }
 

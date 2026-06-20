@@ -27,4 +27,62 @@ public class LessonRepository : ILessonRepository
             .Where(l => l.CourseModule.CourseId == courseId)
             .CountAsync(cancellationToken);
     }
+
+    public async Task<Lesson> CreateAsync(Lesson lesson, CancellationToken cancellationToken = default)
+    {
+        _context.Lessons.Add(lesson);
+        await _context.SaveChangesAsync(cancellationToken);
+        return lesson;
+    }
+
+    public async Task UpdateAsync(Lesson lesson, CancellationToken cancellationToken = default)
+    {
+        _context.Entry(lesson).State = EntityState.Modified;
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var lesson = await _context.Lessons.FindAsync(new object[] { id }, cancellationToken);
+        if (lesson != null)
+        {
+            _context.Lessons.Remove(lesson);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+    }
+}
+
+public class ModuleRepository : IModuleRepository
+{
+    private readonly ApplicationDbContext _context;
+    public ModuleRepository(ApplicationDbContext context) => _context = context;
+
+    public async Task<CourseModule?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        await _context.CourseModules.FindAsync(new object[] { id }, cancellationToken);
+
+    public async Task<CourseModule> CreateAsync(CourseModule module, CancellationToken cancellationToken = default)
+    {
+        _context.CourseModules.Add(module);
+        await _context.SaveChangesAsync(cancellationToken);
+        return module;
+    }
+
+    public async Task UpdateAsync(CourseModule module, CancellationToken cancellationToken = default)
+    {
+        _context.Entry(module).State = EntityState.Modified;
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var module = await _context.CourseModules.FindAsync(new object[] { id }, cancellationToken);
+        if (module != null)
+        {
+            _context.CourseModules.Remove(module);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
+        _context.CourseModules.CountAsync(cancellationToken);
 }

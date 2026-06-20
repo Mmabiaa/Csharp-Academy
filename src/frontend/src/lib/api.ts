@@ -27,6 +27,7 @@ export interface LessonDetail extends Lesson {
   isCompleted: boolean;
   bestPractices: string;
   voiceSummary: string;
+  videoUrl?: string;
   hasTutorial: boolean;
   hasPractice: boolean;
   hasVideos: boolean;
