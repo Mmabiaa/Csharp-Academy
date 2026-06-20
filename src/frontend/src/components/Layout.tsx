@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { ReactNode } from "react";
+import UserAvatar from "./UserAvatar";
 import {
   BookOpen,
   Trophy,
@@ -184,11 +185,15 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           {isAuthenticated && (
             <div className="relative flex items-center gap-2.5 px-2 py-2 rounded-2xl bg-neutral-50">
-              <div className="w-9 h-9 rounded-xl bg-[#58CC02] flex items-center justify-center text-white shrink-0 shadow-[0_2px_0_#46A302]">
-                <User className="w-4 h-4" />
-              </div>
+              <UserAvatar
+                profileImageUrl={user?.profileImageUrl}
+                firstName={user?.firstName}
+                lastName={user?.lastName}
+                size="sm"
+                className="shrink-0"
+              />
               <div className="min-w-0">
-                <p className="text-xs font-black text-neutral-800 truncate">{user?.email}</p>
+                <p className="text-xs font-black text-neutral-800 truncate">{user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : user?.email}</p>
                 <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide">{roleLabel}</p>
               </div>
             </div>
@@ -242,6 +247,16 @@ export default function Layout({ children }: { children: ReactNode }) {
               <Flame className="w-4 h-4 text-[#FF9600] duo-flame-flicker" fill="#FF9600" />
               <span className="text-xs font-black text-[#CC6E00]">{user?.currentStreak ?? 0}</span>
             </div>
+            {isAuthenticated && (
+              <Link to="/profile">
+                <UserAvatar
+                  profileImageUrl={user?.profileImageUrl}
+                  firstName={user?.firstName}
+                  lastName={user?.lastName}
+                  size="sm"
+                />
+              </Link>
+            )}
           </div>
         </header>
 

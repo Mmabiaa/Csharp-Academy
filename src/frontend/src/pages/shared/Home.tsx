@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCourses } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import UserAvatar from "../../components/UserAvatar";
 import {
   ArrowRight,
   BookOpen,
@@ -73,15 +74,28 @@ export default function Home() {
 
       {/* Top Section */}
       <div className="flex items-start justify-between gap-4 mb-2">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-1">
-            {isAuthenticated ? "Let's keep learning! 🦉" : "Welcome!"}
-          </h1>
-          <p className="text-neutral-600 font-bold">
-            {isAuthenticated
-              ? "Continue your journey today"
-              : "Start learning C# today"}
-          </p>
+        <div className="flex items-center gap-3">
+          {isAuthenticated && (
+            <Link to="/profile" className="shrink-0">
+              <UserAvatar
+                profileImageUrl={user?.profileImageUrl}
+                firstName={user?.firstName}
+                lastName={user?.lastName}
+                size="md"
+                className="border-2 border-white shadow-md hover:scale-105 transition-transform"
+              />
+            </Link>
+          )}
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-1">
+              {isAuthenticated ? `Hey, ${user?.firstName || "there"}! 🦉` : "Welcome!"}
+            </h1>
+            <p className="text-neutral-600 font-bold">
+              {isAuthenticated
+                ? "Continue your journey today"
+                : "Start learning C# today"}
+            </p>
+          </div>
         </div>
         {isAuthenticated && (
           <div className="hidden sm:flex items-center gap-2 shrink-0">

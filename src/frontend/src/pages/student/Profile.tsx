@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { fetchUserProfile, fetchCertificates, getCertificatePdfUrl, updateProfile } from "../../lib/api";
+import UserAvatar from "../../components/UserAvatar";
 import { useAuth } from "../../context/AuthContext";
 import {
   Star, Flame, Trophy, Award, BookOpen, Download,
@@ -179,8 +180,8 @@ export default function Profile() {
         <button
           onClick={() => setActiveTab("profile")}
           className={`px-6 py-4 text-sm font-black uppercase tracking-wide transition-all border-b-4 -mb-[2px] whitespace-nowrap ${activeTab === "profile"
-              ? "border-[#58CC02] text-[#58CC02]"
-              : "border-transparent text-neutral-400 hover:text-neutral-500"
+            ? "border-[#58CC02] text-[#58CC02]"
+            : "border-transparent text-neutral-400 hover:text-neutral-500"
             }`}
         >
           <div className="flex items-center gap-2">
@@ -191,8 +192,8 @@ export default function Profile() {
         <button
           onClick={() => setActiveTab("settings")}
           className={`px-6 py-4 text-sm font-black uppercase tracking-wide transition-all border-b-4 -mb-[2px] whitespace-nowrap ${activeTab === "settings"
-              ? "border-[#1CB0F6] text-[#1CB0F6]"
-              : "border-transparent text-neutral-400 hover:text-neutral-500"
+            ? "border-[#1CB0F6] text-[#1CB0F6]"
+            : "border-transparent text-neutral-400 hover:text-neutral-500"
             }`}
         >
           <div className="flex items-center gap-2">
@@ -207,19 +208,13 @@ export default function Profile() {
           {/* Profile Header */}
           <div className="text-center group">
             <div className="relative inline-block">
-              {profile.profileImageUrl ? (
-                <img
-                  src={profile.profileImageUrl}
-                  alt="Avatar"
-                  className="w-24 h-24 rounded-3xl object-cover bg-white shadow-[0_5px_0_#e5e5e5] duo-pop p-1 border-2 border-[#e5e5e5]"
-                />
-              ) : (
-                <div className="w-24 h-24 bg-[#58CC02] rounded-3xl flex items-center justify-center mx-auto shadow-[0_5px_0_#46A302] duo-pop">
-                  <span className="text-4xl font-black text-white">
-                    {profile.firstName[0]}{profile.lastName[0]}
-                  </span>
-                </div>
-              )}
+              <UserAvatar
+                profileImageUrl={profile.profileImageUrl}
+                firstName={profile.firstName}
+                lastName={profile.lastName}
+                size="xl"
+                className="shadow-[0_5px_0_#e5e5e5] duo-pop border-4 border-white"
+              />
               <button
                 onClick={() => setActiveTab("settings")}
                 className="absolute -right-2 -bottom-2 w-10 h-10 bg-white border-2 border-[#e5e5e5] rounded-xl flex items-center justify-center text-neutral-400 hover:text-[#1CB0F6] shadow-[0_2px_0_#e5e5e5] hover:translate-y-[-1px] transition-all"
@@ -338,6 +333,21 @@ export default function Profile() {
                 Customize Avatar
               </h2>
 
+              {/* Live Preview */}
+              <div className="flex items-center gap-4 mb-6 p-4 bg-neutral-50 rounded-2xl border-2 border-neutral-200">
+                <UserAvatar
+                  profileImageUrl={formData.profileImageUrl || undefined}
+                  firstName={formData.firstName || profile.firstName}
+                  lastName={formData.lastName || profile.lastName}
+                  size="lg"
+                  className="border-4 border-white shadow-md flex-shrink-0"
+                />
+                <div>
+                  <p className="font-black text-neutral-800">{formData.firstName || profile.firstName} {formData.lastName || profile.lastName}</p>
+                  <p className="text-sm text-neutral-500 font-bold">Avatar preview</p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-4 md:grid-cols-8 gap-3 mb-6">
                 {PRESET_AVATARS.map((avatar) => (
                   <button
@@ -345,8 +355,8 @@ export default function Profile() {
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, profileImageUrl: avatar }))}
                     className={`relative w-full aspect-square rounded-2xl overflow-hidden border-2 transition-all p-1 bg-white ${formData.profileImageUrl === avatar
-                        ? "border-[#1CB0F6] shadow-[0_0_0_2px_#1CB0F6] scale-105 z-10"
-                        : "border-neutral-200 hover:border-neutral-300 hover:scale-105"
+                      ? "border-[#1CB0F6] shadow-[0_0_0_2px_#1CB0F6] scale-105 z-10"
+                      : "border-neutral-200 hover:border-neutral-300 hover:scale-105"
                       }`}
                   >
                     <img src={avatar} alt="Avatar option" className="w-full h-full object-cover" />
