@@ -12,6 +12,7 @@ import {
   submitPractice,
   runCode,
   fetchLessonVideos,
+  fetchCourseById,
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useVoiceNarration } from "../../hooks/useVoiceNarration";
@@ -100,6 +101,15 @@ export default function LessonPage() {
     queryFn: () => fetchLessonVideos(lessonId),
     enabled: !isNaN(lessonId) && (tab === "video" || lesson?.hasVideos),
   });
+  const { data: course } = useQuery({
+    queryKey: ["course", lesson?.courseId],
+    queryFn: () => fetchCourseById(lesson!.courseId),
+    enabled: !!lesson?.courseId,
+  });
+
+  const allLessons = course?.modules.flatMap((m) => m.lessons) ?? [];
+  const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
+  const nextLesson = allLessons[currentIndex + 1];
 
   const activeExercise =
     exercises?.find((e) => e.id === selectedExercise) ?? exercises?.[0];
@@ -207,9 +217,9 @@ export default function LessonPage() {
 
   const availableTabs = (["read", "video", "tutorial", "practice", "practices"] as Tab[]).filter(
     (t) => {
-      if (t === "video") return lesson.hasVideos;
-      if (t === "tutorial") return lesson.hasTutorial;
-      if (t === "practice") return lesson.hasPractice;
+      if (t === "video") return lesson.hasVideos || (lesson as any).HasVideos || (lesson.videos && lesson.videos.length > 0);
+      if (t === "tutorial") return lesson.hasTutorial || (lesson as any).HasTutorial;
+      if (t === "practice") return lesson.hasPractice || (lesson as any).HasPractice;
       if (t === "practices") return !!lesson.bestPractices;
       return true;
     }
@@ -228,17 +238,16 @@ export default function LessonPage() {
       <style>{`
         @keyframes duo-tab-read {
           0%, 100% { transform: scaleX(1) rotate(0deg); }
-          30% { transform: scaleX(0.88) rotate(-5deg); }
-          65% { transform: scaleX(1.07) rotate(3deg); }
+          50% { transform: scaleX(1.1) rotate(2deg); }
         }
         @keyframes duo-tab-video {
-          0%, 100% { transform: scale(1); }
-          40% { transform: scale(1.2); }
-          70% { transform: scale(0.95); }
-        }
-        @keyframes duo-tab-compass {
           0%, 100% { transform: rotate(0deg); }
           50% { transform: rotate(180deg); }
+        }
+        @keyframes duo-tab-compass {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          25% { transform: scale(1.2) rotate(-15deg); }
+          75% { transform: scale(1.2) rotate(15deg); }
         }
         @keyframes duo-tab-code {
           0%, 100% { transform: translateX(0); }
@@ -265,7 +274,7 @@ export default function LessonPage() {
       `}</style>
 
       {/* Back Button & Header */}
-      <div>
+      <div className="space-y-4">
         <Link
           to={`/courses/${lesson.courseId}`}
           className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm mb-4"
@@ -321,9 +330,9 @@ export default function LessonPage() {
         </article>
       )}
 
-      {tab === "video" && videos && (
+      {tab === "video" && (
         <div className="space-y-4">
-          {videos.length === 0 ? (
+          {!lesson.videos || lesson.videos.length === 0 ? (
             <div className="duo-panel text-center py-10">
               <div className="w-14 h-14 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Video className="w-7 h-7 text-neutral-400" />
@@ -331,7 +340,7 @@ export default function LessonPage() {
               <p className="text-neutral-500 font-bold">No videos for this lesson.</p>
             </div>
           ) : (
-            videos.map((v) => (
+            lesson.videos.map((v) => (
               <div key={v.id} className="duo-card">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="font-black text-neutral-900">{v.title}</h2>
@@ -539,6 +548,15 @@ export default function LessonPage() {
                   >
                     {completeMutation.isPending ? "Saving..." : "Mark as complete"}
                   </button>
+                )}
+                {nextLesson && (
+                  <Link
+                    to={`/lessons/${nextLesson.id}`}
+                    className="duo-btn3d duo-btn3d-blue"
+                  >
+                    Next Lesson
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                 )}
                 {lesson.hasQuiz && (
                   <Link

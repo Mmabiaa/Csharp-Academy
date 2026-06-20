@@ -113,7 +113,7 @@ export default function AdminCourses() {
         const currentVideos = editForm.videos || [];
         setEditForm({
             ...editForm,
-            videos: [...currentVideos, { title: "New Video", videoUrl: "", provider: "YouTube", durationMinutes: 10 }]
+            videos: [...currentVideos, { title: "", videoUrl: "", provider: "YouTube", durationMinutes: 10 }]
         });
     };
 
@@ -418,12 +418,20 @@ export default function AdminCourses() {
                                                                 Delete
                                                             </button>
                                                         </div>
-                                                        <input
-                                                            value={v.videoUrl}
-                                                            onChange={e => handleVideoChange(index, "videoUrl", e.target.value)}
-                                                            className="w-full px-4 py-3 rounded-xl bg-white border-2 border-transparent focus:border-[#58CC02] outline-none text-sm font-mono"
-                                                            placeholder="https://www.youtube.com/watch?v=..."
-                                                        />
+                                                        <div className="space-y-2">
+                                                            <input
+                                                                value={v.title}
+                                                                onChange={e => handleVideoChange(index, "title", e.target.value)}
+                                                                className="w-full px-4 py-2 rounded-xl bg-white border-2 border-transparent focus:border-[#58CC02] outline-none text-xs font-bold"
+                                                                placeholder="Video Name (e.g. Introduction to C#)"
+                                                            />
+                                                            <input
+                                                                value={v.videoUrl}
+                                                                onChange={e => handleVideoChange(index, "videoUrl", e.target.value)}
+                                                                className="w-full px-4 py-2 rounded-xl bg-white border-2 border-transparent focus:border-[#58CC02] outline-none text-[11px] font-mono"
+                                                                placeholder="YouTube/Vimeo URL"
+                                                            />
+                                                        </div>
                                                     </div>
                                                 ))}
                                                 {(!editForm.videos || editForm.videos.length === 0) && (
