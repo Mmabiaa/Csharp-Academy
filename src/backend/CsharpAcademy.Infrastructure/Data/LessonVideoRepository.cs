@@ -32,4 +32,12 @@ public class LessonVideoRepository : ILessonVideoRepository
             await _context.SaveChangesAsync(cancellationToken);
         }
     }
+
+    public async Task<List<LessonVideo>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        await _context.LessonVideos
+            .Include(v => v.Lesson)
+                .ThenInclude(l => l.CourseModule)
+                    .ThenInclude(m => m.Course)
+            .OrderBy(v => v.Title)
+            .ToListAsync(cancellationToken);
 }

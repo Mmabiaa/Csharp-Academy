@@ -10,7 +10,12 @@ import {
     deleteModule,
     createLesson,
     updateLesson,
-    deleteLesson
+    deleteLesson,
+    fetchLesson,
+    createLessonVideo,
+    updateLessonVideo,
+    deleteLessonVideo,
+    LessonVideo
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -25,8 +30,10 @@ import {
     X,
     ArrowLeft,
     Settings,
-    Eye
+    Eye,
+    Video
 } from "lucide-react";
+
 
 type ViewState = {
     type: "courses" | "modules" | "lessons";
@@ -102,6 +109,26 @@ export default function AdminCourses() {
         }
     });
 
+    const handleAddVideo = () => {
+        const currentVideos = editForm.videos || [];
+        setEditForm({
+            ...editForm,
+            videos: [...currentVideos, { title: "New Video", videoUrl: "", provider: "YouTube", durationMinutes: 10 }]
+        });
+    };
+
+    const handleRemoveVideo = (index: number) => {
+        const currentVideos = [...editForm.videos];
+        currentVideos.splice(index, 1);
+        setEditForm({ ...editForm, videos: currentVideos });
+    };
+
+    const handleVideoChange = (index: number, field: string, value: any) => {
+        const currentVideos = [...editForm.videos];
+        currentVideos[index] = { ...currentVideos[index], [field]: value };
+        setEditForm({ ...editForm, videos: currentVideos });
+    };
+
     const deleteItemMutation = useMutation({
         mutationFn: async ({ type, id }: { type: string, id: number }) => {
             if (type === "courses") await deleteCourse(token!, id);
@@ -116,9 +143,20 @@ export default function AdminCourses() {
 
     if (!isAdmin) return <div className="p-8 text-center font-black text-red-500">Access Denied</div>;
 
-    const handleEdit = (item: any) => {
+    const handleEdit = async (item: any) => {
         setEditingId(item.id);
-        setEditForm(item);
+        if (view.type === "lessons") {
+            // Fetch full lesson details for list of videos, best practices etc
+            try {
+                const fullLesson = await fetchLesson(item.id, token!);
+                setEditForm(fullLesson);
+            } catch (error) {
+                console.error("Failed to fetch lesson details", error);
+                setEditForm(item); // Fallback to basic data
+            }
+        } else {
+            setEditForm(item);
+        }
     };
 
     const handleBack = () => {
@@ -352,15 +390,50 @@ export default function AdminCourses() {
                                                 className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-neutral-400 uppercase tracking-widest pl-1">Video URL</label>
-                                            <input
-                                                value={editForm.videoUrl || ""}
-                                                onChange={e => setEditForm({ ...editForm, videoUrl: e.target.value })}
-                                                placeholder="https://youtube.com/..."
-                                                className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold"
-                                            />
+
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-black text-neutral-400 uppercase tracking-widest pl-1">Lesson Videos ({editForm.videos?.length || 0})</label>
+                                                <button
+                                                    onClick={handleAddVideo}
+                                                    className="flex items-center gap-1 text-[10px] font-black text-[#58CC02] uppercase tracking-wider hover:bg-[#D7FFB8] px-2 py-1 rounded-lg transition-colors border-2 border-[#58CC02]"
+                                                >
+                                                    <Plus className="w-3 h-3" />
+                                                    Add Video URL
+                                                </button>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                {editForm.videos?.map((v: any, index: number) => (
+                                                    <div key={index} className="p-4 rounded-2xl bg-neutral-50 border-2 border-neutral-100 space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <Video className="w-5 h-5 text-red-500" />
+                                                                <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Video URL</span>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleRemoveVideo(index)}
+                                                                className="p-1 px-2 hover:bg-red-50 rounded-lg text-red-500 font-bold text-[10px] uppercase transition-all"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                        <input
+                                                            value={v.videoUrl}
+                                                            onChange={e => handleVideoChange(index, "videoUrl", e.target.value)}
+                                                            className="w-full px-4 py-3 rounded-xl bg-white border-2 border-transparent focus:border-[#58CC02] outline-none text-sm font-mono"
+                                                            placeholder="https://www.youtube.com/watch?v=..."
+                                                        />
+                                                    </div>
+                                                ))}
+                                                {(!editForm.videos || editForm.videos.length === 0) && (
+                                                    <p className="text-xs font-bold text-neutral-400 italic p-6 text-center border-2 border-dashed border-neutral-200 rounded-3xl">
+                                                        No videos. Click "Add Video URL" to include lesson videos.
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
+
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-neutral-400 uppercase tracking-widest pl-1">Best Practices</label>
                                             <textarea
@@ -368,6 +441,7 @@ export default function AdminCourses() {
                                                 onChange={e => setEditForm({ ...editForm, bestPractices: e.target.value })}
                                                 rows={3}
                                                 className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-[#58CC02] focus:bg-white transition-all font-bold text-sm"
+                                                placeholder="What tips should students follow?"
                                             />
                                         </div>
                                     </div>

@@ -12,7 +12,6 @@ import {
   submitPractice,
   runCode,
   fetchLessonVideos,
-  fetchCourseById,
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useVoiceNarration } from "../../hooks/useVoiceNarration";
@@ -101,16 +100,6 @@ export default function LessonPage() {
     queryFn: () => fetchLessonVideos(lessonId),
     enabled: !isNaN(lessonId) && (tab === "video" || lesson?.hasVideos),
   });
-
-  const { data: course } = useQuery({
-    queryKey: ["course", lesson?.courseId],
-    queryFn: () => fetchCourseById(lesson!.courseId),
-    enabled: !!lesson?.courseId,
-  });
-
-  const allLessons = course?.modules.flatMap((m) => m.lessons) ?? [];
-  const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
-  const nextLesson = allLessons[currentIndex + 1];
 
   const activeExercise =
     exercises?.find((e) => e.id === selectedExercise) ?? exercises?.[0];
@@ -599,15 +588,6 @@ export default function LessonPage() {
                   <MessageSquare className="w-4 h-4" />
                   Ask AI tutor
                 </Link>
-                {nextLesson && (
-                  <Link
-                    to={`/lessons/${nextLesson.id}`}
-                    className="duo-btn3d duo-btn3d-blue ml-auto"
-                  >
-                    Next Lesson
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                )}
               </>
             ) : (
               <p className="text-neutral-600 font-bold">

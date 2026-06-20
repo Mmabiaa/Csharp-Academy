@@ -37,7 +37,38 @@ public class LessonRepository : ILessonRepository
 
     public async Task UpdateAsync(Lesson lesson, CancellationToken cancellationToken = default)
     {
-        _context.Entry(lesson).State = EntityState.Modified;
+        var existingLesson = await _context.Lessons
+            .Include(l => l.Videos)
+            .FirstOrDefaultAsync(l => l.Id == lesson.Id, cancellationToken);
+
+        if (existingLesson == null) return;
+
+        // Update basic properties
+        _context.Entry(existingLesson).CurrentValues.SetValues(lesson);
+
+        // Synchronize Videos
+        // Remove videos not in the new list
+        foreach (var existingVideo in existingLesson.Videos.ToList())
+        {
+            if (!lesson.Videos.Any(v => v.Id == existingVideo.Id))
+                _context.LessonVideos.Remove(existingVideo);
+        }
+
+        // Add or update videos
+        foreach (var video in lesson.Videos)
+        {
+            var existingVideo = existingLesson.Videos.FirstOrDefault(v => v.Id == video.Id);
+            if (existingVideo != null)
+            {
+                _context.Entry(existingVideo).CurrentValues.SetValues(video);
+            }
+            else
+            {
+                video.LessonId = lesson.Id;
+                existingLesson.Videos.Add(video);
+            }
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
     }
 

@@ -9,6 +9,8 @@ using CsharpAcademy.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using CsharpAcademy.Infrastructure.Data;
 
 namespace CsharpAcademy.Api.Controllers;
 
@@ -121,6 +123,33 @@ public class AdminController : ControllerBase
 
     [HttpDelete("practices/{id}")]
     public async Task<IActionResult> DeletePractice([FromServices] ICodingExerciseRepository repo, int id)
+    {
+        await repo.DeleteAsync(id);
+        return Ok();
+    }
+
+    [HttpGet("videos")]
+    public async Task<ActionResult<List<CsharpAcademy.Application.Challenges.Queries.LessonVideoDto>>> GetAllVideos() =>
+        Ok(await _mediator.Send(new CsharpAcademy.Application.Challenges.Queries.GetAllVideosQuery()));
+
+    [HttpPost("videos")]
+    public async Task<IActionResult> CreateVideo([FromBody] LessonVideo video, [FromServices] ApplicationDbContext context)
+    {
+        await context.LessonVideos.AddAsync(video);
+        await context.SaveChangesAsync();
+        return Ok();
+    }
+
+    [HttpPut("videos/{id}")]
+    public async Task<IActionResult> UpdateVideo(int id, [FromBody] LessonVideo video, [FromServices] ApplicationDbContext context)
+    {
+        context.Entry(video).State = EntityState.Modified;
+        await context.SaveChangesAsync();
+        return Ok();
+    }
+
+    [HttpDelete("videos/{id}")]
+    public async Task<IActionResult> DeleteVideo(int id, [FromServices] ILessonVideoRepository repo)
     {
         await repo.DeleteAsync(id);
         return Ok();

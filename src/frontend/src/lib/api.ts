@@ -18,6 +18,15 @@ export interface Lesson {
   durationMinutes?: number;
 }
 
+export interface LessonVideo {
+  id: number;
+  title: string;
+  videoUrl: string;
+  provider: string;
+  embedUrl: string;
+  durationMinutes: number;
+}
+
 export interface LessonDetail extends Lesson {
   moduleId: number;
   moduleTitle: string;
@@ -27,7 +36,7 @@ export interface LessonDetail extends Lesson {
   isCompleted: boolean;
   bestPractices: string;
   voiceSummary: string;
-  videoUrl?: string;
+  videos: LessonVideo[];
   hasTutorial: boolean;
   hasPractice: boolean;
   hasVideos: boolean;
@@ -794,4 +803,35 @@ export async function deleteAttachment(token: string, id: number): Promise<void>
 export function getFileUrl(path: string): string {
   const base = API_BASE_URL.replace("/api", "");
   return `${base}${path}`;
+}
+
+export async function createLessonVideo(token: string, data: Partial<LessonVideo>): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/videos`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to create video");
+}
+
+export async function fetchAllLessonVideos(token: string): Promise<LessonVideo[]> {
+  const response = await fetch(`${API_BASE_URL}/admin/videos`, { headers: authHeaders(token) });
+  return handleResponse(response);
+}
+
+export async function updateLessonVideo(token: string, id: number, data: Partial<LessonVideo>): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/videos/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to update video");
+}
+
+export async function deleteLessonVideo(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/videos/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete video");
 }
