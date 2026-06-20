@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { data: courses, isLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: fetchCourses,
@@ -22,7 +22,8 @@ export default function Home() {
   const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
   const todayIndex = new Date().getDay();
   const mondayFirstIndex = (todayIndex + 6) % 7;
-  const streakDays = 5;
+  const streakDays = user?.currentStreak ?? 0;
+  const userXp = user?.xp ?? 0;
 
   return (
     <div className="space-y-8 pb-24 md:pb-0">
@@ -86,7 +87,7 @@ export default function Home() {
           <div className="hidden sm:flex items-center gap-2 shrink-0">
             <div className="duo-xp-pill !text-sm !px-3 !py-2">
               <Gem className="w-4 h-4" />
-              1,240
+              {userXp.toLocaleString()}
             </div>
           </div>
         )}
@@ -130,15 +131,15 @@ export default function Home() {
         </p>
         <div className="relative flex items-center justify-between gap-2">
           {weekDays.map((day, index) => {
-            const done = index < mondayFirstIndex;
-            const today = index === mondayFirstIndex;
+            const isActive = index <= mondayFirstIndex && index > mondayFirstIndex - streakDays;
+            const isToday = index === mondayFirstIndex;
             return (
               <div
                 key={index}
-                className={`duo-day !rounded-full !w-11 !h-11 !gap-0 ${done ? "duo-day-done" : today ? "duo-day-today" : "duo-day-future"
+                className={`duo-day !rounded-full !w-11 !h-11 !gap-0 ${isActive ? "duo-day-done" : isToday ? "duo-day-today" : "duo-day-future"
                   }`}
               >
-                {done ? (
+                {isActive ? (
                   <Flame className="w-4.5 h-4.5" fill="currentColor" />
                 ) : (
                   <span className="text-xs">{day}</span>

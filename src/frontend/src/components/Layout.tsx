@@ -201,7 +201,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             </div>
             <div className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-br from-[#FFF1E0] to-[#FFE0BD] rounded-xl px-3 py-2 border-2 border-[#FF9600]/30">
               <Flame className="w-4 h-4 text-[#FF9600] duo-flame-flicker" fill="#FF9600" />
-              <span className="font-black text-[#CC6E00] text-sm">5</span>
+              <span className="font-black text-[#CC6E00] text-sm">{user?.currentStreak ?? 0}</span>
             </div>
           </div>
           {!isAuthenticated ? (
@@ -240,7 +240,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             </div>
             <div className="flex items-center gap-1 bg-gradient-to-br from-[#FFF1E0] to-[#FFE0BD] rounded-lg px-2 py-1">
               <Flame className="w-4 h-4 text-[#FF9600] duo-flame-flicker" fill="#FF9600" />
-              <span className="text-xs font-black text-[#CC6E00]">5</span>
+              <span className="text-xs font-black text-[#CC6E00]">{user?.currentStreak ?? 0}</span>
             </div>
           </div>
         </header>

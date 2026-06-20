@@ -24,38 +24,44 @@ import ProgressDashboard from "./pages/student/ProgressDashboard";
 import Login from "./pages/shared/Login";
 import Register from "./pages/shared/Register";
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/courses/:id" element={<CourseDetail />} />
-          <Route path="/practices" element={<Practices />} />
-          <Route path="/challenges" element={<Challenges />} />
-          <Route path="/lessons/:id" element={<LessonPage />} />
-          <Route path="/lessons/:id/quiz" element={<QuizPage />} />
-          <Route path="/playground" element={<Playground />} />
-          <Route path="/assistant" element={<Assistant />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/classrooms" element={<Classrooms />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/progress" element={<ProgressDashboard />} />
-          <Route path="/assignments" element={<Assignments />} />
-          <Route path="/teacher" element={<TeacherPortal />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/courses" element={<AdminCourses />} />
-          <Route path="/admin/challenges" element={<AdminChallenges />} />
-          <Route path="/admin/practices" element={<AdminPractices />} />
-          <Route path="/certificates/:code" element={<CertificateVerify />} />
-          <Route path="/certificates" element={<CertificateVerify />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:id" element={<CourseDetail />} />
+            <Route path="/practices" element={<Practices />} />
+            <Route path="/challenges" element={<Challenges />} />
+            <Route path="/lessons/:id" element={<LessonPage />} />
+            <Route path="/lessons/:id/quiz" element={<QuizPage />} />
+            <Route path="/playground" element={<Playground />} />
+            <Route path="/assistant" element={<Assistant />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/classrooms" element={<Classrooms />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/progress" element={<ProgressDashboard />} />
+            <Route path="/assignments" element={<Assignments />} />
+            <Route path="/teacher" element={<TeacherPortal />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/courses" element={<AdminCourses />} />
+            <Route path="/admin/challenges" element={<AdminChallenges />} />
+            <Route path="/admin/practices" element={<AdminPractices />} />
+            <Route path="/certificates/:code" element={<CertificateVerify />} />
+            <Route path="/certificates" element={<CertificateVerify />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 

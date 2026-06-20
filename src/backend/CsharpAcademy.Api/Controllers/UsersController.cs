@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CsharpAcademy.Application.Admin.Queries;
 using CsharpAcademy.Application.Progress.Queries;
+using CsharpAcademy.Application.Users.Commands;
 using CsharpAcademy.Application.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,9 @@ public class UsersController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Gets the profile of the currently authenticated user.
+    /// </summary>
     [Authorize]
     [HttpGet("me")]
     public async Task<ActionResult<UserProfileDto>> GetProfile()
@@ -28,6 +32,23 @@ public class UsersController : ControllerBase
         return Ok(profile);
     }
 
+    /// <summary>
+    /// Updates the profile of the currently authenticated user.
+    /// </summary>
+    [Authorize]
+    [HttpPut("me")]
+    public async Task<ActionResult> UpdateProfile([FromBody] UpdateUserProfileCommand command)
+    {
+        var userId = GetRequiredUserId();
+        if (command.UserId != userId) return Forbid();
+
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Gets a summary of the currently authenticated user's overall progress.
+    /// </summary>
     [Authorize]
     [HttpGet("me/progress")]
     public async Task<ActionResult<UserProgressSummaryDto>> GetProgressSummary()

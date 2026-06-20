@@ -68,7 +68,10 @@ export interface AuthResponse {
   email: string;
   firstName: string;
   lastName: string;
+  profileImageUrl?: string;
   roles: string[];
+  xp: number;
+  currentStreak: number;
 }
 
 export interface Enrollment {
@@ -124,11 +127,22 @@ export interface UserProfile {
   email: string;
   firstName: string;
   lastName: string;
+  profileImageUrl?: string;
   xp: number;
   currentStreak: number;
   maxStreak: number;
   badges: { id: number; name: string; description: string }[];
   enrollments: { courseId: number; courseTitle: string; completionPercentage: number }[];
+}
+
+export interface UpdateProfileRequest {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profileImageUrl?: string;
+  currentPassword?: string;
+  newPassword?: string;
 }
 
 function authHeaders(token: string) {
@@ -834,4 +848,25 @@ export async function deleteLessonVideo(token: string, id: number): Promise<void
     headers: authHeaders(token),
   });
   if (!response.ok) throw new Error("Failed to delete video");
+}
+
+export async function updateProfile(token: string, data: UpdateProfileRequest): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/users/me`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to update profile");
+  }
+}
+
+export async function googleLogin(idToken: string): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/google-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken }),
+  });
+  return handleResponse<AuthResponse>(response);
 }

@@ -1,14 +1,15 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import type { AuthResponse } from "../lib/api";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { AuthResponse, fetchUserProfile } from "../lib/api";
 
 interface User {
   userId: number;
   email: string;
   firstName: string;
   lastName: string;
+  profileImageUrl?: string;
   roles: string[];
-  xp?: number;
-  totalXp?: number;
+  xp: number;
+  currentStreak: number;
 }
 
 interface AuthContextType {
@@ -16,6 +17,8 @@ interface AuthContextType {
   token: string | null;
   login: (auth: AuthResponse) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
+  updateUserSettings: (data: Partial<User>) => void;
   isAuthenticated: boolean;
   isTeacher: boolean;
   isAdmin: boolean;
@@ -26,16 +29,17 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const TOKEN_KEY = "csharp_academy_token";
 const USER_KEY = "csharp_academy_user";
 
-function normalizeUser(raw: Partial<User> | null): User | null {
+function normalizeUser(raw: any): User | null {
   if (!raw?.userId) return null;
   return {
     userId: raw.userId,
     email: raw.email ?? "",
     firstName: raw.firstName ?? "",
     lastName: raw.lastName ?? "",
-    roles: Array.isArray(raw.roles) ? raw.roles : [],
-    xp: raw.xp ?? 0,
-    totalXp: raw.totalXp ?? 0,
+    profileImageUrl: raw.profileImageUrl ?? raw.ProfileImageUrl,
+    roles: Array.isArray(raw.roles) ? raw.roles : (raw.Roles ?? []),
+    xp: raw.xp ?? raw.Xp ?? 0,
+    currentStreak: raw.currentStreak ?? raw.CurrentStreak ?? 0,
   };
 }
 
@@ -53,13 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (auth: AuthResponse) => {
     setToken(auth.token);
-    const userData = normalizeUser({
-      userId: auth.userId,
-      email: auth.email,
-      firstName: auth.firstName,
-      lastName: auth.lastName,
-      roles: auth.roles ?? [],
-    })!;
+    const userData = normalizeUser(auth)!;
     setUser(userData);
     localStorage.setItem(TOKEN_KEY, auth.token);
     localStorage.setItem(USER_KEY, JSON.stringify(userData));
@@ -72,11 +70,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(USER_KEY);
   };
 
+  const refreshUser = async () => {
+    if (!token) return;
+    try {
+      const profile = await fetchUserProfile(token);
+      const userData = normalizeUser(profile)!;
+      setUser(userData);
+      localStorage.setItem(USER_KEY, JSON.stringify(userData));
+    } catch (error) {
+      console.error("Failed to refresh user profile", error);
+    }
+  };
+
+  const updateUserSettings = (data: Partial<User>) => {
+    if (!user) return;
+    const newUser = { ...user, ...data };
+    setUser(newUser);
+    localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+  };
+
+  // Initial refresh on mount if authenticated
+  useEffect(() => {
+    if (token) {
+      refreshUser();
+    }
+  }, [token]);
+
   const isTeacher = (user?.roles ?? []).some((r) => r === "Teacher" || r === "Admin");
   const isAdmin = (user?.roles ?? []).some((r) => r === "Admin");
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isTeacher, isAdmin }}>
+    <AuthContext.Provider value={{
+      user,
+      token,
+      login,
+      logout,
+      refreshUser,
+      updateUserSettings,
+      isAuthenticated: !!token,
+      isTeacher,
+      isAdmin
+    }}>
       {children}
     </AuthContext.Provider>
   );
