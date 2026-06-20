@@ -283,11 +283,11 @@ export interface LeaderboardEntry {
   currentStreak: number;
 }
 
-export async function runCode(code: string): Promise<CodeExecutionResult> {
+export async function runCode(code: string, inputs?: string[]): Promise<CodeExecutionResult> {
   const response = await fetch(`${API_BASE_URL}/playground/run`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({ code, inputs }),
   });
   return handleResponse<CodeExecutionResult>(response);
 }

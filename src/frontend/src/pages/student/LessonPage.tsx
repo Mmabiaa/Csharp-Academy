@@ -10,13 +10,13 @@ import {
   fetchTutorialSteps,
   fetchLessonExercises,
   submitPractice,
-  runCode,
   fetchLessonVideos,
   fetchCourseById,
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useVoiceNarration } from "../../hooks/useVoiceNarration";
 import CodeEditor from "../../components/CodeEditor";
+import ConsolePanel from "../../components/ConsolePanel";
 import VideoPlayer from "../../components/VideoPlayer";
 import {
   ArrowLeft,
@@ -71,6 +71,7 @@ export default function LessonPage() {
   const [isSuccess, setIsSuccess] = useState(true);
   const [practiceCode, setPracticeCode] = useState("");
   const [practiceOutput, setPracticeOutput] = useState("");
+  const [practiceRunTrigger, setPracticeRunTrigger] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<number | null>(null);
 
@@ -471,10 +472,7 @@ export default function LessonPage() {
                   />
                   <div className="flex flex-wrap gap-3">
                     <button
-                      onClick={async () => {
-                        const result = await runCode(practiceCode || activeExercise.starterCode);
-                        setPracticeOutput(result.success ? result.output : result.error ?? "Error");
-                      }}
+                      onClick={() => setPracticeRunTrigger((n) => n + 1)}
                       className="duo-btn3d duo-btn3d-white"
                     >
                       <Play className="w-4 h-4" />
@@ -501,6 +499,11 @@ export default function LessonPage() {
                       <p className="text-sm font-bold text-[#946800]">{activeExercise.hint}</p>
                     </div>
                   )}
+                  <ConsolePanel
+                    code={practiceCode || activeExercise.starterCode}
+                    runTrigger={practiceRunTrigger}
+                    onResult={(out) => setPracticeOutput(out)}
+                  />
                   {practiceOutput && (
                     <pre className="bg-neutral-900 text-neutral-100 border-2 border-neutral-800 p-4 rounded-2xl text-sm font-mono whitespace-pre-wrap">
                       {practiceOutput}

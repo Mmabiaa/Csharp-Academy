@@ -35,7 +35,7 @@ public class SubmitChallengeCommandHandler : IRequestHandler<SubmitChallengeComm
         var challenge = await _challengeRepo.GetByIdAsync(request.ChallengeId, cancellationToken)
             ?? throw new KeyNotFoundException("Challenge not found.");
 
-        var result = await _codeExecution.ExecuteAsync(request.Code, cancellationToken);
+        var result = await _codeExecution.ExecuteAsync(request.Code, cancellationToken: cancellationToken);
         if (!result.Success)
         {
             return new ChallengeResultDto { Passed = false, Output = result.Error ?? "", Message = "Code failed to run." };

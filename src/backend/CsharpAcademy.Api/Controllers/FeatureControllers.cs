@@ -30,7 +30,7 @@ namespace CsharpAcademy.Api.Controllers;
         [HttpPost("run")]
         public async Task<ActionResult<CodeExecutionResult>> Run([FromBody] RunCodeRequest request)
         {
-            var result = await _mediator.Send(new RunCodeCommand(request.Code));
+            var result = await _mediator.Send(new RunCodeCommand(request.Code, request.Inputs));
             return Ok(result);
         }
     }
@@ -158,5 +158,5 @@ namespace CsharpAcademy.Api.Controllers;
         }
     }
 
-public record RunCodeRequest(string Code);
+public record RunCodeRequest(string Code, string[]? Inputs = null);
 public record ChatRequest(string Message, string? LessonContext);

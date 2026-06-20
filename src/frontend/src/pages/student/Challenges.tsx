@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchChallenges, runCode, submitChallenge } from "../../lib/api";
+import { fetchChallenges, submitChallenge } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import CodeEditor from "../../components/CodeEditor";
+import ConsolePanel from "../../components/ConsolePanel";
 import { Trophy, Play, Lightbulb, CheckCircle2, XCircle, Gem, Zap, Flame, Sword } from "lucide-react";
 
 const difficultyBadge: Record<string, string> = {
@@ -14,9 +15,9 @@ const difficultyBadge: Record<string, string> = {
 
 // Difficulty → icon bubble config
 const difficultyIcon: Record<string, { icon: React.ElementType; bg: string; shadow: string; animClass: string }> = {
-  Easy:   { icon: Zap,   bg: "bg-[#58CC02]", shadow: "shadow-[0_2px_0_#46A302]", animClass: "duo-diff-easy" },
+  Easy: { icon: Zap, bg: "bg-[#58CC02]", shadow: "shadow-[0_2px_0_#46A302]", animClass: "duo-diff-easy" },
   Medium: { icon: Flame, bg: "bg-[#FFC800]", shadow: "shadow-[0_2px_0_#E6B400]", animClass: "duo-diff-medium" },
-  Hard:   { icon: Sword, bg: "bg-[#FF4B4B]", shadow: "shadow-[0_2px_0_#CC3A3A]", animClass: "duo-diff-hard" },
+  Hard: { icon: Sword, bg: "bg-[#FF4B4B]", shadow: "shadow-[0_2px_0_#CC3A3A]", animClass: "duo-diff-hard" },
 };
 
 export default function Challenges() {
@@ -28,6 +29,7 @@ export default function Challenges() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [filter, setFilter] = useState("All");
+  const [runTrigger, setRunTrigger] = useState(0);
 
   const { data: challenges, isLoading } = useQuery({
     queryKey: ["challenges"],
@@ -142,11 +144,10 @@ export default function Challenges() {
                   setMessage("");
                   setShowHint(false);
                 }}
-                className={`w-full text-left p-4 rounded-2xl border-2 transition-all duo-challenge-item ${
-                  selected?.id === c.id
-                    ? "border-[#58CC02] bg-[#58CC02]/10"
-                    : "border-[#e5e5e5] bg-white hover:border-[#58CC02]/40 hover:bg-neutral-50"
-                }`}
+                className={`w-full text-left p-4 rounded-2xl border-2 transition-all duo-challenge-item ${selected?.id === c.id
+                  ? "border-[#58CC02] bg-[#58CC02]/10"
+                  : "border-[#e5e5e5] bg-white hover:border-[#58CC02]/40 hover:bg-neutral-50"
+                  }`}
               >
                 <div className="flex items-center gap-3 mb-2">
                   {/* Difficulty icon bubble */}
@@ -196,10 +197,7 @@ export default function Challenges() {
 
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={async () => {
-                  const result = await runCode(code || selected.starterCode);
-                  setOutput(result.success ? result.output : result.error ?? "Error");
-                }}
+                onClick={() => setRunTrigger((n) => n + 1)}
                 className="duo-btn3d duo-btn3d-white"
               >
                 <Play className="w-4 h-4" />
@@ -231,15 +229,20 @@ export default function Challenges() {
               </div>
             )}
 
+            <ConsolePanel
+              code={code || selected.starterCode}
+              runTrigger={runTrigger}
+              onResult={(out) => setOutput(out)}
+            />
+
             {output && (
               <pre className="bg-neutral-900 text-neutral-100 border-2 border-neutral-800 p-4 rounded-2xl text-sm font-mono whitespace-pre-wrap">
                 {output}
               </pre>
             )}
             {message && (
-              <div className={`flex items-center gap-2 p-3 rounded-xl font-black text-sm ${
-                isSuccess ? "bg-[#D7FFB8] text-[#46A302]" : "bg-[#FFDFE0] text-[#CC3A3A]"
-              }`}>
+              <div className={`flex items-center gap-2 p-3 rounded-xl font-black text-sm ${isSuccess ? "bg-[#D7FFB8] text-[#46A302]" : "bg-[#FFDFE0] text-[#CC3A3A]"
+                }`}>
                 {isSuccess ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <XCircle className="w-5 h-5 shrink-0" />}
                 {message}
               </div>
