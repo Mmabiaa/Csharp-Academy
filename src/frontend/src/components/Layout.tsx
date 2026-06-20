@@ -18,6 +18,7 @@ import {
   MessageSquare,
   LogOut,
   Gem,
+  Sparkles,
 } from "lucide-react";
 
 type NavItem = {
@@ -104,7 +105,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         }
         @keyframes duo-nav-bounce {
           0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-2px) scale(1.06); }
+          50% { transform: translateY(-2px) scale(1.12); }
         }
         @keyframes duo-nav-dot-pulse {
           0%, 100% { transform: scale(1); opacity: 1; }
@@ -117,19 +118,68 @@ export default function Layout({ children }: { children: ReactNode }) {
         }
         @keyframes duo-gem-glint {
           0%, 100% { transform: scale(1) rotate(0deg); }
-          45% { transform: scale(1.18) rotate(-8deg); }
-          75% { transform: scale(0.96) rotate(4deg); }
+          45%      { transform: scale(1.2) rotate(-10deg); }
+          75%      { transform: scale(0.95) rotate(5deg); }
+        }
+        @keyframes duo-sparkle-pop {
+          0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+          40% { transform: scale(1.3) rotate(15deg); opacity: 0.85; }
+          70% { transform: scale(0.9) rotate(-8deg); opacity: 1; }
+        }
+        @keyframes duo-points-shine {
+          0%   { left: -60%; }
+          55%  { left: 130%; }
+          100% { left: 130%; }
+        }
+        @keyframes duo-streak-glow-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255, 150, 0, 0.35); }
+          50%      { box-shadow: 0 0 0 5px rgba(255, 150, 0, 0.12); }
+        }
+        @keyframes duo-profile-ring-pulse {
+          0%   { transform: scale(0.9); opacity: 0.5; }
+          100% { transform: scale(1.35); opacity: 0; }
+        }
+        @keyframes duo-online-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.45); }
+          50%      { box-shadow: 0 0 0 3px rgba(88, 204, 2, 0.18); }
         }
 
-        .duo-logo-breathe   { animation: duo-logo-breathe 3.2s ease-in-out infinite; }
-        .duo-nav-icon-active{ animation: duo-nav-bounce 2.2s ease-in-out infinite; }
-        .duo-nav-dot        { animation: duo-nav-dot-pulse 1.6s ease-in-out infinite; }
-        .duo-flame-flicker  { animation: duo-flame-flicker 2.2s ease-in-out infinite; }
-        .duo-gem-glint      { animation: duo-gem-glint 2.6s ease-in-out infinite; }
+        .duo-logo-breathe  { animation: duo-logo-breathe 3.2s ease-in-out infinite; }
+        .duo-nav-icon-loop { animation: duo-nav-bounce 2.4s ease-in-out infinite; }
+        .duo-nav-dot       { animation: duo-nav-dot-pulse 1.6s ease-in-out infinite; }
+        .duo-flame-flicker { animation: duo-flame-flicker 2.2s ease-in-out infinite; }
+        .duo-gem-glint     { animation: duo-gem-glint 2s ease-in-out infinite; }
+        .duo-sparkle-icon  { animation: duo-sparkle-pop 2.4s ease-in-out infinite; }
+        .duo-streak-glow   { animation: duo-streak-glow-pulse 1.8s ease-in-out infinite; }
+        .duo-online-pulse  { animation: duo-online-pulse 1.8s ease-in-out infinite; }
+
+        .duo-profile-ring {
+          position: absolute;
+          inset: -3px;
+          border-radius: 9999px;
+          border: 2px solid #1CB0F6;
+          animation: duo-profile-ring-pulse 2.2s ease-out infinite;
+          pointer-events: none;
+        }
+
+        /* Shimmer sweep across the points chip */
+        .duo-points-chip::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: -60%;
+          width: 35%;
+          height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+          transform: skewX(-20deg);
+          animation: duo-points-shine 3.2s ease-in-out infinite;
+        }
 
         @media (prefers-reduced-motion: reduce) {
-          .duo-logo-breathe, .duo-nav-icon-active, .duo-nav-dot,
-          .duo-flame-flicker, .duo-gem-glint {
+          .duo-logo-breathe, .duo-nav-icon-loop, .duo-nav-dot,
+          .duo-flame-flicker, .duo-gem-glint, .duo-sparkle-icon,
+          .duo-streak-glow, .duo-online-pulse, .duo-profile-ring,
+          .duo-points-chip::after {
             animation: none;
           }
         }
@@ -141,8 +191,8 @@ export default function Layout({ children }: { children: ReactNode }) {
         <div className="p-5 border-b-2 border-[#e5e5e5] relative overflow-hidden">
           <GraduationCap className="absolute -right-3 -top-4 w-20 h-20 text-[#58CC02] opacity-[0.06] rotate-12 pointer-events-none" />
           <div className="relative flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-[#58CC02] flex items-center justify-center text-white font-black shadow-[0_3px_0_#46A302] duo-logo-breathe">
-              C#
+            <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center shadow-[0_3px_0_#46A302] duo-logo-breathe overflow-hidden p-1.5 shrink-0">
+              <img src="/logo.png" alt="C# Academy" className="w-full h-full object-contain" />
             </div>
             <span className="text-xl font-black text-neutral-900">C# Academy</span>
           </div>
@@ -150,7 +200,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.filter(isVisible).map((item) => {
+          {navItems.filter(isVisible).map((item, idx) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             const accent = navAccent[item.path] ?? fallbackAccent;
@@ -165,13 +215,14 @@ export default function Layout({ children }: { children: ReactNode }) {
               >
                 <span
                   className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-150 ${isActive
-                    ? `${accent.bg} ${accent.shadow} duo-nav-icon-active`
+                    ? `${accent.bg} ${accent.shadow}`
                     : "bg-neutral-100 group-hover:bg-neutral-200"
                     }`}
                 >
                   <Icon
-                    className={`w-[18px] h-[18px] ${isActive ? "text-white" : "text-neutral-400 group-hover:text-neutral-600"}`}
+                    className={`w-[18px] h-[18px] duo-nav-icon-loop ${isActive ? "text-white" : "text-neutral-400 group-hover:text-neutral-600"}`}
                     strokeWidth={isActive ? 2.5 : 2}
+                    style={{ animationDelay: `${idx * 0.12}s` }}
                   />
                 </span>
                 <span className="truncate">{item.label}</span>
@@ -186,28 +237,42 @@ export default function Layout({ children }: { children: ReactNode }) {
           <Star className="absolute -left-5 -bottom-5 w-24 h-24 text-[#FFC800] opacity-[0.05] -rotate-12 pointer-events-none" />
 
           {isAuthenticated && (
-            <div className="relative flex items-center gap-2.5 px-2 py-2 rounded-2xl bg-neutral-50">
-              <UserAvatar
-                profileImageUrl={user?.profileImageUrl}
-                firstName={user?.firstName}
-                lastName={user?.lastName}
-                size="sm"
-                className="shrink-0"
-              />
-              <div className="min-w-0">
-                <p className="text-xs font-black text-neutral-800 truncate">{user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : user?.email}</p>
-                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide">{roleLabel}</p>
+            <Link
+              to="/profile"
+              className="relative flex items-center gap-2.5 px-2.5 py-2.5 rounded-2xl bg-gradient-to-br from-[#F3F8FF] to-[#EAF6FF] border-2 border-[#1CB0F6]/15 hover:border-[#1CB0F6]/40 hover:-translate-y-0.5 transition-all"
+            >
+              <span className="relative shrink-0">
+                <span className="duo-profile-ring" />
+                <UserAvatar
+                  profileImageUrl={user?.profileImageUrl}
+                  firstName={user?.firstName}
+                  lastName={user?.lastName}
+                  size="sm"
+                  className="relative shrink-0 ring-2 ring-white"
+                />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#58CC02] border-2 border-white duo-online-pulse" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black text-neutral-800 truncate">
+                  {user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : user?.email}
+                </p>
+                <p className="text-[10px] font-bold text-[#1899D6] uppercase tracking-wide flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 duo-sparkle-icon" />
+                  {roleLabel}
+                </p>
               </div>
-            </div>
+            </Link>
           )}
 
           <div className="relative flex items-center justify-between gap-2">
-            <div className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-br from-[#FFF8E1] to-[#FFF1C2] rounded-xl px-3 py-2 border-2 border-[#FFC800]/30">
+            <div className="flex-1 relative flex items-center justify-center gap-1.5 bg-gradient-to-br from-[#FFF8E1] to-[#FFF1C2] rounded-xl px-3 py-2 border-2 border-[#FFC800]/30 overflow-hidden duo-points-chip">
               <Gem className="w-4 h-4 text-[#FFC800] duo-gem-glint" fill="#FFC800" />
               <span className="font-black text-[#946800] text-sm">{user?.xp ?? 0}</span>
             </div>
-            <div className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-br from-[#FFF1E0] to-[#FFE0BD] rounded-xl px-3 py-2 border-2 border-[#FF9600]/30">
-              <Flame className="w-4 h-4 text-[#FF9600] duo-flame-flicker" fill="#FF9600" />
+            <div className="flex-1 relative flex items-center justify-center gap-1.5 bg-gradient-to-br from-[#FFF1E0] to-[#FFE0BD] rounded-xl px-3 py-2 border-2 border-[#FF9600]/30 overflow-hidden">
+              <span className="relative flex items-center justify-center w-5 h-5 rounded-full bg-[#FF9600]/15 duo-streak-glow shrink-0">
+                <Flame className="w-3.5 h-3.5 text-[#FF9600] duo-flame-flicker" fill="#FF9600" />
+              </span>
               <span className="font-black text-[#CC6E00] text-sm">{user?.currentStreak ?? 0}</span>
             </div>
           </div>
@@ -221,7 +286,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 logout();
                 navigate("/");
               }}
-              className="relative w-full flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wide text-neutral-400 hover:text-[#FF4B4B] hover:bg-[#FFDFE0]/50 py-2.5 rounded-xl transition-all"
+              className="duo-btn3d w-full !py-2.5 !px-4 !text-xs bg-[#FF4B4B] text-white shadow-[0_3px_0_#CC3A3A] hover:bg-[#FF3737] active:shadow-[0_0_0_#CC3A3A]"
             >
               <LogOut className="w-4 h-4" />
               Log out
@@ -235,28 +300,33 @@ export default function Layout({ children }: { children: ReactNode }) {
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b-2 border-[#e5e5e5] sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-[#58CC02] flex items-center justify-center text-white font-black shadow-[0_3px_0_#46A302] duo-logo-breathe">
-              C#
+            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-[0_3px_0_#46A302] duo-logo-breathe overflow-hidden p-1 shrink-0">
+              <img src="/logo.png" alt="C# Academy" className="w-full h-full object-contain" />
             </div>
             <span className="font-black text-neutral-900">C# Academy</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-gradient-to-br from-[#FFF8E1] to-[#FFF1C2] rounded-lg px-2 py-1">
+            <div className="relative flex items-center gap-1 bg-gradient-to-br from-[#FFF8E1] to-[#FFF1C2] rounded-lg px-2 py-1 overflow-hidden duo-points-chip">
               <Gem className="w-4 h-4 text-[#FFC800] duo-gem-glint" fill="#FFC800" />
               <span className="text-xs font-black text-[#946800]">{user?.xp ?? 0}</span>
             </div>
             <div className="flex items-center gap-1 bg-gradient-to-br from-[#FFF1E0] to-[#FFE0BD] rounded-lg px-2 py-1">
-              <Flame className="w-4 h-4 text-[#FF9600] duo-flame-flicker" fill="#FF9600" />
+              <span className="relative flex items-center justify-center w-4 h-4 rounded-full bg-[#FF9600]/15 duo-streak-glow shrink-0">
+                <Flame className="w-3 h-3 text-[#FF9600] duo-flame-flicker" fill="#FF9600" />
+              </span>
               <span className="text-xs font-black text-[#CC6E00]">{user?.currentStreak ?? 0}</span>
             </div>
             {isAuthenticated && (
-              <Link to="/profile">
+              <Link to="/profile" className="relative shrink-0">
+                <span className="duo-profile-ring" />
                 <UserAvatar
                   profileImageUrl={user?.profileImageUrl}
                   firstName={user?.firstName}
                   lastName={user?.lastName}
                   size="sm"
+                  className="relative ring-2 ring-white"
                 />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#58CC02] border-2 border-white duo-online-pulse" />
               </Link>
             )}
           </div>
@@ -269,7 +339,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         {/* Mobile Bottom Nav */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#e5e5e5] z-50">
           <div className="grid grid-cols-5 gap-1 px-2 py-2">
-            {navItems.filter(isVisible).slice(0, 5).map((item) => {
+            {navItems.filter(isVisible).slice(0, 5).map((item, idx) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               const accent = navAccent[item.path] ?? fallbackAccent;
@@ -280,12 +350,13 @@ export default function Layout({ children }: { children: ReactNode }) {
                   className="flex flex-col items-center justify-center py-1.5 rounded-xl transition-all"
                 >
                   <span
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center mb-0.5 transition-all ${isActive ? `${accent.bg} ${accent.shadow} duo-nav-icon-active` : ""
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center mb-0.5 transition-all ${isActive ? `${accent.bg} ${accent.shadow}` : ""
                       }`}
                   >
                     <Icon
-                      className={`w-5 h-5 ${isActive ? "text-white" : "text-[#AFAFAF]"}`}
+                      className={`w-5 h-5 duo-nav-icon-loop ${isActive ? "text-white" : "text-[#AFAFAF]"}`}
                       strokeWidth={isActive ? 2.5 : 2}
+                      style={{ animationDelay: `${idx * 0.12}s` }}
                     />
                   </span>
                   <span className={`text-[10px] font-black uppercase tracking-wide ${isActive ? accent.text : "text-[#AFAFAF]"}`}>
