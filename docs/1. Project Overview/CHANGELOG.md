@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.1] - 2026-06-21
+
+### Added
+- **Full API Documentation**: Completed comprehensive Swagger/OpenAPI documentation for 100% of the API. Every endpoint now includes `<summary>`, `<param>`, `<returns>`, and `<response code>` tags.
+- **Dockerization**: Full multi-container support with `docker-compose.yml`. Includes persistent MySQL volumes, automated backend builds, and a "Zero Install" frontend build that reuses existing `node_modules` for speed.
+- **Visual Overview**: Expanded the `README.md` with a high-fidelity 8-screenshot grid showcasing the Home Dashboard, Course Catalog, AI Assistant, and Code Playground.
+- **Secure Configuration Management**: Added a global `docker.env` management system (git-ignored) to centralize secrets.
+- **.dockerignore**: Implemented strict exclusion rules to keep images thin and secrets safe.
+
+### Changed
+- **Security Hardening**: Replaced hardcoded JWT and Database secrets in `appsettings.json` with secure environment variable overrides (`JWT_KEY`, `JWT_ISSUER`, etc.).
+- **Code Refactoring**: Updated `Program.cs` and `JwtTokenService` to prioritize environment-based configuration for enhanced security.
+- **Swagger Optimization**: Integrated explicit `[ProducesResponseType]` attributes across all controllers to generate accurate DTO schemas in the Swagger UI.
+
+---
+
 ## [1.1.0] - 2026-06-21
 
 ### Added
