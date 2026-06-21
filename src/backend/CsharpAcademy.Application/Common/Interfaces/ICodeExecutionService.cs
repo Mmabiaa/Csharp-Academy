@@ -2,7 +2,7 @@ namespace CsharpAcademy.Application.Common.Interfaces;
 
 public interface ICodeExecutionService
 {
-    Task<CodeExecutionResult> ExecuteAsync(string code, CancellationToken cancellationToken = default);
+    Task<CodeExecutionResult> ExecuteAsync(string code, string[]? inputs = null, CancellationToken cancellationToken = default);
 }
 
 public class CodeExecutionResult

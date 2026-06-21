@@ -61,7 +61,36 @@ public class GetLessonByIdQueryHandler : IRequestHandler<GetLessonByIdQuery, Les
             VoiceSummary = lesson.VoiceSummary,
             HasTutorial = tutorialSteps.Count > 0,
             HasPractice = exercises.Count > 0,
-            HasVideos = videos.Count > 0
+            HasVideos = videos.Count > 0,
+            Videos = videos.Select(v => new Challenges.Queries.LessonVideoDto
+            {
+                Id = v.Id,
+                Title = v.Title,
+                VideoUrl = v.VideoUrl,
+                Provider = v.Provider.ToString(),
+                EmbedUrl = ToEmbedUrl(v.VideoUrl, v.Provider),
+                DurationMinutes = v.DurationMinutes
+            }).ToList()
         };
+    }
+
+    private static string ToEmbedUrl(string url, Domain.Entities.VideoProvider provider)
+    {
+        if (provider == Domain.Entities.VideoProvider.YouTube)
+        {
+            var id = ExtractYouTubeId(url);
+            return id is not null ? $"https://www.youtube.com/embed/{id}" : url;
+        }
+        return url;
+    }
+
+    private static string? ExtractYouTubeId(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return null;
+        if (url.Contains("youtu.be/"))
+            return url.Split("youtu.be/").Last().Split('?').First();
+        if (url.Contains("v="))
+            return url.Split("v=").Last().Split('&').First();
+        return null;
     }
 }

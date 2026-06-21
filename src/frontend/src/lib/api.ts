@@ -18,6 +18,15 @@ export interface Lesson {
   durationMinutes?: number;
 }
 
+export interface LessonVideo {
+  id: number;
+  title: string;
+  videoUrl: string;
+  provider: string;
+  embedUrl: string;
+  durationMinutes: number;
+}
+
 export interface LessonDetail extends Lesson {
   moduleId: number;
   moduleTitle: string;
@@ -27,6 +36,7 @@ export interface LessonDetail extends Lesson {
   isCompleted: boolean;
   bestPractices: string;
   voiceSummary: string;
+  videos: LessonVideo[];
   hasTutorial: boolean;
   hasPractice: boolean;
   hasVideos: boolean;
@@ -58,7 +68,10 @@ export interface AuthResponse {
   email: string;
   firstName: string;
   lastName: string;
+  profileImageUrl?: string;
   roles: string[];
+  xp: number;
+  currentStreak: number;
 }
 
 export interface Enrollment {
@@ -114,11 +127,23 @@ export interface UserProfile {
   email: string;
   firstName: string;
   lastName: string;
+  profileImageUrl?: string;
+  roles: string[];
   xp: number;
   currentStreak: number;
   maxStreak: number;
   badges: { id: number; name: string; description: string }[];
   enrollments: { courseId: number; courseTitle: string; completionPercentage: number }[];
+}
+
+export interface UpdateProfileRequest {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profileImageUrl?: string;
+  currentPassword?: string;
+  newPassword?: string;
 }
 
 function authHeaders(token: string) {
@@ -258,11 +283,11 @@ export interface LeaderboardEntry {
   currentStreak: number;
 }
 
-export async function runCode(code: string): Promise<CodeExecutionResult> {
+export async function runCode(code: string, inputs?: string[]): Promise<CodeExecutionResult> {
   const response = await fetch(`${API_BASE_URL}/playground/run`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({ code, inputs }),
   });
   return handleResponse<CodeExecutionResult>(response);
 }
@@ -357,6 +382,13 @@ export async function joinClassroom(token: string, joinCode: string): Promise<Cl
 
 export async function fetchAnalyticsDashboard(token: string): Promise<AnalyticsDashboard> {
   const response = await fetch(`${API_BASE_URL}/analytics/dashboard`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse<AnalyticsDashboard>(response);
+}
+
+export async function fetchTeachingAnalytics(token: string): Promise<AnalyticsDashboard> {
+  const response = await fetch(`${API_BASE_URL}/analytics/teaching`, {
     headers: authHeaders(token),
   });
   return handleResponse<AnalyticsDashboard>(response);
@@ -553,6 +585,11 @@ export async function fetchTeachingAssignments(token: string): Promise<Assignmen
   return handleResponse(response);
 }
 
+export async function fetchClassroomAssignments(token: string): Promise<Assignment[]> {
+  const response = await fetch(`${API_BASE_URL}/assignments/classroom`, { headers: authHeaders(token) });
+  return handleResponse(response);
+}
+
 export async function createAssignment(
   token: string,
   data: {
@@ -628,6 +665,129 @@ export async function fetchUserProgressSummary(token: string): Promise<UserProgr
   return handleResponse(response);
 }
 
+// --- Admin Management Functions ---
+
+export async function updateCourse(token: string, id: number, data: Partial<Course>): Promise<Course> {
+  const response = await fetch(`${API_BASE_URL}/admin/courses/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteCourse(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/courses/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete course");
+}
+
+export async function createModule(token: string, data: Partial<Module> & { courseId: number }): Promise<Module> {
+  const response = await fetch(`${API_BASE_URL}/admin/modules`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateModule(token: string, id: number, data: Partial<Module>): Promise<Module> {
+  const response = await fetch(`${API_BASE_URL}/admin/modules/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteModule(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/modules/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete module");
+}
+
+export async function createLesson(token: string, data: Partial<LessonDetail> & { moduleId: number }): Promise<LessonDetail> {
+  const response = await fetch(`${API_BASE_URL}/admin/lessons`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateLesson(token: string, id: number, data: Partial<LessonDetail>): Promise<LessonDetail> {
+  const response = await fetch(`${API_BASE_URL}/admin/lessons/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteLesson(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/lessons/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete lesson");
+}
+
+export async function createChallenge(token: string, data: Partial<Challenge>): Promise<Challenge> {
+  const response = await fetch(`${API_BASE_URL}/admin/challenges`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateChallenge(token: string, id: number, data: Partial<Challenge>): Promise<Challenge> {
+  const response = await fetch(`${API_BASE_URL}/admin/challenges/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteChallenge(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/challenges/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete challenge");
+}
+
+export async function createPractice(token: string, data: Partial<CodingExercise>): Promise<CodingExercise> {
+  const response = await fetch(`${API_BASE_URL}/admin/practices`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updatePractice(token: string, id: number, data: Partial<CodingExercise>): Promise<CodingExercise> {
+  const response = await fetch(`${API_BASE_URL}/admin/practices/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deletePractice(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/practices/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete practice");
+}
+
 export async function uploadAttachment(
   token: string,
   file: File,
@@ -658,4 +818,56 @@ export async function deleteAttachment(token: string, id: number): Promise<void>
 export function getFileUrl(path: string): string {
   const base = API_BASE_URL.replace("/api", "");
   return `${base}${path}`;
+}
+
+export async function createLessonVideo(token: string, data: Partial<LessonVideo>): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/videos`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to create video");
+}
+
+export async function fetchAllLessonVideos(token: string): Promise<LessonVideo[]> {
+  const response = await fetch(`${API_BASE_URL}/admin/videos`, { headers: authHeaders(token) });
+  return handleResponse(response);
+}
+
+export async function updateLessonVideo(token: string, id: number, data: Partial<LessonVideo>): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/videos/${id}`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to update video");
+}
+
+export async function deleteLessonVideo(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/videos/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error("Failed to delete video");
+}
+
+export async function updateProfile(token: string, data: UpdateProfileRequest): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/users/me`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to update profile");
+  }
+}
+
+export async function googleLogin(idToken: string): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/google-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken }),
+  });
+  return handleResponse<AuthResponse>(response);
 }

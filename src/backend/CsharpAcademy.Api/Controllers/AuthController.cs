@@ -16,6 +16,9 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Registers a new user with the specified role.
+    /// </summary>
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequest request)
     {
@@ -31,6 +34,9 @@ public class AuthController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Authenticates a user using email and password.
+    /// </summary>
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequest request)
     {
@@ -44,7 +50,25 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Authenticates a user using a Google ID token.
+    /// </summary>
+    [HttpPost("google-login")]
+    public async Task<ActionResult<AuthResponseDto>> GoogleLogin([FromBody] GoogleLoginRequest request)
+    {
+        try
+        {
+            var result = await _mediator.Send(new GoogleLoginCommand(request.IdToken));
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
 }
 
 public record RegisterRequest(string Email, string Password, string FirstName, string LastName, string? Role);
 public record LoginRequest(string Email, string Password);
+public record GoogleLoginRequest(string IdToken);

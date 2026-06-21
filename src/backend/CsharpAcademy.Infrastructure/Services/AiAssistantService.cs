@@ -42,7 +42,7 @@ public class AiAssistantService : IAiAssistantService
                 GeminiClient.GetModel(_configuration),
                 systemPrompt,
                 request.Message,
-                maxTokens: 500,
+                maxTokens: 1800,
                 cancellationToken: cancellationToken);
 
             return new AiAssistantResponse { Reply = reply, UsedAiProvider = true };
@@ -97,11 +97,9 @@ public class AiAssistantService : IAiAssistantService
 
         if (lower.Contains("hello") || lower.Contains("hi"))
         {
-            return "Hello! I'm your C# learning assistant. Ask me about variables, classes, loops, or any C# concept!" + context +
-                   "\n\n*Tip: Set `GEMINI_API_KEY` in `src/backend/.env` for AI-powered responses.*";
+            return "Hello! I'm your C# learning assistant. Ask me about variables, classes, loops, or any C# concept!" + context;
         }
 
-        return "I'm here to help you learn C#! Try asking about:\n- Variables and data types\n- Classes and objects\n- Loops and conditionals\n- Methods and functions" + context +
-               "\n\n*Running in offline tutor mode. Add `GEMINI_API_KEY` to `src/backend/.env` for full AI assistance.*";
+        return "I'm here to help you learn C#! Try asking about:\n- Variables and data types\n- Classes and objects\n- Loops and conditionals\n- Methods and functions" + context;
     }
 }

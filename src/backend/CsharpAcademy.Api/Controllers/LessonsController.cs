@@ -22,6 +22,9 @@ public class LessonsController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Gets the details of a specific lesson, including content and child entities.
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<LessonDetailDto>> GetLesson(int id)
     {
@@ -35,10 +38,16 @@ public class LessonsController : ControllerBase
         return Ok(lesson);
     }
 
+    /// <summary>
+    /// Gets all videos associated with a specific lesson.
+    /// </summary>
     [HttpGet("{lessonId}/videos")]
     public async Task<ActionResult<List<LessonVideoDto>>> GetVideos(int lessonId) =>
         Ok(await _mediator.Send(new GetLessonVideosQuery(lessonId)));
 
+    /// <summary>
+    /// Marks a lesson as completed for the authenticated user and awards XP.
+    /// </summary>
     [Authorize]
     [HttpPost("{id}/complete")]
     public async Task<ActionResult<LessonCompleteResultDto>> CompleteLesson(int id)
@@ -59,6 +68,9 @@ public class LessonsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Gets the quiz associated with a lesson.
+    /// </summary>
     [HttpGet("{lessonId}/quiz")]
     public async Task<ActionResult<QuizDto>> GetQuiz(int lessonId)
     {
@@ -71,6 +83,9 @@ public class LessonsController : ControllerBase
         return Ok(quiz);
     }
 
+    /// <summary>
+    /// Submits quiz answers for evaluation and records the result.
+    /// </summary>
     [Authorize]
     [HttpPost("{lessonId}/quiz/submit")]
     public async Task<ActionResult<QuizResultDto>> SubmitQuiz(int lessonId, [FromBody] SubmitQuizRequest request)
@@ -88,6 +103,9 @@ public class LessonsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Generates a new AI quiz for a lesson (Teacher/Admin only).
+    /// </summary>
     [Authorize(Roles = "Teacher,Admin")]
     [HttpPost("{lessonId}/quiz/generate")]
     public async Task<ActionResult<QuizGeneratedDto>> GenerateQuiz(int lessonId, [FromQuery] int count = 5)

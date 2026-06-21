@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login as apiLogin } from "../../lib/api";
+import { GoogleLogin } from "@react-oauth/google";
+import { login as apiLogin, googleLogin as apiGoogleLogin } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { Mail, Lock, GraduationCap, XCircle } from "lucide-react";
 
@@ -19,7 +20,18 @@ export default function Login() {
     try {
       const auth = await apiLogin(email, password);
       login(auth);
-      navigate("/");
+
+      // Role-based redirection - handle both roles and Roles from API
+      const rawRoles = auth.roles || (auth as any).Roles || [];
+      const userRoles = rawRoles.map((r: string) => r.toLowerCase());
+
+      if (userRoles.includes("admin")) {
+        navigate("/admin");
+      } else if (userRoles.includes("teacher")) {
+        navigate("/teacher");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -27,11 +39,36 @@ export default function Login() {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setError("");
+    setLoading(true);
+    try {
+      const auth = await apiGoogleLogin(credentialResponse.credential);
+      login(auth);
+
+      // Role-based redirection - handle both roles and Roles from API
+      const rawRoles = auth.roles || (auth as any).Roles || [];
+      const userRoles = rawRoles.map((r: string) => r.toLowerCase());
+
+      if (userRoles.includes("admin")) {
+        navigate("/admin");
+      } else if (userRoles.includes("teacher")) {
+        navigate("/teacher");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="max-w-md mx-auto py-12 px-4">
+    <div className="max-w-md mx-auto py-12 px-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <div className="text-center mb-8">
         <div className="w-20 h-20 rounded-full bg-[#D7FFB8] flex items-center justify-center mx-auto mb-4 shadow-[0_4px_0_#46A302]">
-          <GraduationCap className="w-10 h-10 text-[#46A302]" />
+          <GraduationCap className="w-10 h-10 text-[#46A302] duo-bounce" />
         </div>
         <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-2">
           Welcome back
@@ -94,6 +131,25 @@ export default function Login() {
             {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
+
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t-2 border-[#e5e5e5]"></div>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase font-black">
+            <span className="bg-white px-4 text-neutral-400">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError("Google Login Failed")}
+            width="100%"
+            theme="outline"
+            shape="pill"
+          />
+        </div>
       </div>
 
       <div className="text-center pt-6">

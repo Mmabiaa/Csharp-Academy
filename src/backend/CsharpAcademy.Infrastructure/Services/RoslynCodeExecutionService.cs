@@ -12,12 +12,12 @@ public class RoslynCodeExecutionService : ICodeExecutionService
     private static readonly string[] BlockedPatterns =
     [
         "System.IO", "System.Net", "System.Diagnostics.Process",
-        "System.Reflection", "File.", "Directory.", "Console.Read"
+        "System.Reflection", "File.", "Directory."
     ];
 
     private static readonly SemaphoreSlim _executionSemaphore = new SemaphoreSlim(1, 1);
 
-    public async Task<CodeExecutionResult> ExecuteAsync(string code, CancellationToken cancellationToken = default)
+    public async Task<CodeExecutionResult> ExecuteAsync(string code, string[]? inputs = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(code))
         {
@@ -37,14 +37,24 @@ public class RoslynCodeExecutionService : ICodeExecutionService
         }
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(TimeSpan.FromSeconds(5));
+        cts.CancelAfter(TimeSpan.FromSeconds(10));
 
         try
         {
             await _executionSemaphore.WaitAsync(cts.Token);
-            var sw = new StringWriter();
+
+            var outputWriter = new StringWriter();
             var originalOut = Console.Out;
-            Console.SetOut(sw);
+            var originalIn = Console.In;
+
+            // Build a stdin reader from the pre-supplied inputs
+            var stdinContent = inputs != null && inputs.Length > 0
+                ? string.Join(Environment.NewLine, inputs) + Environment.NewLine
+                : string.Empty;
+            var inputReader = new StringReader(stdinContent);
+
+            Console.SetOut(outputWriter);
+            Console.SetIn(inputReader);
 
             try
             {
@@ -72,7 +82,7 @@ public class RoslynCodeExecutionService : ICodeExecutionService
                     : $"return ({code});";
 
                 var result = await CSharpScript.EvaluateAsync<object?>(wrapped, options, cancellationToken: cts.Token);
-                var consoleOutput = sw.ToString();
+                var consoleOutput = outputWriter.ToString();
 
                 // If code printed to console, use that. Otherwise use the return value.
                 var finalOutput = !string.IsNullOrWhiteSpace(consoleOutput)
@@ -84,6 +94,7 @@ public class RoslynCodeExecutionService : ICodeExecutionService
             finally
             {
                 Console.SetOut(originalOut);
+                Console.SetIn(originalIn);
                 _executionSemaphore.Release();
             }
         }
@@ -94,7 +105,7 @@ public class RoslynCodeExecutionService : ICodeExecutionService
         }
         catch (OperationCanceledException)
         {
-            return new CodeExecutionResult { Success = false, Error = "Execution timed out (5 second limit)." };
+            return new CodeExecutionResult { Success = false, Error = "Execution timed out (10 second limit)." };
         }
         catch (Exception ex)
         {

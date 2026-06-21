@@ -18,6 +18,9 @@ public class CoursesController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Gets all available courses in the academy.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<CourseDto>>> GetCourses()
     {
@@ -25,6 +28,9 @@ public class CoursesController : ControllerBase
         return Ok(courses);
     }
 
+    /// <summary>
+    /// Gets detailed information about a specific course, including its modules and lessons.
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<CourseDetailDto>> GetCourse(int id)
     {
@@ -37,6 +43,9 @@ public class CoursesController : ControllerBase
         return Ok(course);
     }
 
+    /// <summary>
+    /// Enrolls the authenticated user in a specific course.
+    /// </summary>
     [Authorize]
     [HttpPost("{id}/enroll")]
     public async Task<ActionResult<EnrollmentDto>> Enroll(int id)

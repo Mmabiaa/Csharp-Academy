@@ -70,7 +70,7 @@ public class GetLessonVideosQueryHandler : IRequestHandler<GetLessonVideosQuery,
         }).ToList();
     }
 
-    private static string ToEmbedUrl(string url, Domain.Entities.VideoProvider provider)
+    public static string ToEmbedUrl(string url, Domain.Entities.VideoProvider provider)
     {
         if (provider == Domain.Entities.VideoProvider.YouTube)
         {
@@ -82,10 +82,33 @@ public class GetLessonVideosQueryHandler : IRequestHandler<GetLessonVideosQuery,
 
     private static string? ExtractYouTubeId(string url)
     {
+        if (string.IsNullOrEmpty(url)) return null;
         if (url.Contains("youtu.be/"))
             return url.Split("youtu.be/").Last().Split('?').First();
         if (url.Contains("v="))
             return url.Split("v=").Last().Split('&').First();
         return null;
+    }
+}
+
+public record GetAllVideosQuery : IRequest<List<LessonVideoDto>>;
+
+public class GetAllVideosQueryHandler : IRequestHandler<GetAllVideosQuery, List<LessonVideoDto>>
+{
+    private readonly ILessonVideoRepository _repo;
+    public GetAllVideosQueryHandler(ILessonVideoRepository repo) => _repo = repo;
+
+    public async Task<List<LessonVideoDto>> Handle(GetAllVideosQuery request, CancellationToken cancellationToken)
+    {
+        var videos = await _repo.GetAllAsync(cancellationToken);
+        return videos.Select(v => new LessonVideoDto
+        {
+            Id = v.Id,
+            Title = v.Title,
+            VideoUrl = v.VideoUrl,
+            Provider = v.Provider.ToString(),
+            EmbedUrl = GetLessonVideosQueryHandler.ToEmbedUrl(v.VideoUrl, v.Provider),
+            DurationMinutes = v.DurationMinutes
+        }).ToList();
     }
 }

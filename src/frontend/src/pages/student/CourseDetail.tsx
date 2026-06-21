@@ -23,10 +23,10 @@ import {
 const LessonTypeIcon = ({ type, done }: { type?: string; done: boolean }) => {
   const map: Record<string, { icon: React.ElementType; bg: string; shadow: string }> = {
     Reading: { icon: BookOpen, bg: "bg-[#1CB0F6]", shadow: "shadow-[0_2px_0_#1899D6]" },
-    Video:   { icon: Video,    bg: "bg-[#FF9600]", shadow: "shadow-[0_2px_0_#CC7800]" },
-    Practice:{ icon: Code2,    bg: "bg-[#CE82FF]", shadow: "shadow-[0_2px_0_#A568CC]" },
-    Interactive:{ icon: Compass, bg: "bg-[#FF4B4B]", shadow: "shadow-[0_2px_0_#CC3A3A]" },
-    Quiz:    { icon: HelpCircle, bg: "bg-[#FFC800]", shadow: "shadow-[0_2px_0_#E6B400]" },
+    Video: { icon: Video, bg: "bg-[#FF9600]", shadow: "shadow-[0_2px_0_#CC7800]" },
+    Practice: { icon: Code2, bg: "bg-[#CE82FF]", shadow: "shadow-[0_2px_0_#A568CC]" },
+    Interactive: { icon: Compass, bg: "bg-[#FF4B4B]", shadow: "shadow-[0_2px_0_#CC3A3A]" },
+    Quiz: { icon: HelpCircle, bg: "bg-[#FFC800]", shadow: "shadow-[0_2px_0_#E6B400]" },
   };
   const fallback = { icon: FileText, bg: "bg-neutral-300", shadow: "shadow-[0_2px_0_#b0b0b0]" };
   const entry = (type && map[type]) ? map[type] : fallback;
@@ -125,16 +125,29 @@ export default function CourseDetail() {
           40% { transform: scale(1.15) rotate(-6deg); }
           70% { transform: scale(1.08) rotate(4deg); }
         }
-        .duo-lesson-row:hover .duo-lesson-type-icon {
-          animation: duo-lesson-icon-hover 0.45s ease-in-out;
+
+        /* Continuous ambient icon animations — always running, hover no longer required */
+        .duo-lesson-type-icon {
+          animation: duo-lesson-icon-hover 2.4s ease-in-out infinite;
         }
+        /* Stagger lessons within a module so icons don't pulse in lockstep */
+        ul.divide-y > li:nth-child(2n) .duo-lesson-type-icon { animation-delay: 0.25s; }
+        ul.divide-y > li:nth-child(3n) .duo-lesson-type-icon { animation-delay: 0.5s; }
+        ul.divide-y > li:nth-child(4n) .duo-lesson-type-icon { animation-delay: 0.75s; }
+
         @keyframes duo-module-star {
           0%, 100% { transform: scale(1) rotate(0deg); }
           40% { transform: scale(1.2) rotate(20deg); }
           70% { transform: scale(0.95) rotate(-5deg); }
         }
-        .duo-module-btn:hover .duo-module-star {
-          animation: duo-module-star 0.5s ease-in-out;
+        .duo-module-star {
+          animation: duo-module-star 2.6s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .duo-lesson-type-icon, .duo-module-star {
+            animation: none;
+          }
         }
       `}</style>
 
@@ -211,11 +224,10 @@ export default function CourseDetail() {
                 className="w-full flex items-center justify-between p-5 text-left hover:bg-neutral-50 transition-colors duo-module-btn"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-sm ${
-                    moduleDone
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-sm ${moduleDone
                       ? "bg-[#FFC800] text-[#946800] shadow-[0_3px_0_#E6B400]"
                       : "bg-neutral-100 text-neutral-400 border-2 border-neutral-200"
-                  }`}>
+                    }`}>
                     {moduleDone
                       ? <CheckCircle2 className="w-5 h-5" />
                       : <Star className="w-5 h-5 duo-module-star" />}

@@ -41,7 +41,10 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto
             Email = user.Email!,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Roles = roles.ToList()
+            ProfileImageUrl = user.ProfileImageUrl,
+            Roles = roles.ToList(),
+            Xp = user.Xp,
+            CurrentStreak = user.CurrentStreak
         };
     }
 }

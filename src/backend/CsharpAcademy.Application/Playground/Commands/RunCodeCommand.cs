@@ -3,7 +3,7 @@ using MediatR;
 
 namespace CsharpAcademy.Application.Playground.Commands;
 
-public record RunCodeCommand(string Code) : IRequest<CodeExecutionResult>;
+public record RunCodeCommand(string Code, string[]? Inputs = null) : IRequest<CodeExecutionResult>;
 
 public class RunCodeCommandHandler : IRequestHandler<RunCodeCommand, CodeExecutionResult>
 {
@@ -16,6 +16,6 @@ public class RunCodeCommandHandler : IRequestHandler<RunCodeCommand, CodeExecuti
 
     public Task<CodeExecutionResult> Handle(RunCodeCommand request, CancellationToken cancellationToken)
     {
-        return _codeExecutionService.ExecuteAsync(request.Code, cancellationToken);
+        return _codeExecutionService.ExecuteAsync(request.Code, request.Inputs, cancellationToken);
     }
 }

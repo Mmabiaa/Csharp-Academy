@@ -42,6 +42,16 @@ public class CourseRepository : ICourseRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var course = await _context.Courses.FindAsync(new object[] { id }, cancellationToken);
+        if (course != null)
+        {
+            _context.Courses.Remove(course);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
     public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
         _context.Courses.CountAsync(cancellationToken);
 }

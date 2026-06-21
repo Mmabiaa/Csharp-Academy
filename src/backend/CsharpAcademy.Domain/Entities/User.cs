@@ -9,6 +9,7 @@ public class User : IdentityUser<int>
     public int Xp { get; set; } = 0;
     public int CurrentStreak { get; set; } = 0;
     public int MaxStreak { get; set; } = 0;
+    public string? ProfileImageUrl { get; set; }
     public DateTime? LastActiveDate { get; set; }
     public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     public ICollection<Progress> ProgressRecords { get; set; } = new List<Progress>();

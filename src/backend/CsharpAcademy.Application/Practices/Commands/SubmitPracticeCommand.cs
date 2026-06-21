@@ -35,7 +35,7 @@ public class SubmitPracticeCommandHandler : IRequestHandler<SubmitPracticeComman
         var exercise = await _exerciseRepository.GetByIdAsync(request.ExerciseId, cancellationToken)
             ?? throw new KeyNotFoundException("Exercise not found.");
 
-        var result = await _codeExecutionService.ExecuteAsync(request.Code, cancellationToken);
+        var result = await _codeExecutionService.ExecuteAsync(request.Code, cancellationToken: cancellationToken);
         if (!result.Success)
         {
             return new PracticeResultDto

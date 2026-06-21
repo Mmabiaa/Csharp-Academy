@@ -21,4 +21,5 @@ public class LessonDetailDto
     public bool HasTutorial { get; set; }
     public bool HasPractice { get; set; }
     public bool HasVideos { get; set; }
+    public List<CsharpAcademy.Application.Challenges.Queries.LessonVideoDto> Videos { get; set; } = new();
 }

@@ -53,7 +53,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             Email = user.Email!,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Roles = roles.ToList()
+            ProfileImageUrl = user.ProfileImageUrl,
+            Roles = roles.ToList(),
+            Xp = 0,
+            CurrentStreak = 0
         };
     }
 }
