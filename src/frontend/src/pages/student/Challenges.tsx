@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchChallenges, submitChallenge, fetchUserProgressSummary } from "../../lib/api";
@@ -35,6 +35,9 @@ export default function Challenges() {
   const [filter, setFilter] = useState("All");
   const [runTrigger, setRunTrigger] = useState(0);
 
+  const rightCardRef = useRef<HTMLDivElement>(null);
+  const [listMaxHeight, setListMaxHeight] = useState<number | null>(null);
+
   const { data: challenges, isLoading } = useQuery({
     queryKey: ["challenges"],
     queryFn: fetchChallenges,
@@ -47,6 +50,37 @@ export default function Challenges() {
   });
 
   const selected = challenges?.find((c) => c.id === selectedId) ?? challenges?.[0];
+
+  // Keep the challenge list capped to the actual rendered height of the
+  // right-hand card (code editor + console + everything below it), instead
+  // of letting the list's own height stretch that card taller.
+  useEffect(() => {
+    const el = rightCardRef.current;
+    if (!el) {
+      setListMaxHeight(null);
+      return;
+    }
+
+    const updateHeight = () => {
+      if (window.innerWidth >= 1024) {
+        setListMaxHeight(el.offsetHeight);
+      } else {
+        // Below the lg breakpoint the columns stack, so no cap is needed.
+        setListMaxHeight(null);
+      }
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(el);
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, [selected?.id, showHint, output, message]);
 
   const submitMutation = useMutation({
     mutationFn: () => submitChallenge(selected!.id, code, token!),
@@ -125,8 +159,11 @@ export default function Challenges() {
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-2 space-y-2 max-h-[70vh] overflow-y-auto pr-1">
+      <div className="grid lg:grid-cols-5 gap-6 items-start">
+        <div
+          className="lg:col-span-2 space-y-2 overflow-y-auto pr-1"
+          style={listMaxHeight ? { maxHeight: `${listMaxHeight}px` } : undefined}
+        >
           {filtered.map((c) => {
             const diff = difficultyIcon[c.difficulty] ?? difficultyIcon["Easy"];
             const DiffIcon = diff.icon;
@@ -179,7 +216,7 @@ export default function Challenges() {
         </div>
 
         {selected && (
-          <div className="lg:col-span-3 duo-card space-y-4">
+          <div ref={rightCardRef} className="lg:col-span-3 duo-card space-y-4">
             <div className="flex items-start gap-3">
               {(() => {
                 const diff = difficultyIcon[selected.difficulty] ?? difficultyIcon["Easy"];
