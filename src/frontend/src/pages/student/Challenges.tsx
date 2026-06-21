@@ -22,7 +22,7 @@ const difficultyIcon: Record<string, { icon: React.ElementType; bg: string; shad
 };
 
 export default function Challenges() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, refreshUser } = useAuth();
   const { showNotification } = useNotifications();
   const { playSound } = useSound();
   const queryClient = useQueryClient();
@@ -67,6 +67,7 @@ export default function Challenges() {
           xpEarned: result.xpEarned,
         });
         queryClient.invalidateQueries({ queryKey: ["progress-summary"] });
+        refreshUser();
       }
     },
     onError: (err: Error) => {
@@ -190,7 +191,21 @@ export default function Challenges() {
                 );
               })()}
               <div>
-                <h2 className="text-xl font-black text-neutral-900 mb-1">{selected.title}</h2>
+                <div className="flex items-center gap-3 mb-1">
+                  <h2 className="text-xl font-black text-neutral-900">{selected.title}</h2>
+                  <div className="flex items-center gap-2">
+                    {progress?.solvedChallengeIds?.includes(selected.id) && (
+                      <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[#58CC02] bg-[#58CC02]/10 px-2 py-0.5 rounded-lg border border-[#58CC02]/30">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Solved
+                      </span>
+                    )}
+                    <span className="duo-xp-pill !text-[10px] !px-2 !py-0.5">
+                      <Gem className="w-3 h-3" />
+                      +{selected.xpReward} XP
+                    </span>
+                  </div>
+                </div>
                 <p className="text-neutral-600 font-bold text-sm leading-relaxed">{selected.description}</p>
               </div>
             </div>

@@ -27,7 +27,11 @@ namespace CsharpAcademy.Api.Controllers;
         /// <summary>
         /// Executes C# code in a secure sandboxed environment and returns the output.
         /// </summary>
+        /// <param name="request">The C# source code and optional standard inputs.</param>
+        /// <returns>Result of code execution including stdout and stderr.</returns>
+        /// <response code="200">Execution completed (could still contain compilation errors in result).</response>
         [HttpPost("run")]
+        [ProducesResponseType(typeof(CodeExecutionResult), 200)]
         public async Task<ActionResult<CodeExecutionResult>> Run([FromBody] RunCodeRequest request)
         {
             var result = await _mediator.Send(new RunCodeCommand(request.Code, request.Inputs));
@@ -52,7 +56,11 @@ namespace CsharpAcademy.Api.Controllers;
         /// <summary>
         /// Sends a message to the AI assistant for contextual help or general inquiries.
         /// </summary>
+        /// <param name="request">The user message and current lesson context helper.</param>
+        /// <returns>The AI-generated markdown response.</returns>
+        /// <response code="200">AI response received.</response>
         [HttpPost("chat")]
+        [ProducesResponseType(typeof(AiAssistantResponse), 200)]
         public async Task<ActionResult<AiAssistantResponse>> Chat([FromBody] ChatRequest request)
         {
             var result = await _mediator.Send(new AskAssistantCommand(request.Message, request.LessonContext));
@@ -79,8 +87,13 @@ namespace CsharpAcademy.Api.Controllers;
         /// <summary>
         /// Retrieves certificates earned by the currently authenticated user.
         /// </summary>
+        /// <returns>A list of certificates with verification codes.</returns>
+        /// <response code="200">Returns certificates list.</response>
+        /// <response code="401">If user not logged in.</response>
         [Authorize]
         [HttpGet]
+        [ProducesResponseType(typeof(List<CertificateDto>), 200)]
+        [ProducesResponseType(401)]
         public async Task<ActionResult<List<CertificateDto>>> GetMyCertificates()
         {
             var userId = GetRequiredUserId();
@@ -91,7 +104,13 @@ namespace CsharpAcademy.Api.Controllers;
         /// <summary>
         /// Verifies a certificate using its unique code.
         /// </summary>
+        /// <param name="code">The unique certificate code.</param>
+        /// <returns>Verification result including student name and course.</returns>
+        /// <response code="200">Certificate found.</response>
+        /// <response code="404">If code is invalid.</response>
         [HttpGet("verify/{code}")]
+        [ProducesResponseType(typeof(CertificateVerificationDto), 200)]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<CertificateVerificationDto>> Verify(string code)
         {
             var cert = await _mediator.Send(new GetCertificateByCodeQuery(code));
@@ -106,7 +125,13 @@ namespace CsharpAcademy.Api.Controllers;
         /// <summary>
         /// Downloads the PDF version of a certificate.
         /// </summary>
+        /// <param name="code">The unique certificate code.</param>
+        /// <returns>The generated binary PDF file.</returns>
+        /// <response code="200">Returns PDF stream.</response>
+        /// <response code="404">If certificate not found.</response>
         [HttpGet("{code}/pdf")]
+        [ProducesResponseType(200, Type = typeof(FileResult))]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> DownloadPdf(string code)
         {
             var cert = await _mediator.Send(new GetCertificateByCodeQuery(code));
@@ -150,7 +175,11 @@ namespace CsharpAcademy.Api.Controllers;
         /// <summary>
         /// Retrieves the top users by XP.
         /// </summary>
+        /// <param name="top">Number of users to return (default 10).</param>
+        /// <returns>The leaderboard entries.</returns>
+        /// <response code="200">Leaderboard returned.</response>
         [HttpGet]
+        [ProducesResponseType(typeof(List<LeaderboardEntryDto>), 200)]
         public async Task<ActionResult<List<LeaderboardEntryDto>>> GetLeaderboard([FromQuery] int top = 10)
         {
             var entries = await _mediator.Send(new GetLeaderboardQuery(top));

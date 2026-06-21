@@ -1,58 +1,53 @@
 # C# Academy
 
-[![Status](https://img.shields.io/badge/status-v1.0.0--stable-brightgreen)](docs/STATUS.md)
-[![Build](https://img.shields.io/badge/build-passing-brightgreen)](build_output.txt)
-[![Architecture](https://img.shields.io/badge/architecture-clean-blue)](docs/ARCHITECTURE.md)
+[![Status](https://img.shields.io/badge/status-v1.1.0--latest-brightgreen)](docs/1.%20Project%20Overview/CHANGELOG.md)
+[![Architecture](https://img.shields.io/badge/architecture-clean-blue)](docs/2.%20Architecture/ARCHITECTURE.md)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
-**C# Academy** is an intelligent, gamified learning platform designed to bridge the gap between theory and practice for aspiring C# developers. Featuring a deep integration with Google Gemini for AI tutoring and a sandboxed Roslyn execution environment, it provides a complete ecosystem for students, teachers, and administrators.
+**C# Academy** is an intelligent, gamified learning platform designed to bridge the gap between theory and practice for aspiring C# developers. Featuring a deep integration with **Google Gemini** for AI tutoring and a sandboxed **Roslyn execution environment**, it provides a complete ecosystem for students, teachers, and administrators.
 
 ---
 
 ## 🚀 Key Features
 
-### 🎓 For Students
-- **Structured Curriculum**: 5 foundational courses covering everything from Basics to ASP.NET Core.
-- **Interactive Playground**: Write and execute C# code directly in the browser with real-time feedback.
-- **AI Learning Assistant**: Integrated "Gemini-1.5-Flash" for line-by-line code explanations and debugging.
-- **Gamified Experience**: Earn XP, maintain daily streaks, and unlock achievement badges.
-- **Certification**: Automated PDF certificates of completion for verified skills.
-
-### 👩‍🏫 For Teachers
-- **Classroom Management**: Create virtual classrooms and manage student enrollments.
-- **Assignment System**: Deploy coding or essay-based assignments with automated delivery.
-- **Grading & Feedback**: Review student code submissions and provide detailed performance reviews.
-- **Analytics Dashboard**: Monitor class-wide progress and identify students needing assistance.
-
-### 🛠 For Administrators
-- **Platform Oversight**: Full control over user accounts, course content, and global metrics.
-- **Course Authoring**: Create and publish new modules, lessons, and assessments.
-- **System Monitoring**: Track platform health and user engagement stats.
+*   **Interactive C# Playground**: Run real C#/.NET code in the browser with Roslyn-powered sandboxing and security.
+*   **AI Learning Assistant**: Context-aware C# tutor powered by **Google Gemini**, featuring adaptive explanations and a rule-based offline fallback.
+*   **Structured Curriculum**: Comprehensive courses, from absolute beginner to advanced design patterns.
+*   **3D High-Gloss UI**: A premium, bouncy Duolingo-inspired interface built for accessibility and high engagement.
+*   **Gamification Engine**: Earn XP, maintain daily streaks (with Max Streak tracking), and unlock achievement badges.
+*   **Teacher & Admin Portals**: Manage classrooms, assign tasks, grade submissions, and view deep learning analytics.
+*   **Sound & Notifications**: Immersive auditory feedback system for successes, failures, and gamification events.
+*   **Voice Narration**: Narrative audio summaries for lessons using the browser's native Speech API.
+*   **Certifications**: Automated PDF certificate generation via QuestPDF with digital verification codes.
 
 ---
 
-## 🏗 System Architecture
+## 📂 Documentation
 
-The project is built following **Clean Architecture** principles, ensuring a decoupled, testable, and maintainable codebase.
+A comprehensive documentation suite is available in the [`/docs`](./docs) folder, organized by domain:
 
-- **Presentation**: React 18 + Vite + TypeScript (SPA) / ASP.NET Core Web API
-- **Application**: MediatR Use Cases, FluentValidation, AutoMapper
-- **Domain**: Pure POCO Entities, Value Objects, Domain Exceptions
-- **Infrastructure**: Entity Framework Core 9 (MySQL), Identity, AI Services (Gemini), PDF Generation (QuestPDF)
-
-For more details, see the [Architecture Documentation](docs/ARCHITECTURE.md).
+1.  [**Project Overview**](./docs/1.%20Project%20Overview) - Project Brief, Roadmap, and the accurate [Changelog](./docs/1.%20Project%20Overview/CHANGELOG.md).
+2.  [**Architecture**](./docs/2.%20Architecture) - Clean Architecture diagrams, Database Schema, and documented Design Patterns.
+3.  [**Backend**](./docs/3.%20Backend) - Technical dives into Roslyn Sandboxing, Gemini AI Engine, and Identity/Auth.
+4.  [**Frontend**](./docs/4.%20Frontend) - Design System tokens (3D styles), State Management, and Component library.
+5.  [**Features**](./docs/5.%20Features) - Detailed guides on the Course hierarchy, Quiz engine, and Classroom workflows.
+6.  [**SE Principles**](./docs/6.%20Software%20Engineering%20Principles/SE_PRINCIPLES.md) - **The definitive report on SOLID, DRY, and Security for semester submission.**
+7.  [**Developer Guide**](./docs/7.%20Developer%20Guide) - Step-by-step Setup, Testing strategy, and Environment variables.
+8.  [**Deployment**](./docs/8.%20Deployment) - Guide on building for production and Docker containerization.
 
 ---
 
-## 💻 Technology Stack
+## 🛠️ Technology Stack
 
-| Layer | Technologies |
+| Feature | Technology |
 |---|---|
-| **Backend** | .NET 10 (Preview), ASP.NET Core API |
-| **Logic** | MediatR, C# 13, Roslyn (Code Execution) |
-| **Frontend** | React 18, Tailwind CSS, Shadcn/UI, TanStack Query |
-| **Database** | MySQL (Pomelo Provider) |
-| **AI/ML** | Google Gemini API (AI Tutor & Quiz Generation) |
-| **Tooling** | Vite, Prettier, ESLint, Git |
+| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, Lucide |
+| **Backend** | ASP.NET Core 10 (Web API), MediatR (CQRS) |
+| **Database** | MySQL 8.0, EF Core (Pomelo Provider) |
+| **Sandbox** | Roslyn (Microsoft.CodeAnalysis.CSharp.Scripting) |
+| **AI Engine** | Google Gemini (Models: 1.5-Flash / 2.5-Flash) |
+| **Reporting** | QuestPDF |
+| **State** | TanStack Query v5 + React Context API |
 
 ---
 
@@ -62,48 +57,13 @@ For more details, see the [Architecture Documentation](docs/ARCHITECTURE.md).
 - .NET 9 or 10 SDK
 - Node.js (v18+)
 - MySQL Server (v8.0+)
-- Google Gemini API Key
+- Google Gemini API Key ([Get one here](https://aistudio.google.com/apikey))
 
-### Backend Setup
-1. Navigate to `src/backend`.
-2. Create a `.env` file based on `.env.example`.
-3. Configure your `CONNECTION_STRING` and `GEMINI_API_KEY`.
-4. Apply migrations:
-   ```powershell
-   dotnet ef database update --project CsharpAcademy.Infrastructure --startup-project CsharpAcademy.Api
-   ```
-5. Launch the API:
-   ```powershell
-   dotnet run --project CsharpAcademy.Api
-   ```
-
-### Frontend Setup
-1. Navigate to `src/frontend`.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Launch the dev server:
-   ```bash
-   npm run dev
-   ```
-
----
-
-## 🔑 Access Credentials
-
-| User Role | Email | Password |
-|---|---|---|
-| **Administrator** | `admin@academy.com` | `Admin123!` |
-| **Teacher** | `teacher@academy.com` | `Teacher123!` |
-
----
-
-## 🗺 Documentation
-- [Release Notes & Changelog](docs/CHANGELOG.md)
-- [Detailed Project Status](docs/STATUS.md)
-- [Architecture Overview](docs/ARCHITECTURE.md)
-- [Product Roadmap](docs/ROADMAP.md)
+### Quick Start
+1. **Database**: Create a MySQL db and configure `CONNECTION_STRING` in `src/backend/.env`.
+2. **Migrations**: `dotnet ef database update --project src/backend/CsharpAcademy.Infrastructure`
+3. **Launch Backend**: `dotnet run --project src/backend/CsharpAcademy.Api`
+4. **Launch Frontend**: `cd src/frontend && npm install && npm run dev`
 
 ---
 

@@ -144,15 +144,18 @@ public class GetUserProgressSummaryQueryHandler : IRequestHandler<GetUserProgres
     private readonly IEnrollmentRepository _enrollments;
     private readonly IProgressRepository _progress;
     private readonly ICourseRepository _courses;
+    private readonly ICodingChallengeRepository _challenges;
 
     public GetUserProgressSummaryQueryHandler(
         IUserRepository users, IEnrollmentRepository enrollments,
-        IProgressRepository progress, ICourseRepository courses)
+        IProgressRepository progress, ICourseRepository courses,
+        ICodingChallengeRepository challenges)
     {
         _users = users;
         _enrollments = enrollments;
         _progress = progress;
         _courses = courses;
+        _challenges = challenges;
     }
 
     public async Task<UserProgressSummaryDto> Handle(GetUserProgressSummaryQuery request, CancellationToken cancellationToken)
