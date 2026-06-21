@@ -19,7 +19,13 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Registers a new user with the specified role.
     /// </summary>
+    /// <param name="request">The registration details including email, password, and optional role.</param>
+    /// <returns>Auth response containing JWT and user profile.</returns>
+    /// <response code="200">Registration successful.</response>
+    /// <response code="400">If email is already taken or registration fails.</response>
     [HttpPost("register")]
+    [ProducesResponseType(typeof(AuthResponseDto), 200)]
+    [ProducesResponseType(400)]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequest request)
     {
         try
@@ -37,7 +43,13 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Authenticates a user using email and password.
     /// </summary>
+    /// <param name="request">Login credentials.</param>
+    /// <returns>Auth response with token.</returns>
+    /// <response code="200">Login successful.</response>
+    /// <response code="401">Invalid credentials.</response>
     [HttpPost("login")]
+    [ProducesResponseType(typeof(AuthResponseDto), 200)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequest request)
     {
         try
@@ -54,7 +66,13 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Authenticates a user using a Google ID token.
     /// </summary>
+    /// <param name="request">The Google identity token.</param>
+    /// <returns>Auth response with token.</returns>
+    /// <response code="200">Google login successful.</response>
+    /// <response code="401">If the Google token is invalid or unauthorized.</response>
     [HttpPost("google-login")]
+    [ProducesResponseType(typeof(AuthResponseDto), 200)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult<AuthResponseDto>> GoogleLogin([FromBody] GoogleLoginRequest request)
     {
         try

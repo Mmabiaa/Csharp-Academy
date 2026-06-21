@@ -15,6 +15,7 @@ import {
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { useSound } from "../../context/SoundContext";
 import { useVoiceNarration } from "../../hooks/useVoiceNarration";
 import CodeEditor from "../../components/CodeEditor";
 import ConsolePanel from "../../components/ConsolePanel";
@@ -77,6 +78,7 @@ export default function LessonPage() {
 
   const { token, isAuthenticated, isTeacher } = useAuth();
   const { showNotification } = useNotifications();
+  const { playSound } = useSound();
   const queryClient = useQueryClient();
   const { speak, stop, speaking, supported } = useVoiceNarration();
 
@@ -126,6 +128,7 @@ export default function LessonPage() {
   const completeMutation = useMutation({
     mutationFn: () => completeLesson(lessonId, token!),
     onSuccess: (result) => {
+      playSound("complete");
       setIsSuccess(true);
       const badgeMsg = result.newBadges.length > 0
         ? ` Badges earned: ${result.newBadges.join(", ")}` : "";
@@ -174,6 +177,11 @@ export default function LessonPage() {
     onSuccess: (result) => {
       setPracticeOutput(result.output);
       setIsSuccess(result.passed);
+      if (result.passed) {
+        playSound("success");
+      } else {
+        playSound("error");
+      }
       setMessage(result.message + (result.xpEarned > 0 ? ` +${result.xpEarned} XP` : ""));
       if (result.passed) {
         showNotification({
@@ -350,7 +358,7 @@ export default function LessonPage() {
                     Next<ChevronRight className="w-4 h-4" />
                   </button>
                 ) : (
-                  <button onClick={() => switchTab(lesson.hasPractice ? "practice" : "read")} className="duo-btn3d duo-btn3d-green">
+                  <button onClick={() => { playSound("click"); switchTab(lesson.hasPractice ? "practice" : "read"); }} className="duo-btn3d duo-btn3d-green">
                     {lesson.hasPractice ? "Try practice" : "Finish"}<ChevronRight className="w-4 h-4" />
                   </button>
                 )}
@@ -397,13 +405,13 @@ export default function LessonPage() {
                   <p className="text-neutral-600 font-bold">{activeExercise.instructions}</p>
                   <CodeEditor value={practiceCode || activeExercise.starterCode} onChange={setPracticeCode} rows={12} />
                   <div className="flex flex-wrap gap-3">
-                    <button onClick={() => setPracticeRunTrigger((n) => n + 1)} className="duo-btn3d duo-btn3d-white">
+                    <button onClick={() => { setPracticeRunTrigger((n) => n + 1); playSound("click"); }} className="duo-btn3d duo-btn3d-white">
                       <Play className="w-4 h-4" />Run code
                     </button>
-                    <button onClick={() => practiceMutation.mutate()} disabled={practiceMutation.isPending} className="duo-btn3d duo-btn3d-green">
+                    <button onClick={() => { playSound("click"); practiceMutation.mutate(); }} disabled={practiceMutation.isPending} className="duo-btn3d duo-btn3d-green">
                       {practiceMutation.isPending ? "Checking..." : "Submit solution"}
                     </button>
-                    <button onClick={() => setShowHint(!showHint)} className="duo-btn3d duo-btn3d-yellow">
+                    <button onClick={() => { playSound("click"); setShowHint(!showHint); }} className="duo-btn3d duo-btn3d-yellow">
                       <Lightbulb className="w-4 h-4" />{showHint ? "Hide hint" : "Show hint"}
                     </button>
                   </div>
@@ -454,12 +462,12 @@ export default function LessonPage() {
                     <CheckCircle2 className="w-5 h-5" />Completed
                   </div>
                 ) : (
-                  <button onClick={() => completeMutation.mutate()} disabled={completeMutation.isPending} className="duo-btn3d duo-btn3d-green">
+                  <button onClick={() => { playSound("click"); completeMutation.mutate(); }} disabled={completeMutation.isPending} className="duo-btn3d duo-btn3d-green">
                     {completeMutation.isPending ? "Saving..." : "Mark as complete"}
                   </button>
                 )}
                 {nextLesson && (
-                  <Link to={`/lessons/${nextLesson.id}`} className="duo-btn3d duo-btn3d-blue">
+                  <Link to={`/lessons/${nextLesson.id}`} className="duo-btn3d duo-btn3d-blue" onClick={() => playSound("click")}>
                     Next lesson<ChevronRight className="w-4 h-4" />
                   </Link>
                 )}
@@ -469,12 +477,12 @@ export default function LessonPage() {
                   </Link>
                 )}
                 {lesson.hasTutorial && (
-                  <button onClick={() => { setTutorialStep(0); switchTab("tutorial"); }} className="duo-btn3d duo-btn3d-blue">
+                  <button onClick={() => { playSound("click"); setTutorialStep(0); switchTab("tutorial"); }} className="duo-btn3d duo-btn3d-blue">
                     <Compass className="w-4 h-4" />Start tutorial
                   </button>
                 )}
                 {lesson.hasPractice && (
-                  <button onClick={() => switchTab("practice")} className="duo-btn3d duo-btn3d-yellow">
+                  <button onClick={() => { playSound("click"); switchTab("practice"); }} className="duo-btn3d duo-btn3d-yellow">
                     <Code2 className="w-4 h-4" />Code practice
                   </button>
                 )}

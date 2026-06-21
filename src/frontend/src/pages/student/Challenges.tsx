@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchChallenges, submitChallenge } from "../../lib/api";
+import { fetchChallenges, submitChallenge, fetchUserProgressSummary } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { useSound } from "../../context/SoundContext";
 import CodeEditor from "../../components/CodeEditor";
 import ConsolePanel from "../../components/ConsolePanel";
 import { Trophy, Play, Lightbulb, CheckCircle2, XCircle, Gem, Zap, Flame, Sword } from "lucide-react";
@@ -21,8 +22,10 @@ const difficultyIcon: Record<string, { icon: React.ElementType; bg: string; shad
 };
 
 export default function Challenges() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, refreshUser } = useAuth();
   const { showNotification } = useNotifications();
+  const { playSound } = useSound();
+  const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
@@ -37,25 +40,39 @@ export default function Challenges() {
     queryFn: fetchChallenges,
   });
 
+  const { data: progress } = useQuery({
+    queryKey: ["progress-summary"],
+    queryFn: () => fetchUserProgressSummary(token!),
+    enabled: !!token,
+  });
+
   const selected = challenges?.find((c) => c.id === selectedId) ?? challenges?.[0];
 
   const submitMutation = useMutation({
     mutationFn: () => submitChallenge(selected!.id, code, token!),
     onSuccess: (result) => {
       setOutput(result.output);
-      setIsSuccess(result.xpEarned > 0);
+      setIsSuccess(result.passed);
+      if (result.passed) {
+        playSound("success");
+      } else {
+        playSound("error");
+      }
       setMessage(result.message + (result.xpEarned > 0 ? ` +${result.xpEarned} XP` : ""));
-      if (result.xpEarned > 0) {
+      if (result.passed) {
         showNotification({
           type: "achievement",
           title: "Challenge Solved!",
           message: "Masterful work! This puzzle didn't stand a chance.",
           xpEarned: result.xpEarned,
         });
+        queryClient.invalidateQueries({ queryKey: ["progress-summary"] });
+        refreshUser();
       }
     },
     onError: (err: Error) => {
       setIsSuccess(false);
+      playSound("error");
       setMessage(err.message);
     },
   });
@@ -96,7 +113,7 @@ export default function Challenges() {
         {["All", "Easy", "Medium", "Hard"].map((d) => (
           <button
             key={d}
-            onClick={() => setFilter(d)}
+            onClick={() => { setFilter(d); playSound("click"); }}
             className={
               filter === d
                 ? "duo-btn3d duo-btn3d-green !px-4 !py-2 !text-xs"
@@ -113,6 +130,8 @@ export default function Challenges() {
           {filtered.map((c) => {
             const diff = difficultyIcon[c.difficulty] ?? difficultyIcon["Easy"];
             const DiffIcon = diff.icon;
+            const isSolved = progress?.solvedChallengeIds?.includes(c.id);
+
             return (
               <button
                 key={c.id}
@@ -122,21 +141,28 @@ export default function Challenges() {
                   setOutput("");
                   setMessage("");
                   setShowHint(false);
+                  playSound("click");
                 }}
                 className={`w-full text-left p-4 rounded-2xl border-2 transition-all duo-challenge-item ${selected?.id === c.id
-                    ? "border-[#58CC02] bg-[#58CC02]/10"
+                  ? "border-[#58CC02] bg-[#58CC02]/10"
+                  : isSolved
+                    ? "border-[#D7FFB8] bg-[#F7FFF0]"
                     : "border-[#e5e5e5] bg-white hover:border-[#58CC02]/40 hover:bg-neutral-50"
                   }`}
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${diff.bg} ${diff.shadow}`}>
-                    <DiffIcon className={`w-4 h-4 text-white ${diff.animClass}`} />
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isSolved ? "bg-[#58CC02] shadow-[0_2px_0_#46A302]" : diff.bg + " " + diff.shadow}`}>
+                    {isSolved ? (
+                      <CheckCircle2 className="w-5 h-5 text-white" />
+                    ) : (
+                      <DiffIcon className={`w-4 h-4 text-white ${diff.animClass}`} />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-black text-neutral-900 truncate">{c.title}</p>
-                      <span className={`duo-badge ${difficultyBadge[c.difficulty] ?? "duo-badge-gray"} shrink-0`}>
-                        {c.difficulty}
+                      <p className={`font-black truncate ${isSolved ? "text-[#46A302]" : "text-neutral-900"}`}>{c.title}</p>
+                      <span className={`duo-badge ${isSolved ? "duo-badge-green" : (difficultyBadge[c.difficulty] ?? "duo-badge-gray")} shrink-0`}>
+                        {isSolved ? "Solved" : c.difficulty}
                       </span>
                     </div>
                   </div>
@@ -165,7 +191,21 @@ export default function Challenges() {
                 );
               })()}
               <div>
-                <h2 className="text-xl font-black text-neutral-900 mb-1">{selected.title}</h2>
+                <div className="flex items-center gap-3 mb-1">
+                  <h2 className="text-xl font-black text-neutral-900">{selected.title}</h2>
+                  <div className="flex items-center gap-2">
+                    {progress?.solvedChallengeIds?.includes(selected.id) && (
+                      <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[#58CC02] bg-[#58CC02]/10 px-2 py-0.5 rounded-lg border border-[#58CC02]/30">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Solved
+                      </span>
+                    )}
+                    <span className="duo-xp-pill !text-[10px] !px-2 !py-0.5">
+                      <Gem className="w-3 h-3" />
+                      +{selected.xpReward} XP
+                    </span>
+                  </div>
+                </div>
                 <p className="text-neutral-600 font-bold text-sm leading-relaxed">{selected.description}</p>
               </div>
             </div>
@@ -174,7 +214,7 @@ export default function Challenges() {
 
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={() => setRunTrigger((n) => n + 1)}
+                onClick={() => { setRunTrigger((n) => n + 1); playSound("click"); }}
                 className="duo-btn3d duo-btn3d-white"
               >
                 <Play className="w-4 h-4" />
@@ -182,7 +222,7 @@ export default function Challenges() {
               </button>
               {isAuthenticated ? (
                 <button
-                  onClick={() => submitMutation.mutate()}
+                  onClick={() => { playSound("click"); submitMutation.mutate(); }}
                   disabled={submitMutation.isPending}
                   className="duo-btn3d duo-btn3d-green"
                 >
@@ -191,7 +231,7 @@ export default function Challenges() {
               ) : (
                 <Link to="/login" className="duo-btn3d duo-btn3d-green">Sign in to submit</Link>
               )}
-              <button onClick={() => setShowHint(!showHint)} className="duo-btn3d duo-btn3d-yellow">
+              <button onClick={() => { playSound("click"); setShowHint(!showHint); }} className="duo-btn3d duo-btn3d-yellow">
                 <Lightbulb className="w-4 h-4" />
                 {showHint ? "Hide hint" : "Hint"}
               </button>

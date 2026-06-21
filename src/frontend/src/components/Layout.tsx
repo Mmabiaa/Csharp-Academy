@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useSound } from "../context/SoundContext";
 import { ReactNode } from "react";
 import UserAvatar from "./UserAvatar";
 import NotificationOverlay from "./NotificationOverlay";
@@ -58,6 +59,7 @@ const fallbackAccent: Accent = { bg: "bg-[#1CB0F6]", shadow: "shadow-[0_3px_0_#1
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { user, isAuthenticated, logout, isAdmin, isTeacher } = useAuth();
+  const { playSound } = useSound();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -209,6 +211,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => playSound("click")}
                 className={`group flex items-center gap-3 px-3 py-2.5 text-sm font-black uppercase tracking-wide rounded-2xl transition-all duration-150 ${isActive
                   ? `${accent.tint} ${accent.text}`
                   : "text-neutral-400 hover:bg-neutral-50 hover:text-neutral-600 hover:translate-x-0.5"
@@ -240,6 +243,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           {isAuthenticated && (
             <Link
               to="/profile"
+              onClick={() => playSound("click")}
               className="relative flex items-center gap-2.5 px-2.5 py-2.5 rounded-2xl bg-gradient-to-br from-[#F3F8FF] to-[#EAF6FF] border-2 border-[#1CB0F6]/15 hover:border-[#1CB0F6]/40 hover:-translate-y-0.5 transition-all"
             >
               <span className="relative shrink-0">
@@ -284,6 +288,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           ) : (
             <button
               onClick={() => {
+                playSound("click");
                 logout();
                 navigate("/");
               }}
@@ -350,6 +355,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <Link
                   key={item.path}
                   to={item.path}
+                  onClick={() => playSound("click")}
                   className="flex flex-col items-center justify-center py-1.5 rounded-xl transition-all"
                 >
                   <span

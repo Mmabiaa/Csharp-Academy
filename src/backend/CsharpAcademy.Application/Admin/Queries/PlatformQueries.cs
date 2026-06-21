@@ -124,6 +124,8 @@ public class UserProgressSummaryDto
     public int LessonsCompleted { get; set; }
     public int PracticesCompleted { get; set; }
     public int ChallengesCompleted { get; set; }
+    public List<int> SolvedChallengeIds { get; set; } = new();
+    public List<int> SolvedPracticeIds { get; set; } = new();
     public List<CourseProgressItemDto> Courses { get; set; } = new();
 }
 
@@ -142,15 +144,18 @@ public class GetUserProgressSummaryQueryHandler : IRequestHandler<GetUserProgres
     private readonly IEnrollmentRepository _enrollments;
     private readonly IProgressRepository _progress;
     private readonly ICourseRepository _courses;
+    private readonly ICodingChallengeRepository _challenges;
 
     public GetUserProgressSummaryQueryHandler(
         IUserRepository users, IEnrollmentRepository enrollments,
-        IProgressRepository progress, ICourseRepository courses)
+        IProgressRepository progress, ICourseRepository courses,
+        ICodingChallengeRepository challenges)
     {
         _users = users;
         _enrollments = enrollments;
         _progress = progress;
         _courses = courses;
+        _challenges = challenges;
     }
 
     public async Task<UserProgressSummaryDto> Handle(GetUserProgressSummaryQuery request, CancellationToken cancellationToken)
@@ -176,11 +181,18 @@ public class GetUserProgressSummaryQueryHandler : IRequestHandler<GetUserProgres
             });
         }
 
+        var solvedChallenges = await _challenges.GetCompletedIdsByUserAsync(request.UserId, cancellationToken);
+        var solvedPractices = await _progress.GetCompletedPracticeIdsAsync(request.UserId, cancellationToken);
+
         return new UserProgressSummaryDto
         {
             TotalXp = user?.Xp ?? 0,
             CoursesEnrolled = enrollments.Count,
             LessonsCompleted = completed.Count,
+            PracticesCompleted = solvedPractices.Count,
+            ChallengesCompleted = solvedChallenges.Count,
+            SolvedChallengeIds = solvedChallenges,
+            SolvedPracticeIds = solvedPractices,
             Courses = courses
         };
     }

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchAllPractices } from "../../lib/api";
 import { Code2, Dumbbell, ArrowRight } from "lucide-react";
+import { useSound } from "../../context/SoundContext";
 
 const difficultyLabel = (d: number) =>
   d === 1 ? "Beginner" : d === 2 ? "Intermediate" : "Advanced";
@@ -13,6 +14,7 @@ const difficultyDot = (d: number) =>
   d === 1 ? "bg-[#58CC02]" : d === 2 ? "bg-[#FFC800]" : "bg-[#FF4B4B]";
 
 export default function Practices() {
+  const { playSound } = useSound();
   const {
     data: exercises,
     isLoading,
@@ -75,6 +77,7 @@ export default function Practices() {
                 key={ex.id}
                 to={`/lessons/${ex.lessonId}?tab=practice`}
                 className="duo-card duo-card-hover block hover:border-[#1CB0F6]"
+                onClick={() => playSound("click")}
               >
                 <div className="flex items-start gap-4">
                   <div

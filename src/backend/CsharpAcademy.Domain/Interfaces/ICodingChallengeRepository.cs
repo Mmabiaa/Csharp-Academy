@@ -8,4 +8,5 @@ public interface ICodingChallengeRepository
     Task<List<CodingChallenge>> GetAllPublishedAsync(CancellationToken cancellationToken = default);
     Task<bool> HasUserCompletedAsync(int userId, int challengeId, CancellationToken cancellationToken = default);
     Task RecordCompletionAsync(int userId, int challengeId, CancellationToken cancellationToken = default);
+    Task<List<int>> GetCompletedIdsByUserAsync(int userId, CancellationToken cancellationToken = default);
 }

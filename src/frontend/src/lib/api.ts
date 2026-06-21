@@ -544,6 +544,8 @@ export interface UserProgressSummary {
   lessonsCompleted: number;
   practicesCompleted: number;
   challengesCompleted: number;
+  solvedChallengeIds: number[];
+  solvedPracticeIds: number[];
   courses: {
     courseId: number;
     courseTitle: string;

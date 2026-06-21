@@ -33,4 +33,10 @@ public class CodingChallengeRepository : ICodingChallengeRepository
         });
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<List<int>> GetCompletedIdsByUserAsync(int userId, CancellationToken cancellationToken = default) =>
+        await _context.ChallengeCompletions
+            .Where(c => c.UserId == userId)
+            .Select(c => c.ChallengeId)
+            .ToListAsync(cancellationToken);
 }
