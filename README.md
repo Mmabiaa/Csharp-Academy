@@ -8,6 +8,27 @@
 
 ---
 
+## 🖼️ Visual Overview
+
+| Home Dashboard | Course Catalog |
+|:---:|:---:|
+| ![Home](./screenshots/home.png) | ![Courses](./screenshots/courses.png) |
+
+| Learning Interface | AI Assistant |
+|:---:|:---:|
+| ![Learn](./screenshots/learn.png) | ![AI Assistant](./screenshots/AI_Assistant.png) |
+
+| Code Playground | Video Tutorials |
+|:---:|:---:|
+| ![Playground](./screenshots/playground.png) | ![Video](./screenshots/video.png) |
+
+| Practice Exercises | Course Enrollment |
+|:---:|:---:|
+| ![Practices](./screenshots/practices.png) | ![Start Course](./screenshots/start_course.png) |
+
+
+---
+
 ## 🚀 Key Features
 
 *   **Interactive C# Playground**: Run real C#/.NET code in the browser with Roslyn-powered sandboxing and security.
