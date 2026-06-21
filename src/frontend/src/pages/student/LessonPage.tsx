@@ -14,6 +14,7 @@ import {
   fetchCourseById,
 } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
 import { useVoiceNarration } from "../../hooks/useVoiceNarration";
 import CodeEditor from "../../components/CodeEditor";
 import ConsolePanel from "../../components/ConsolePanel";
@@ -43,7 +44,6 @@ import {
 
 type Tab = "read" | "video" | "tutorial" | "practice" | "practices";
 
-// Animated icon components per tab — each has its own keyframe personality
 const TabIcon = ({ tab, active }: { tab: Tab; active: boolean }) => {
   const base = "w-4 h-4 transition-transform";
   const map: Record<Tab, React.ReactNode> = {
@@ -76,6 +76,7 @@ export default function LessonPage() {
   const [selectedExercise, setSelectedExercise] = useState<number | null>(null);
 
   const { token, isAuthenticated, isTeacher } = useAuth();
+  const { showNotification } = useNotifications();
   const queryClient = useQueryClient();
   const { speak, stop, speaking, supported } = useVoiceNarration();
 
@@ -102,6 +103,7 @@ export default function LessonPage() {
     queryFn: () => fetchLessonVideos(lessonId),
     enabled: !isNaN(lessonId) && (tab === "video" || lesson?.hasVideos),
   });
+
   const { data: course } = useQuery({
     queryKey: ["course", lesson?.courseId],
     queryFn: () => fetchCourseById(lesson!.courseId),
@@ -125,15 +127,23 @@ export default function LessonPage() {
     mutationFn: () => completeLesson(lessonId, token!),
     onSuccess: (result) => {
       setIsSuccess(true);
-      const badgeMsg =
-        result.newBadges.length > 0
-          ? ` Badges earned: ${result.newBadges.join(", ")}`
-          : "";
+      const badgeMsg = result.newBadges.length > 0
+        ? ` Badges earned: ${result.newBadges.join(", ")}` : "";
       let msg = `Lesson complete! +${result.xpEarned} XP (Total: ${result.totalXp}). Streak: ${result.currentStreak} days.${badgeMsg}`;
       if (result.courseCompleted && result.certificateCode) {
         msg += ` Course completed! Certificate: ${result.certificateCode}`;
       }
       setMessage(msg);
+      showNotification({
+        type: "congrats",
+        title: "Lesson Complete!",
+        message: result.courseCompleted
+          ? "Amazing! You've finished the entire course!"
+          : "You're on a roll — keep it up!",
+        xpEarned: result.xpEarned,
+        streakDays: result.currentStreak,
+        badges: result.newBadges,
+      });
       queryClient.invalidateQueries({ queryKey: ["lesson", lessonId] });
       queryClient.invalidateQueries({ queryKey: ["course-progress"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
@@ -149,9 +159,7 @@ export default function LessonPage() {
     mutationFn: () => generateQuiz(lessonId, token!),
     onSuccess: (data) => {
       setIsSuccess(true);
-      setMessage(
-        `Quiz generated with ${data.questionCount} questions${data.usedAi ? " (AI)" : ""}.`
-      );
+      setMessage(`Quiz generated with ${data.questionCount} questions${data.usedAi ? " (AI)" : ""}.`);
       queryClient.invalidateQueries({ queryKey: ["lesson", lessonId] });
       queryClient.invalidateQueries({ queryKey: ["quiz", lessonId] });
     },
@@ -166,10 +174,16 @@ export default function LessonPage() {
     onSuccess: (result) => {
       setPracticeOutput(result.output);
       setIsSuccess(result.passed);
-      setMessage(
-        result.message + (result.xpEarned > 0 ? ` +${result.xpEarned} XP` : "")
-      );
-      if (result.passed) queryClient.invalidateQueries({ queryKey: ["profile"] });
+      setMessage(result.message + (result.xpEarned > 0 ? ` +${result.xpEarned} XP` : ""));
+      if (result.passed) {
+        showNotification({
+          type: "achievement",
+          title: "Practice Perfected!",
+          message: result.message,
+          xpEarned: result.xpEarned,
+        });
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+      }
     },
     onError: (err: Error) => {
       setIsSuccess(false);
@@ -187,9 +201,7 @@ export default function LessonPage() {
     return (
       <div className="space-y-6 pb-24 md:pb-0">
         <div className="h-6 w-40 bg-neutral-200 rounded-xl animate-pulse" />
-        <div className="duo-card animate-pulse">
-          <div className="h-40" />
-        </div>
+        <div className="duo-card animate-pulse"><div className="h-40" /></div>
       </div>
     );
   }
@@ -197,10 +209,7 @@ export default function LessonPage() {
   if (error || !lesson) {
     return (
       <div className="space-y-6 pb-24 md:pb-0">
-        <Link
-          to={`/courses/${lesson?.courseId}`}
-          className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm"
-        >
+        <Link to={`/courses/${lesson?.courseId}`} className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm">
           <ArrowLeft className="w-5 h-5" />
           Back to course
         </Link>
@@ -216,86 +225,38 @@ export default function LessonPage() {
 
   const voiceText = lesson.voiceSummary || lesson.content.replace(/[#*`]/g, "").slice(0, 500);
 
-  const availableTabs = (["read", "video", "tutorial", "practice", "practices"] as Tab[]).filter(
-    (t) => {
-      if (t === "video") return lesson.hasVideos || (lesson as any).HasVideos || (lesson.videos && lesson.videos.length > 0);
-      if (t === "tutorial") return lesson.hasTutorial || (lesson as any).HasTutorial;
-      if (t === "practice") return lesson.hasPractice || (lesson as any).HasPractice;
-      if (t === "practices") return !!lesson.bestPractices;
-      return true;
-    }
-  );
+  const availableTabs = (["read", "video", "tutorial", "practice", "practices"] as Tab[]).filter((t) => {
+    if (t === "video") return lesson.hasVideos || (lesson.videos && lesson.videos.length > 0);
+    if (t === "tutorial") return lesson.hasTutorial;
+    if (t === "practice") return lesson.hasPractice;
+    if (t === "practices") return !!lesson.bestPractices;
+    return true;
+  });
 
   const labels: Record<Tab, string> = {
-    read: "Lesson",
-    video: "Video",
-    tutorial: "Tutorial",
-    practice: "Practice",
-    practices: "Best practices",
+    read: "Lesson", video: "Video", tutorial: "Tutorial",
+    practice: "Practice", practices: "Best practices",
   };
+
+  const videoList = videos ?? lesson.videos ?? [];
 
   return (
     <div className="space-y-6 pb-24 md:pb-0">
-      <style>{`
-        @keyframes duo-tab-read {
-          0%, 100% { transform: scaleX(1) rotate(0deg); }
-          50% { transform: scaleX(1.1) rotate(2deg); }
-        }
-        @keyframes duo-tab-video {
-          0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(180deg); }
-        }
-        @keyframes duo-tab-compass {
-          0%, 100% { transform: scale(1) rotate(0deg); }
-          25% { transform: scale(1.2) rotate(-15deg); }
-          75% { transform: scale(1.2) rotate(15deg); }
-        }
-        @keyframes duo-tab-code {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-3px); }
-          75% { transform: translateX(3px); }
-        }
-        @keyframes duo-tab-star {
-          0%, 100% { transform: scale(1) rotate(0deg); }
-          40% { transform: scale(1.3) rotate(20deg); }
-          70% { transform: scale(0.95) rotate(-5deg); }
-        }
-        .duo-tab-read-icon { animation: duo-tab-read 0.5s ease-in-out; }
-        .duo-tab-video-icon { animation: duo-tab-video 0.4s ease-in-out; }
-        .duo-tab-compass-icon { animation: duo-tab-compass 0.6s ease-in-out; }
-        .duo-tab-code-icon { animation: duo-tab-code 0.4s ease-in-out; }
-        .duo-tab-star-icon { animation: duo-tab-star 0.5s ease-in-out; }
-
-        @keyframes duo-flame-dance {
-          0%, 100% { transform: rotate(-6deg) scale(1); }
-          25% { transform: rotate(7deg) scale(1.1); }
-          75% { transform: rotate(-4deg) scale(1.05); }
-        }
-        .duo-tutorial-node { animation: duo-flame-dance 2s ease-in-out infinite; }
-      `}</style>
-
-      {/* Back Button & Header */}
-      <div className="space-y-4">
-        <Link
-          to={`/courses/${lesson.courseId}`}
-          className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm mb-4"
-        >
+      {/* Back + Header */}
+      <div className="space-y-1">
+        <Link to={`/courses/${lesson.courseId}`} className="inline-flex items-center gap-2 text-neutral-500 font-bold hover:text-[#58CC02] text-sm">
           <ArrowLeft className="w-5 h-5" />
           Back to {lesson.courseTitle}
         </Link>
-        <p className="text-xs font-black text-neutral-400 uppercase tracking-wider mb-1">
-          {lesson.moduleTitle}
-        </p>
+        <p className="text-xs font-black text-neutral-400 uppercase tracking-wider">{lesson.moduleTitle}</p>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl md:text-3xl font-black text-neutral-900">{lesson.title}</h1>
           {supported && voiceText && (
             <button
               onClick={() => (speaking ? stop() : speak(voiceText))}
-              className={
-                speaking
-                  ? "duo-btn3d !px-4 !py-2 !text-xs bg-[#FF4B4B] text-white shadow-[0_3px_0_#EA2B2B]"
-                  : "duo-btn3d duo-btn3d-blue !px-4 !py-2 !text-xs"
-              }
+              className={speaking
+                ? "duo-btn3d !px-4 !py-2 !text-xs bg-[#FF4B4B] text-white shadow-[0_3px_0_#EA2B2B]"
+                : "duo-btn3d duo-btn3d-blue !px-4 !py-2 !text-xs"}
             >
               {speaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               {speaking ? "Stop" : "Listen"}
@@ -304,17 +265,15 @@ export default function LessonPage() {
         </div>
       </div>
 
-      {/* Tabs — icon bubbles instead of emoji */}
+      {/* Tabs */}
       <div className="flex flex-wrap gap-2">
         {availableTabs.map((t) => (
           <button
             key={t}
             onClick={() => switchTab(t)}
-            className={
-              tab === t
-                ? "duo-btn3d duo-btn3d-green !px-4 !py-2.5 !text-xs"
-                : "duo-btn3d duo-btn3d-white !px-4 !py-2.5 !text-xs"
-            }
+            className={tab === t
+              ? "duo-btn3d duo-btn3d-green !px-4 !py-2.5 !text-xs"
+              : "duo-btn3d duo-btn3d-white !px-4 !py-2.5 !text-xs"}
           >
             <TabIcon tab={t} active={tab === t} />
             {labels[t]}
@@ -322,7 +281,7 @@ export default function LessonPage() {
         ))}
       </div>
 
-      {/* Tab Content */}
+      {/* READ */}
       {tab === "read" && (
         <article className="duo-card lesson-content">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -331,9 +290,10 @@ export default function LessonPage() {
         </article>
       )}
 
+      {/* VIDEO */}
       {tab === "video" && (
         <div className="space-y-4">
-          {!lesson.videos || lesson.videos.length === 0 ? (
+          {videoList.length === 0 ? (
             <div className="duo-panel text-center py-10">
               <div className="w-14 h-14 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Video className="w-7 h-7 text-neutral-400" />
@@ -341,13 +301,11 @@ export default function LessonPage() {
               <p className="text-neutral-500 font-bold">No videos for this lesson.</p>
             </div>
           ) : (
-            lesson.videos.map((v) => (
+            videoList.map((v: any) => (
               <div key={v.id} className="duo-card">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="font-black text-neutral-900">{v.title}</h2>
-                  <span className="duo-badge duo-badge-gray">
-                    {v.durationMinutes} min · {v.provider}
-                  </span>
+                  <span className="duo-badge duo-badge-gray">{v.durationMinutes} min · {v.provider}</span>
                 </div>
                 <VideoPlayer embedUrl={v.embedUrl} title={v.title} />
               </div>
@@ -356,6 +314,7 @@ export default function LessonPage() {
         </div>
       )}
 
+      {/* TUTORIAL */}
       {tab === "tutorial" && tutorialSteps && (
         <div className="duo-card">
           {tutorialSteps.length === 0 ? (
@@ -369,51 +328,30 @@ export default function LessonPage() {
             <>
               <div className="flex items-center gap-2 mb-4">
                 {tutorialSteps.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-2 flex-1 rounded-full transition-colors ${i <= tutorialStep ? "bg-[#58CC02]" : "bg-neutral-100"
-                      }`}
-                  />
+                  <div key={i} className={`h-2 flex-1 rounded-full transition-colors ${i <= tutorialStep ? "bg-[#58CC02]" : "bg-neutral-100"}`} />
                 ))}
               </div>
               <p className="text-xs font-black text-neutral-400 uppercase tracking-wider mb-4">
                 Step {tutorialStep + 1} of {tutorialSteps.length}
               </p>
-              <h2 className="text-xl font-black text-neutral-900 mb-3">
-                {tutorialSteps[tutorialStep].title}
-              </h2>
-              <p className="text-neutral-600 font-bold mb-4 leading-relaxed">
-                {tutorialSteps[tutorialStep].content}
-              </p>
+              <h2 className="text-xl font-black text-neutral-900 mb-3">{tutorialSteps[tutorialStep].title}</h2>
+              <p className="text-neutral-600 font-bold mb-4 leading-relaxed">{tutorialSteps[tutorialStep].content}</p>
               {tutorialSteps[tutorialStep].codeSample && (
                 <pre className="bg-neutral-900 text-[#7FE787] border-2 border-neutral-800 p-4 rounded-2xl text-sm font-mono mb-6 overflow-x-auto">
                   {tutorialSteps[tutorialStep].codeSample}
                 </pre>
               )}
               <div className="flex gap-3">
-                <button
-                  disabled={tutorialStep === 0}
-                  onClick={() => setTutorialStep((s) => s - 1)}
-                  className="duo-btn3d duo-btn3d-white disabled:opacity-50"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
+                <button disabled={tutorialStep === 0} onClick={() => setTutorialStep((s) => s - 1)} className="duo-btn3d duo-btn3d-white disabled:opacity-50">
+                  <ChevronLeft className="w-4 h-4" />Previous
                 </button>
                 {tutorialStep < tutorialSteps.length - 1 ? (
-                  <button
-                    onClick={() => setTutorialStep((s) => s + 1)}
-                    className="duo-btn3d duo-btn3d-blue"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
+                  <button onClick={() => setTutorialStep((s) => s + 1)} className="duo-btn3d duo-btn3d-blue">
+                    Next<ChevronRight className="w-4 h-4" />
                   </button>
                 ) : (
-                  <button
-                    onClick={() => switchTab(lesson.hasPractice ? "practice" : "read")}
-                    className="duo-btn3d duo-btn3d-green"
-                  >
-                    {lesson.hasPractice ? "Try practice" : "Finish"}
-                    <ChevronRight className="w-4 h-4" />
+                  <button onClick={() => switchTab(lesson.hasPractice ? "practice" : "read")} className="duo-btn3d duo-btn3d-green">
+                    {lesson.hasPractice ? "Try practice" : "Finish"}<ChevronRight className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -422,14 +360,12 @@ export default function LessonPage() {
         </div>
       )}
 
+      {/* PRACTICE */}
       {tab === "practice" && exercises && (
         <div className="duo-card space-y-4">
           {!isAuthenticated ? (
             <p className="text-neutral-600 font-bold">
-              <Link to="/login" className="text-[#58CC02] font-black hover:underline">
-                Sign in
-              </Link>{" "}
-              to submit practices.
+              <Link to="/login" className="text-[#58CC02] font-black hover:underline">Sign in</Link> to submit practices.
             </p>
           ) : exercises.length === 0 ? (
             <div className="text-center py-6">
@@ -445,16 +381,10 @@ export default function LessonPage() {
                   {exercises.map((ex) => (
                     <button
                       key={ex.id}
-                      onClick={() => {
-                        setSelectedExercise(ex.id);
-                        setPracticeCode(ex.starterCode);
-                        setShowHint(false);
-                      }}
-                      className={
-                        activeExercise?.id === ex.id
-                          ? "duo-btn3d duo-btn3d-green !px-3 !py-2 !text-xs"
-                          : "duo-btn3d duo-btn3d-white !px-3 !py-2 !text-xs"
-                      }
+                      onClick={() => { setSelectedExercise(ex.id); setPracticeCode(ex.starterCode); setShowHint(false); }}
+                      className={activeExercise?.id === ex.id
+                        ? "duo-btn3d duo-btn3d-green !px-3 !py-2 !text-xs"
+                        : "duo-btn3d duo-btn3d-white !px-3 !py-2 !text-xs"}
                     >
                       {ex.title}
                     </button>
@@ -465,32 +395,16 @@ export default function LessonPage() {
                 <>
                   <h2 className="text-lg font-black text-neutral-900">{activeExercise.title}</h2>
                   <p className="text-neutral-600 font-bold">{activeExercise.instructions}</p>
-                  <CodeEditor
-                    value={practiceCode || activeExercise.starterCode}
-                    onChange={setPracticeCode}
-                    rows={12}
-                  />
+                  <CodeEditor value={practiceCode || activeExercise.starterCode} onChange={setPracticeCode} rows={12} />
                   <div className="flex flex-wrap gap-3">
-                    <button
-                      onClick={() => setPracticeRunTrigger((n) => n + 1)}
-                      className="duo-btn3d duo-btn3d-white"
-                    >
-                      <Play className="w-4 h-4" />
-                      Run code
+                    <button onClick={() => setPracticeRunTrigger((n) => n + 1)} className="duo-btn3d duo-btn3d-white">
+                      <Play className="w-4 h-4" />Run code
                     </button>
-                    <button
-                      onClick={() => practiceMutation.mutate()}
-                      disabled={practiceMutation.isPending}
-                      className="duo-btn3d duo-btn3d-green"
-                    >
+                    <button onClick={() => practiceMutation.mutate()} disabled={practiceMutation.isPending} className="duo-btn3d duo-btn3d-green">
                       {practiceMutation.isPending ? "Checking..." : "Submit solution"}
                     </button>
-                    <button
-                      onClick={() => setShowHint(!showHint)}
-                      className="duo-btn3d duo-btn3d-yellow"
-                    >
-                      <Lightbulb className="w-4 h-4" />
-                      {showHint ? "Hide hint" : "Show hint"}
+                    <button onClick={() => setShowHint(!showHint)} className="duo-btn3d duo-btn3d-yellow">
+                      <Lightbulb className="w-4 h-4" />{showHint ? "Hide hint" : "Show hint"}
                     </button>
                   </div>
                   {showHint && (
@@ -516,23 +430,20 @@ export default function LessonPage() {
         </div>
       )}
 
+      {/* BEST PRACTICES */}
       {tab === "practices" && lesson.bestPractices && (
-        <article className="duo-card lesson-content border-l-4 border-[#FFC800] flex gap-3 items-start">
-          <div className="flex-1">
-            <h2 className="text-xl font-black text-neutral-900 mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#FFC800] rounded-xl flex items-center justify-center shadow-[0_3px_0_#E6B400]">
-                <ShieldCheck className="w-4 h-4 text-white" />
-              </div>
-              Best practices
-            </h2>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {stripLeadingHeading(lesson.bestPractices)}
-            </ReactMarkdown>
-          </div>
+        <article className="duo-card lesson-content border-l-4 border-[#FFC800]">
+          <h2 className="text-xl font-black text-neutral-900 mb-4 flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#FFC800] rounded-xl flex items-center justify-center shadow-[0_3px_0_#E6B400]">
+              <ShieldCheck className="w-4 h-4 text-white" />
+            </div>
+            Best practices
+          </h2>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{stripLeadingHeading(lesson.bestPractices)}</ReactMarkdown>
         </article>
       )}
 
-      {/* Action Buttons */}
+      {/* Action buttons */}
       {tab === "read" && (
         <div className="duo-card">
           <div className="flex flex-wrap items-center gap-3">
@@ -540,99 +451,58 @@ export default function LessonPage() {
               <>
                 {lesson.isCompleted ? (
                   <div className="inline-flex items-center gap-2 text-[#46A302] font-black bg-[#D7FFB8] px-4 py-2.5 rounded-2xl">
-                    <CheckCircle2 className="w-5 h-5" />
-                    Completed
+                    <CheckCircle2 className="w-5 h-5" />Completed
                   </div>
                 ) : (
-                  <button
-                    onClick={() => completeMutation.mutate()}
-                    disabled={completeMutation.isPending}
-                    className="duo-btn3d duo-btn3d-green"
-                  >
+                  <button onClick={() => completeMutation.mutate()} disabled={completeMutation.isPending} className="duo-btn3d duo-btn3d-green">
                     {completeMutation.isPending ? "Saving..." : "Mark as complete"}
                   </button>
                 )}
                 {nextLesson && (
-                  <Link
-                    to={`/lessons/${nextLesson.id}`}
-                    className="duo-btn3d duo-btn3d-blue"
-                  >
-                    Next Lesson
-                    <ChevronRight className="w-4 h-4" />
+                  <Link to={`/lessons/${nextLesson.id}`} className="duo-btn3d duo-btn3d-blue">
+                    Next lesson<ChevronRight className="w-4 h-4" />
                   </Link>
                 )}
                 {lesson.hasQuiz && (
-                  <Link
-                    to={`/lessons/${lessonId}/quiz`}
-                    className="duo-btn3d bg-[#CE82FF] text-white shadow-[0_4px_0_#A568CC]"
-                  >
-                    <GraduationCap className="w-4 h-4" />
-                    Take quiz
+                  <Link to={`/lessons/${lessonId}/quiz`} className="duo-btn3d bg-[#CE82FF] text-white shadow-[0_4px_0_#A568CC]">
+                    <GraduationCap className="w-4 h-4" />Take quiz
                   </Link>
                 )}
                 {lesson.hasTutorial && (
-                  <button
-                    onClick={() => {
-                      setTutorialStep(0);
-                      switchTab("tutorial");
-                    }}
-                    className="duo-btn3d duo-btn3d-blue"
-                  >
-                    <Compass className="w-4 h-4" />
-                    Start tutorial
+                  <button onClick={() => { setTutorialStep(0); switchTab("tutorial"); }} className="duo-btn3d duo-btn3d-blue">
+                    <Compass className="w-4 h-4" />Start tutorial
                   </button>
                 )}
                 {lesson.hasPractice && (
                   <button onClick={() => switchTab("practice")} className="duo-btn3d duo-btn3d-yellow">
-                    <Code2 className="w-4 h-4" />
-                    Code practice
+                    <Code2 className="w-4 h-4" />Code practice
                   </button>
                 )}
                 {isTeacher && (
-                  <button
-                    onClick={() => generateMutation.mutate()}
-                    disabled={generateMutation.isPending}
-                    className="duo-btn3d bg-[#FF9600] text-white shadow-[0_4px_0_#CC7800]"
-                  >
+                  <button onClick={() => generateMutation.mutate()} disabled={generateMutation.isPending} className="duo-btn3d bg-[#FF9600] text-white shadow-[0_4px_0_#CC7800]">
                     <Wand2 className="w-4 h-4" />
-                    {generateMutation.isPending
-                      ? "Generating..."
-                      : lesson.hasQuiz
-                        ? "Regenerate quiz (AI)"
-                        : "Generate quiz (AI)"}
+                    {generateMutation.isPending ? "Generating..." : lesson.hasQuiz ? "Regenerate quiz (AI)" : "Generate quiz (AI)"}
                   </button>
                 )}
-                <Link
-                  to={`/assistant?lesson=${encodeURIComponent(lesson.title)}`}
-                  className="duo-btn3d duo-btn3d-white"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Ask AI tutor
+                <Link to={`/assistant?lesson=${encodeURIComponent(lesson.title)}`} className="duo-btn3d duo-btn3d-white">
+                  <MessageSquare className="w-4 h-4" />Ask AI tutor
                 </Link>
               </>
             ) : (
               <p className="text-neutral-600 font-bold">
-                <Link to="/login" className="text-[#58CC02] font-black hover:underline">
-                  Sign in
-                </Link>{" "}
-                to track progress.
+                <Link to="/login" className="text-[#58CC02] font-black hover:underline">Sign in</Link> to track progress.
               </p>
             )}
           </div>
         </div>
       )}
 
-      {/* Message */}
+      {/* Inline message */}
       {message && (
-        <div
-          className={`flex items-start gap-2 p-4 rounded-2xl font-bold text-sm ${isSuccess ? "bg-[#D7FFB8] text-[#46A302]" : "bg-[#FFDFE0] text-[#CC3A3A]"
-            }`}
-        >
-          {isSuccess ? (
-            <Sparkles className="w-5 h-5 shrink-0 mt-0.5" />
-          ) : (
-            <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
-          )}
+        <div className={`flex items-start gap-2 p-4 rounded-2xl font-bold text-sm ${isSuccess ? "bg-[#D7FFB8] text-[#46A302]" : "bg-[#FFDFE0] text-[#CC3A3A]"}`}>
+          {isSuccess
+            ? <Sparkles className="w-5 h-5 shrink-0 mt-0.5" />
+            : <XCircle className="w-5 h-5 shrink-0 mt-0.5" />}
           <span className="font-black">{message}</span>
         </div>
       )}

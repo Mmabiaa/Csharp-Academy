@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchChallenges, submitChallenge } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
 import CodeEditor from "../../components/CodeEditor";
 import ConsolePanel from "../../components/ConsolePanel";
 import { Trophy, Play, Lightbulb, CheckCircle2, XCircle, Gem, Zap, Flame, Sword } from "lucide-react";
@@ -13,7 +14,6 @@ const difficultyBadge: Record<string, string> = {
   Hard: "duo-badge-red",
 };
 
-// Difficulty → icon bubble config
 const difficultyIcon: Record<string, { icon: React.ElementType; bg: string; shadow: string; animClass: string }> = {
   Easy: { icon: Zap, bg: "bg-[#58CC02]", shadow: "shadow-[0_2px_0_#46A302]", animClass: "duo-diff-easy" },
   Medium: { icon: Flame, bg: "bg-[#FFC800]", shadow: "shadow-[0_2px_0_#E6B400]", animClass: "duo-diff-medium" },
@@ -22,6 +22,7 @@ const difficultyIcon: Record<string, { icon: React.ElementType; bg: string; shad
 
 export default function Challenges() {
   const { token, isAuthenticated } = useAuth();
+  const { showNotification } = useNotifications();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
@@ -44,6 +45,14 @@ export default function Challenges() {
       setOutput(result.output);
       setIsSuccess(result.xpEarned > 0);
       setMessage(result.message + (result.xpEarned > 0 ? ` +${result.xpEarned} XP` : ""));
+      if (result.xpEarned > 0) {
+        showNotification({
+          type: "achievement",
+          title: "Challenge Solved!",
+          message: "Masterful work! This puzzle didn't stand a chance.",
+          xpEarned: result.xpEarned,
+        });
+      }
     },
     onError: (err: Error) => {
       setIsSuccess(false);
@@ -71,39 +80,9 @@ export default function Challenges() {
 
   return (
     <div className="space-y-6 pb-24 md:pb-0">
-      <style>{`
-        @keyframes duo-trophy-wobble {
-          0%, 100% { transform: rotate(0deg) scale(1); }
-          25% { transform: rotate(-10deg) scale(1.12); }
-          50% { transform: rotate(10deg) scale(1.12); }
-          75% { transform: rotate(-4deg) scale(1.05); }
-        }
-        @keyframes duo-zap-bounce {
-          0%, 100% { transform: translateY(0) scale(1); }
-          40% { transform: translateY(-4px) scale(1.15); }
-          70% { transform: translateY(-1px) scale(1.07); }
-        }
-        @keyframes duo-flame-dance {
-          0%, 100% { transform: rotate(-7deg) scale(1); }
-          30% { transform: rotate(8deg) scale(1.12); }
-          65% { transform: rotate(-4deg) scale(1.06); }
-        }
-        @keyframes duo-sword-spin {
-          0%, 100% { transform: rotate(0deg) scale(1); }
-          50% { transform: rotate(-20deg) scale(1.15); }
-        }
-        /* fire on card hover */
-        .duo-challenge-item:hover .duo-diff-easy   { animation: duo-zap-bounce   0.45s ease-in-out; }
-        .duo-challenge-item:hover .duo-diff-medium { animation: duo-flame-dance  0.55s ease-in-out; }
-        .duo-challenge-item:hover .duo-diff-hard   { animation: duo-sword-spin   0.5s ease-in-out; }
-        /* header trophy loops */
-        .duo-trophy-header { animation: duo-trophy-wobble 3s ease-in-out infinite; }
-      `}</style>
-
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-black text-neutral-900 mb-1 flex items-center gap-2">
-            {/* Animated trophy bubble for the header */}
             <div className="w-9 h-9 bg-[#FFC800] rounded-2xl flex items-center justify-center shadow-[0_3px_0_#E6B400]">
               <Trophy className="w-5 h-5 text-white duo-trophy-header" />
             </div>
@@ -145,12 +124,11 @@ export default function Challenges() {
                   setShowHint(false);
                 }}
                 className={`w-full text-left p-4 rounded-2xl border-2 transition-all duo-challenge-item ${selected?.id === c.id
-                  ? "border-[#58CC02] bg-[#58CC02]/10"
-                  : "border-[#e5e5e5] bg-white hover:border-[#58CC02]/40 hover:bg-neutral-50"
+                    ? "border-[#58CC02] bg-[#58CC02]/10"
+                    : "border-[#e5e5e5] bg-white hover:border-[#58CC02]/40 hover:bg-neutral-50"
                   }`}
               >
                 <div className="flex items-center gap-3 mb-2">
-                  {/* Difficulty icon bubble */}
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${diff.bg} ${diff.shadow}`}>
                     <DiffIcon className={`w-4 h-4 text-white ${diff.animClass}`} />
                   </div>
@@ -177,7 +155,6 @@ export default function Challenges() {
         {selected && (
           <div className="lg:col-span-3 duo-card space-y-4">
             <div className="flex items-start gap-3">
-              {/* Selected challenge difficulty bubble (large) */}
               {(() => {
                 const diff = difficultyIcon[selected.difficulty] ?? difficultyIcon["Easy"];
                 const DiffIcon = diff.icon;

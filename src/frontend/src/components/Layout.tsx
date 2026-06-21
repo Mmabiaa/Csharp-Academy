@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { ReactNode } from "react";
 import UserAvatar from "./UserAvatar";
+import NotificationOverlay from "./NotificationOverlay";
 import {
   BookOpen,
   Trophy,
@@ -335,6 +336,8 @@ export default function Layout({ children }: { children: ReactNode }) {
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 md:px-6 py-6 md:py-8">
           {children}
         </main>
+
+        <NotificationOverlay />
 
         {/* Mobile Bottom Nav */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#e5e5e5] z-50">
