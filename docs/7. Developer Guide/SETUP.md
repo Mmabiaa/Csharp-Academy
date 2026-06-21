@@ -18,7 +18,7 @@ Before starting, ensure you have the following installed:
 ## 🏗️ Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo/Csharp-Academy.git
+git clone https://github.com/Mmabiaa/Csharp-Academy.git
 cd Csharp-Academy
 ```
 
