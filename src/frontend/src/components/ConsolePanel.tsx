@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { runCode } from "../lib/api";
 import { Play, AlertTriangle, Terminal, ChevronRight } from "lucide-react";
+import { useSound } from "../context/SoundContext";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -51,6 +52,7 @@ interface ConsolePanelProps {
 // ─── component ──────────────────────────────────────────────────────────────
 
 export default function ConsolePanel({ code, runTrigger, onResult }: ConsolePanelProps) {
+    const { playSound } = useSound();
     const [lines, setLines] = useState<ConsoleLine[]>([]);
     const [phase, setPhase] = useState<"idle" | "collecting" | "running" | "done">("idle");
     const [inputValues, setInputValues] = useState<string[]>([]);
@@ -94,12 +96,15 @@ export default function ConsolePanel({ code, runTrigger, onResult }: ConsolePane
                 if (result.success) {
                     const outputLines = result.output.split("\n");
                     outputLines.forEach((l) => appendLine({ kind: "output", text: l }));
+                    playSound("success");
                     onResult?.(result.output, null);
                 } else {
+                    playSound("error");
                     appendLine({ kind: "error", text: result.error ?? "Execution failed" });
                     onResult?.("", result.error ?? "Execution failed");
                 }
             } catch (err) {
+                playSound("error");
                 const msg = err instanceof Error ? err.message : "Failed to run code";
                 setLines([{ kind: "error", text: msg }]);
                 onResult?.("", msg);
@@ -181,8 +186,14 @@ export default function ConsolePanel({ code, runTrigger, onResult }: ConsolePane
                         : [{ kind: "error" as const, text: result.error ?? "Execution failed" }];
                     return [...cleaned, ...outputLines];
                 });
+                if (result.success) {
+                    playSound("success");
+                } else {
+                    playSound("error");
+                }
                 onResult?.(result.success ? result.output : "", result.success ? null : result.error ?? "Error");
             } catch (err) {
+                playSound("error");
                 const msg = err instanceof Error ? err.message : "Failed to run code";
                 setLines((prev) => [...prev.filter((l) => l.kind !== "info"), { kind: "error", text: msg }]);
                 onResult?.("", msg);
