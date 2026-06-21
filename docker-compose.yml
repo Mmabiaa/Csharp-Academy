@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    env_file: docker.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    env_file: docker.env
+    depends_on:
+      - db
+    ports:
+      - "5000:8080"
+    restart: always
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:5000/api
+        - VITE_GOOGLE_CLIENT_ID=1065532050541-u3d305t4rab0hsl06j0kl9ok25k6lupd.apps.googleusercontent.com
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  mysql_data:

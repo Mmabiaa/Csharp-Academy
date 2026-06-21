@@ -1,0 +1,9 @@
+.git
+.env
+docker.env
+src/backend/.env
+src/frontend/.env
+**/bin
+**/obj
+**/dist
+**/publish

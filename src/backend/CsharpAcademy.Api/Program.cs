@@ -89,9 +89,9 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "CsharpAcademy_DevSecretKey_ChangeInProduction_32chars!";
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "CsharpAcademy";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "CsharpAcademy";
+var jwtKey = builder.Configuration["JWT_KEY"] ?? builder.Configuration["Jwt:Key"] ?? "DEV_SECRET_KEY_REPLACE_IN_PRODUCTION";
+var jwtIssuer = builder.Configuration["JWT_ISSUER"] ?? builder.Configuration["Jwt:Issuer"] ?? "CsharpAcademy";
+var jwtAudience = builder.Configuration["JWT_AUDIENCE"] ?? builder.Configuration["Jwt:Audience"] ?? "CsharpAcademy";
 
 builder.Services.AddAuthentication(options =>
     {

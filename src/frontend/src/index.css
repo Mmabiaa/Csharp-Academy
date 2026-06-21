@@ -1320,3 +1320,435 @@
   border-radius: 16px;
   border: 2px solid var(--duo-swan);
 }
+
+/* ============================================================
+   DARK MODE — append to the bottom of index.css
+   Applied via [data-theme="dark"] on <html> by ThemeContext
+   ============================================================ */
+
+[data-theme="dark"] {
+  /* ── Surface & background ─────────────────────────────── */
+  --dm-bg: #111318;
+  /* page background              */
+  --dm-surface: #1c1f27;
+  /* cards, sidebar               */
+  --dm-surface-2: #23272f;
+  /* elevated cards, inputs       */
+  --dm-surface-3: #2a2f3a;
+  /* hover states                 */
+  --dm-border: #2e3340;
+  /* borders, dividers            */
+  --dm-border-soft: #252930;
+  /* subtle borders               */
+
+  /* ── Text ─────────────────────────────────────────────── */
+  --dm-text: #e8eaf0;
+  /* primary text                 */
+  --dm-text-2: #9499a8;
+  /* secondary / muted            */
+  --dm-text-3: #5c6070;
+  /* disabled / placeholder       */
+
+  /* ── Duolingo brand stays vivid in dark mode ─────────── */
+  --duo-green: #58cc02;
+  --duo-green-dark: #46a302;
+  --duo-blue: #1cb0f6;
+  --duo-blue-dark: #1899d6;
+  --duo-yellow: #ffc800;
+  --duo-red: #ff4b4b;
+  --duo-purple: #ce82ff;
+  --duo-fox: #ff9600;
+  --duo-swan: #2e3340;
+  /* was #e5e5e5 — used for borders */
+  --duo-polar: #0d2233;
+  /* was #ddf4ff — blue tint bg   */
+}
+
+/* ── Base resets ──────────────────────────────────────────────────────────── */
+[data-theme="dark"] body {
+  background-color: var(--dm-bg);
+  color: var(--dm-text);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--dm-surface-3);
+}
+
+/* ============================================================
+   LAYOUT — sidebar, header, main
+   ============================================================ */
+[data-theme="dark"] aside {
+  background: linear-gradient(to bottom, var(--dm-surface), #181c24) !important;
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] header {
+  background: var(--dm-surface) !important;
+  border-color: var(--dm-border) !important;
+}
+
+/* Bottom mobile nav */
+[data-theme="dark"] nav.md\:hidden {
+  background: var(--dm-surface) !important;
+  border-color: var(--dm-border) !important;
+}
+
+/* ── Sidebar logo area ──────────────────────────────────────────────────────*/
+[data-theme="dark"] aside .border-b-2 {
+  border-color: var(--dm-border) !important;
+}
+
+/* ── Sidebar nav items ──────────────────────────────────────────────────────*/
+[data-theme="dark"] aside nav a {
+  color: var(--dm-text-2);
+}
+
+[data-theme="dark"] aside nav a:hover {
+  background: var(--dm-surface-3) !important;
+  color: var(--dm-text) !important;
+}
+
+/* Inactive icon pill */
+[data-theme="dark"] aside nav a span.bg-neutral-100 {
+  background: var(--dm-surface-2) !important;
+}
+
+[data-theme="dark"] aside nav a:hover span.bg-neutral-100 {
+  background: var(--dm-surface-3) !important;
+}
+
+[data-theme="dark"] aside nav a .text-neutral-400 {
+  color: var(--dm-text-3) !important;
+}
+
+[data-theme="dark"] aside nav a:hover .text-neutral-400 {
+  color: var(--dm-text-2) !important;
+}
+
+/* ── Sidebar bottom profile card ────────────────────────────────────────────*/
+[data-theme="dark"] aside .border-t-2 {
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] aside .from-\[\#F3F8FF\] {
+  background: var(--dm-surface-2) !important;
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] aside .text-neutral-800 {
+  color: var(--dm-text) !important;
+}
+
+/* ── XP / streak chips ──────────────────────────────────────────────────────*/
+[data-theme="dark"] .from-\[\#FFF8E1\],
+[data-theme="dark"] .from-\[\#FFF1E0\] {
+  background: var(--dm-surface-2) !important;
+  border-color: var(--dm-border) !important;
+}
+
+/* ── Logo breathe badge ─────────────────────────────────────────────────────*/
+[data-theme="dark"] .duo-logo-breathe {
+  background: var(--dm-surface-2) !important;
+}
+
+/* ── Page name text ─────────────────────────────────────────────────────────*/
+[data-theme="dark"] aside span.text-xl,
+[data-theme="dark"] header span.font-black {
+  color: var(--dm-text) !important;
+}
+
+/* ============================================================
+   CARDS & PANELS
+   ============================================================ */
+[data-theme="dark"] .duo-card,
+[data-theme="dark"] .duo-panel {
+  background: var(--dm-surface) !important;
+  border-color: var(--dm-border) !important;
+  color: var(--dm-text);
+}
+
+[data-theme="dark"] .duo-card-hover:hover {
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Generic white bg cards (bg-white) */
+[data-theme="dark"] .bg-white {
+  background-color: var(--dm-surface) !important;
+}
+
+/* Light grey page bg */
+[data-theme="dark"] .bg-\[\#f7f7f7\],
+[data-theme="dark"] .bg-\[\#fafbff\] {
+  background-color: var(--dm-bg) !important;
+}
+
+/* Neutral surface variants */
+[data-theme="dark"] .bg-neutral-50 {
+  background-color: var(--dm-surface-2) !important;
+}
+
+[data-theme="dark"] .bg-neutral-100 {
+  background-color: var(--dm-surface-2) !important;
+}
+
+[data-theme="dark"] .bg-neutral-200 {
+  background-color: var(--dm-surface-3) !important;
+}
+
+/* ============================================================
+   TEXT
+   ============================================================ */
+[data-theme="dark"] .text-neutral-900 {
+  color: var(--dm-text) !important;
+}
+
+[data-theme="dark"] .text-neutral-800 {
+  color: var(--dm-text) !important;
+}
+
+[data-theme="dark"] .text-neutral-700 {
+  color: var(--dm-text-2) !important;
+}
+
+[data-theme="dark"] .text-neutral-600 {
+  color: var(--dm-text-2) !important;
+}
+
+[data-theme="dark"] .text-neutral-500 {
+  color: var(--dm-text-3) !important;
+}
+
+[data-theme="dark"] .text-neutral-400 {
+  color: var(--dm-text-3) !important;
+}
+
+/* ============================================================
+   BORDERS
+   ============================================================ */
+[data-theme="dark"] .border-\[\#e5e5e5\],
+[data-theme="dark"] .border-neutral-200,
+[data-theme="dark"] .border-neutral-100 {
+  border-color: var(--dm-border) !important;
+}
+
+/* ============================================================
+   INPUTS & FORMS
+   ============================================================ */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--dm-surface-2) !important;
+  border-color: var(--dm-border) !important;
+  color: var(--dm-text) !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--dm-text-3) !important;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: var(--duo-blue) !important;
+  box-shadow: 0 0 0 4px rgba(28, 176, 246, 0.15) !important;
+}
+
+/* ============================================================
+   3D BUTTONS — keep vivid, just darken the white variant
+   ============================================================ */
+[data-theme="dark"] .duo-btn3d-white {
+  background: var(--dm-surface-2) !important;
+  color: var(--dm-text) !important;
+  border-color: var(--dm-border) !important;
+  box-shadow: 0 4px 0 var(--dm-border) !important;
+}
+
+[data-theme="dark"] .duo-btn3d-white:active:not(:disabled) {
+  box-shadow: 0 0 0 var(--dm-border) !important;
+}
+
+/* ============================================================
+   BADGES & PILLS
+   ============================================================ */
+[data-theme="dark"] .duo-badge-gray {
+  background: var(--dm-surface-2) !important;
+  color: var(--dm-text-2) !important;
+  border-color: var(--dm-border) !important;
+}
+
+/* ============================================================
+   PROGRESS BAR TRACK
+   ============================================================ */
+[data-theme="dark"] .duo-progress-track {
+  background: var(--dm-surface-2) !important;
+}
+
+/* ============================================================
+   LESSON MARKDOWN
+   ============================================================ */
+[data-theme="dark"] .lesson-content {
+  color: var(--dm-text);
+}
+
+[data-theme="dark"] .lesson-content h1,
+[data-theme="dark"] .lesson-content h2,
+[data-theme="dark"] .lesson-content h3,
+[data-theme="dark"] .lesson-content h4,
+[data-theme="dark"] .lesson-content strong {
+  color: var(--dm-text) !important;
+}
+
+[data-theme="dark"] .lesson-content h1 {
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] .lesson-content h4,
+[data-theme="dark"] .lesson-content em {
+  color: var(--dm-text-2) !important;
+}
+
+[data-theme="dark"] .lesson-content p {
+  color: var(--dm-text);
+}
+
+[data-theme="dark"] .lesson-content code {
+  background: var(--dm-surface-3) !important;
+  color: #ff79c6 !important;
+}
+
+[data-theme="dark"] .lesson-content pre {
+  background: #0d0f14 !important;
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] .lesson-content blockquote {
+  background: #1e1900 !important;
+  color: #ffd966 !important;
+}
+
+[data-theme="dark"] .lesson-content hr {
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] .lesson-content table {
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] .lesson-content thead {
+  background: var(--dm-surface-2) !important;
+}
+
+[data-theme="dark"] .lesson-content th {
+  color: var(--dm-text-2) !important;
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] .lesson-content td {
+  color: var(--dm-text);
+  border-color: var(--dm-border-soft) !important;
+}
+
+[data-theme="dark"] .lesson-content tbody tr:hover {
+  background: var(--dm-surface-2) !important;
+}
+
+[data-theme="dark"] .lesson-content img {
+  border-color: var(--dm-border) !important;
+}
+
+/* ============================================================
+   AI ASSISTANT CHAT BUBBLES
+   ============================================================ */
+[data-theme="dark"] .owl-bubble,
+[data-theme="dark"] .duo-typing-dots {
+  background: var(--dm-surface-2) !important;
+  border-color: var(--dm-border) !important;
+  box-shadow: 0 3px 0 var(--dm-border-soft) !important;
+  color: var(--dm-text) !important;
+}
+
+[data-theme="dark"] .duo-md strong {
+  color: var(--dm-text) !important;
+}
+
+[data-theme="dark"] .duo-md h1,
+[data-theme="dark"] .duo-md h2,
+[data-theme="dark"] .duo-md h3 {
+  color: var(--dm-text) !important;
+}
+
+[data-theme="dark"] .duo-md pre {
+  background: #0d0f14 !important;
+  border-color: var(--dm-border) !important;
+}
+
+[data-theme="dark"] .duo-md code {
+  background: var(--dm-surface-3) !important;
+  border-color: var(--dm-border) !important;
+  color: #bd93f9 !important;
+}
+
+/* ============================================================
+   LESSON NODES
+   ============================================================ */
+[data-theme="dark"] .duo-node-todo {
+  background: var(--dm-surface-2) !important;
+  border-color: var(--dm-border) !important;
+  color: var(--dm-text-2) !important;
+}
+
+/* ============================================================
+   STREAK WEEK DAYS
+   ============================================================ */
+[data-theme="dark"] .duo-day-future {
+  background: var(--dm-surface-2) !important;
+  border-color: var(--dm-border) !important;
+  color: var(--dm-text-3) !important;
+}
+
+[data-theme="dark"] .duo-day-today {
+  background: var(--dm-surface) !important;
+}
+
+/* ============================================================
+   CONTEXT BANNER (lesson context in Assistant)
+   ============================================================ */
+[data-theme="dark"] .duo-context-banner {
+  background: #1e1600 !important;
+  border-color: #7a5a00 !important;
+  color: #ffd966 !important;
+}
+
+/* ============================================================
+   SUGGEST BUTTONS (Assistant empty state)
+   ============================================================ */
+[data-theme="dark"] .duo-suggest-btn {
+  background: var(--dm-surface-2) !important;
+  border-color: var(--dm-border) !important;
+  color: var(--dm-text) !important;
+  box-shadow: 0 3px 0 var(--dm-border-soft) !important;
+}
+
+[data-theme="dark"] .duo-suggest-btn:hover {
+  border-color: var(--duo-blue) !important;
+  color: var(--duo-blue) !important;
+}
+
+/* ============================================================
+   MISC UTILITY OVERRIDES
+   ============================================================ */
+/* Table dividers used in various pages */
+[data-theme="dark"] .divide-y>* {
+  border-color: var(--dm-border) !important;
+}
+
+/* Shadow lightening — dark surfaces don't need heavy shadows */
+[data-theme="dark"] .shadow-sm,
+[data-theme="dark"] .shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .shadow-md {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5) !important;
+}
