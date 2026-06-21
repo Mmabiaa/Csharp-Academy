@@ -19,8 +19,10 @@ public class JwtTokenService : IJwtTokenService
 
     public string GenerateToken(User user, IList<string> roles)
     {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured.")));
+        var keyStr = _configuration["JWT_KEY"] ?? _configuration["Jwt:Key"] 
+            ?? throw new InvalidOperationException("JWT Key is not configured.");
+        
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyStr));
 
         var claims = new List<Claim>
         {
@@ -34,11 +36,11 @@ public class JwtTokenService : IJwtTokenService
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"] ?? "60");
+        var expireMinutes = int.Parse(_configuration["JWT_EXPIRE_MINUTES"] ?? _configuration["Jwt:ExpireMinutes"] ?? "60");
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
+            issuer: _configuration["JWT_ISSUER"] ?? _configuration["Jwt:Issuer"],
+            audience: _configuration["JWT_AUDIENCE"] ?? _configuration["Jwt:Audience"],
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(expireMinutes),
             signingCredentials: credentials);
