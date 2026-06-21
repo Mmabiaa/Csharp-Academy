@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { fetchQuiz, submitQuiz } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { useSound } from "../../context/SoundContext";
 import { ArrowLeft, CheckCircle2, XCircle, Star, Award, PartyPopper, GraduationCap } from "lucide-react";
 
 function isTextQuestion(type: string) {
@@ -15,6 +16,7 @@ export default function QuizPage() {
   const lessonId = Number(id);
   const { token, isAuthenticated } = useAuth();
   const { showNotification } = useNotifications();
+  const { playSound } = useSound();
   const [optionAnswers, setOptionAnswers] = useState<Record<number, number>>({});
   const [textAnswers, setTextAnswers] = useState<Record<number, string>>({});
   const [result, setResult] = useState<Awaited<ReturnType<typeof submitQuiz>> | null>(null);
@@ -30,6 +32,7 @@ export default function QuizPage() {
     onSuccess: (data) => {
       setResult(data);
       if (data.passed) {
+        playSound("quiz");
         showNotification({
           type: "congrats",
           title: "Quiz Conquered!",
@@ -37,6 +40,8 @@ export default function QuizPage() {
           xpEarned: data.xpEarned,
           badges: data.newBadges,
         });
+      } else {
+        playSound("error");
       }
     },
   });
@@ -245,8 +250,8 @@ export default function QuizPage() {
                   <label
                     key={option.id}
                     className={`flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-colors ${optionAnswers[question.id] === option.id
-                        ? "border-[#58CC02] bg-[#58CC02]/10"
-                        : "border-[#e5e5e5] bg-neutral-50 hover:border-[#58CC02]/30 hover:bg-neutral-100"
+                      ? "border-[#58CC02] bg-[#58CC02]/10"
+                      : "border-[#e5e5e5] bg-neutral-50 hover:border-[#58CC02]/30 hover:bg-neutral-100"
                       }`}
                   >
                     <input

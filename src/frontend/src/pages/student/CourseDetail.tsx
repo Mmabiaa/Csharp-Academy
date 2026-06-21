@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchCourseById, enrollInCourse, fetchCourseProgress } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { useSound } from "../../context/SoundContext";
 import {
   ArrowLeft,
   Clock,
@@ -57,6 +58,7 @@ export default function CourseDetail() {
   const { id } = useParams<{ id: string }>();
   const courseId = Number(id);
   const { token, isAuthenticated } = useAuth();
+  const { playSound } = useSound();
   const queryClient = useQueryClient();
   const [enrollMessage, setEnrollMessage] = useState("");
   const [expandedModule, setExpandedModule] = useState<number | null>(null);
@@ -76,6 +78,7 @@ export default function CourseDetail() {
   const enrollMutation = useMutation({
     mutationFn: () => enrollInCourse(courseId, token!),
     onSuccess: () => {
+      playSound("enrolled");
       setEnrollMessage("Successfully enrolled!");
       queryClient.invalidateQueries({ queryKey: ["course-progress", courseId] });
       queryClient.invalidateQueries({ queryKey: ["progress-summary"] });
@@ -225,8 +228,8 @@ export default function CourseDetail() {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-sm ${moduleDone
-                      ? "bg-[#FFC800] text-[#946800] shadow-[0_3px_0_#E6B400]"
-                      : "bg-neutral-100 text-neutral-400 border-2 border-neutral-200"
+                    ? "bg-[#FFC800] text-[#946800] shadow-[0_3px_0_#E6B400]"
+                    : "bg-neutral-100 text-neutral-400 border-2 border-neutral-200"
                     }`}>
                     {moduleDone
                       ? <CheckCircle2 className="w-5 h-5" />

@@ -4,10 +4,11 @@ import { useState } from "react";
 import { fetchUserProfile, fetchCertificates, getCertificatePdfUrl, updateProfile } from "../../lib/api";
 import UserAvatar from "../../components/UserAvatar";
 import { useAuth } from "../../context/AuthContext";
+import { useSound } from "../../context/SoundContext";
 import {
-  Star, Flame, Trophy, Award, BookOpen, Download,
+  Star, Flame, Trophy, Award, Download,
   Eye, Lock, Scroll, Settings, User as UserIcon,
-  Camera, Check, X, Loader2, Save
+  Camera, Check, X, Loader2, Save, Volume2
 } from "lucide-react";
 
 const PRESET_AVATARS = [
@@ -22,7 +23,8 @@ const PRESET_AVATARS = [
 ];
 
 export default function Profile() {
-  const { token, isAuthenticated, user: authUser, updateUserSettings } = useAuth();
+  const { token, isAuthenticated, updateUserSettings } = useAuth();
+  const { isSoundEnabled, setSoundEnabled, playSound } = useSound();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"profile" | "settings">("profile");
 
@@ -178,7 +180,7 @@ export default function Profile() {
       {/* Tabs */}
       <div className="flex border-b-2 border-[#e5e5e5] mb-8 gap-4 overflow-x-auto no-scrollbar">
         <button
-          onClick={() => setActiveTab("profile")}
+          onClick={() => { setActiveTab("profile"); playSound("click"); }}
           className={`px-6 py-4 text-sm font-black uppercase tracking-wide transition-all border-b-4 -mb-[2px] whitespace-nowrap ${activeTab === "profile"
             ? "border-[#58CC02] text-[#58CC02]"
             : "border-transparent text-neutral-400 hover:text-neutral-500"
@@ -190,7 +192,7 @@ export default function Profile() {
           </div>
         </button>
         <button
-          onClick={() => setActiveTab("settings")}
+          onClick={() => { setActiveTab("settings"); playSound("click"); }}
           className={`px-6 py-4 text-sm font-black uppercase tracking-wide transition-all border-b-4 -mb-[2px] whitespace-nowrap ${activeTab === "settings"
             ? "border-[#1CB0F6] text-[#1CB0F6]"
             : "border-transparent text-neutral-400 hover:text-neutral-500"
@@ -461,6 +463,33 @@ export default function Profile() {
               </div>
             </div>
 
+            {/* Sound Settings */}
+            <div className="duo-card">
+              <h2 className="font-black text-lg text-neutral-900 mb-6 flex items-center gap-2">
+                <div className="w-8 h-8 bg-[#1CB0F6] rounded-xl flex items-center justify-center shadow-[0_3px_0_#1899D6]">
+                  <Volume2 className="w-4 h-4 text-white" />
+                </div>
+                Sound Preferences
+              </h2>
+              <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-2xl border-2 border-neutral-200">
+                <div>
+                  <p className="font-black text-neutral-800">Sound Effects</p>
+                  <p className="text-sm text-neutral-500 font-bold">Enable interactive learning sounds</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !isSoundEnabled;
+                    setSoundEnabled(next);
+                    if (next) playSound("click");
+                  }}
+                  className={`w-14 h-8 rounded-full transition-all relative ${isSoundEnabled ? "bg-[#58CC02]" : "bg-neutral-300"}`}
+                >
+                  <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${isSoundEnabled ? "left-7" : "left-1"}`} />
+                </button>
+              </div>
+            </div>
+
             {/* Error/Success FeedBack */}
             {errorMsg && (
               <div className="duo-panel border-[#FF4B4B]/40 bg-[#FFEFEF] flex items-center gap-3 py-4 text-[#CC3A3A]">
@@ -479,6 +508,7 @@ export default function Profile() {
             <div className="flex items-center gap-4">
               <button
                 type="submit"
+                onClick={() => playSound("click")}
                 disabled={updateMutation.isPending}
                 className="duo-btn3d duo-btn3d-green min-w-[200px]"
               >
@@ -496,7 +526,7 @@ export default function Profile() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("profile")}
+                onClick={() => { setActiveTab("profile"); playSound("click"); }}
                 className="duo-btn3d duo-btn3d-white"
               >
                 Cancel

@@ -62,4 +62,10 @@ public class ProgressRepository : IProgressRepository
             .Where(p => p.UserId == userId && p.IsCompleted)
             .Select(p => p.LessonId)
             .ToListAsync(cancellationToken);
+
+    public async Task<List<int>> GetCompletedPracticeIdsAsync(int userId, CancellationToken cancellationToken = default) =>
+        await _context.PracticeCompletions
+            .Where(p => p.UserId == userId)
+            .Select(p => p.ExerciseId)
+            .ToListAsync(cancellationToken);
 }

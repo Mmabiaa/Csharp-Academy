@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCourses } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { useSound } from "../../context/SoundContext";
 import UserAvatar from "../../components/UserAvatar";
 import {
   ArrowRight,
@@ -16,6 +17,7 @@ import {
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
+  const { playSound } = useSound();
   const { data: courses, isLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: fetchCourses,
@@ -160,7 +162,7 @@ export default function Home() {
       <div className="flex items-start justify-between gap-4 mb-2">
         <div className="flex items-center gap-3">
           {isAuthenticated && (
-            <Link to="/profile" className="shrink-0">
+            <Link to="/profile" className="shrink-0" onClick={() => playSound("click")}>
               <UserAvatar
                 profileImageUrl={user?.profileImageUrl}
                 firstName={user?.firstName}
@@ -289,6 +291,7 @@ export default function Home() {
         <Link
           to={`/courses/${courses[0].id}`}
           className="duo-card duo-card-hover mb-2 block border-2 border-[#58CC02]/30 bg-[#58CC02]/5 duo-continue-card"
+          onClick={() => playSound("click")}
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
@@ -336,6 +339,7 @@ export default function Home() {
                 key={course.id}
                 to={`/courses/${course.id}`}
                 className="duo-card duo-card-hover hover:border-[#58CC02] duo-course-link"
+                onClick={() => playSound("click")}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-11 h-11 bg-[#1CB0F6] rounded-xl flex items-center justify-center shadow-[0_3px_0_#1899D6]">
@@ -368,6 +372,7 @@ export default function Home() {
         <Link
           to="/challenges"
           className="duo-card duo-card-hover block border-2 border-[#FFC800]/40 bg-[#FFF8E1] duo-challenge-card"
+          onClick={() => playSound("click")}
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">

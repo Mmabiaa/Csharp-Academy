@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
+import { useSound } from "./SoundContext";
 
 export type NotificationType = "congrats" | "achievement" | "streak" | "info";
 
@@ -22,10 +23,12 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
     const [notifications, setNotifications] = useState<GamificationNotification[]>([]);
+    const { playSound } = useSound();
 
     const showNotification = useCallback((notif: Omit<GamificationNotification, "id">) => {
         const id = Math.random().toString(36).substring(2, 9);
         setNotifications((prev) => [...prev, { ...notif, id }]);
+        playSound("notification");
 
         // Auto-hide after some time if it's just info, but for congrats we might want manual dismiss
         if (notif.type === "info") {
