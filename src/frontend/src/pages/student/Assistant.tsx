@@ -10,20 +10,8 @@ interface Message {
   content: string;
 }
 
-const OWL_SVG = (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <ellipse cx="14" cy="16" rx="9" ry="10" fill="#58CC02" />
-    <ellipse cx="14" cy="14" rx="7" ry="8" fill="#89E219" />
-    <circle cx="10.5" cy="13" r="3" fill="white" />
-    <circle cx="17.5" cy="13" r="3" fill="white" />
-    <circle cx="10.5" cy="13.5" r="1.5" fill="#1A1A1A" />
-    <circle cx="17.5" cy="13.5" r="1.5" fill="#1A1A1A" />
-    <ellipse cx="14" cy="17" rx="2" ry="1.2" fill="#FFC800" />
-    <path d="M8 7 C8 4 10 3 14 3 C18 3 20 4 20 7 L18 9 C18 7 16 6 14 6 C12 6 10 7 10 9 Z" fill="#58CC02" />
-    <ellipse cx="9" cy="20" rx="2.5" ry="1.2" fill="#46A302" />
-    <ellipse cx="19" cy="20" rx="2.5" ry="1.2" fill="#46A302" />
-  </svg>
-);
+const LOGO = <img src="/logo.png" alt="" aria-hidden="true" width={28} height={28}
+  style={{ objectFit: "contain", display: "block" }} />;
 
 const SUGGESTED_QUESTIONS = [
   "What is a class in C#?",
@@ -556,7 +544,7 @@ export default function Assistant() {
         <div className="duo-topbar">
           <div className="duo-topbar-title">
             <div className="duo-owl-badge">
-              {OWL_SVG}
+              {LOGO}
             </div>
             <div className="duo-title-text">
               <h1>AI Tutor</h1>
@@ -642,7 +630,7 @@ export default function Assistant() {
               {messages.map((msg, i) => (
                 <div key={i} className={`duo-msg-row ${msg.role}`}>
                   {msg.role === "assistant" && (
-                    <div className="duo-avatar owl">{OWL_SVG}</div>
+                    <div className="duo-avatar owl">{LOGO}</div>
                   )}
                   <div className={`duo-bubble ${msg.role === "assistant" ? "owl-bubble" : "user-bubble"}`}>
                     {msg.role === "assistant" ? (
@@ -663,7 +651,7 @@ export default function Assistant() {
 
               {loading && (
                 <div className="duo-typing">
-                  <div className="duo-avatar owl">{OWL_SVG}</div>
+                  <div className="duo-avatar owl">{LOGO}</div>
                   <div className="duo-typing-dots">
                     <div className="duo-dot" />
                     <div className="duo-dot" />
