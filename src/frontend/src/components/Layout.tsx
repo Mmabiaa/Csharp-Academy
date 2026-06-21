@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useSound } from "../context/SoundContext";
+import { useTheme } from "../context/ThemeContext";
 import { ReactNode } from "react";
 import UserAvatar from "./UserAvatar";
 import NotificationOverlay from "./NotificationOverlay";
@@ -21,6 +22,8 @@ import {
   LogOut,
   Gem,
   Sparkles,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 type NavItem = {
@@ -60,6 +63,7 @@ const fallbackAccent: Accent = { bg: "bg-[#1CB0F6]", shadow: "shadow-[0_3px_0_#1
 export default function Layout({ children }: { children: ReactNode }) {
   const { user, isAuthenticated, logout, isAdmin, isTeacher } = useAuth();
   const { playSound } = useSound();
+  const { toggleTheme, isDark } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -281,6 +285,21 @@ export default function Layout({ children }: { children: ReactNode }) {
               <span className="font-black text-[#CC6E00] text-sm">{user?.currentStreak ?? 0}</span>
             </div>
           </div>
+
+          {/* ── Dark mode toggle ── */}
+          <button
+            onClick={() => { playSound("click"); toggleTheme(); }}
+            className="group flex items-center gap-3 w-full px-3 py-2.5 text-sm font-black uppercase tracking-wide rounded-2xl border-2 border-[#e5e5e5] bg-white text-neutral-400 hover:bg-neutral-50 hover:text-neutral-600 transition-all duration-150"
+          >
+            <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-neutral-100 group-hover:bg-neutral-200 transition-all duration-150">
+              {isDark
+                ? <Sun className="w-[18px] h-[18px] text-[#FFC800]" />
+                : <Moon className="w-[18px] h-[18px] text-[#534AB7]" />
+              }
+            </span>
+            {isDark ? "Light Mode" : "Dark Mode"}
+          </button>
+
           {!isAuthenticated ? (
             <Link to="/login" className="duo-btn3d duo-btn3d-green w-full block text-center relative">
               Log in
@@ -322,6 +341,17 @@ export default function Layout({ children }: { children: ReactNode }) {
               </span>
               <span className="text-xs font-black text-[#CC6E00]">{user?.currentStreak ?? 0}</span>
             </div>
+            {/* ── Dark mode toggle — mobile ── */}
+            <button
+              onClick={() => { playSound("click"); toggleTheme(); }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center bg-neutral-100 border-2 border-[#e5e5e5] transition-all hover:bg-neutral-200"
+              aria-label="Toggle dark mode"
+            >
+              {isDark
+                ? <Sun className="w-4 h-4 text-[#FFC800]" />
+                : <Moon className="w-4 h-4 text-[#534AB7]" />
+              }
+            </button>
             {isAuthenticated && (
               <Link to="/profile" className="relative shrink-0">
                 <span className="duo-profile-ring" />
