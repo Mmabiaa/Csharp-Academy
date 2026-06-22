@@ -9,13 +9,13 @@ interface SoundContextType {
 const SoundContext = createContext<SoundContextType | undefined>(undefined);
 
 const SOUNDS = {
-    click: "/button.mp3",
-    success: "/streak_and_success.mp3",
-    error: "/failed.mp3",
-    notification: "/notification.mp3",
-    complete: "/course_completion.mp3",
-    enrolled: "/enrolled.mp3",
-    quiz: "/quiz.mp3",
+    click: "/sounds/button.mp3",
+    success: "/sounds/streak_and_success.mp3",
+    error: "/sounds/failed.mp3",
+    notification: "/sounds/notification.mp3",
+    complete: "/sounds/course_completion.mp3",
+    enrolled: "/sounds/enrolled.mp3",
+    quiz: "/sounds/quiz.mp3",
 };
 
 export function SoundProvider({ children }: { children: React.ReactNode }) {
