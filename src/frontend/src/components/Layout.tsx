@@ -199,7 +199,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <GraduationCap className="absolute -right-3 -top-4 w-20 h-20 text-[#58CC02] opacity-[0.06] rotate-12 pointer-events-none" />
           <div className="relative flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center shadow-[0_3px_0_#46A302] duo-logo-breathe overflow-hidden p-1.5 shrink-0">
-              <img src="/logo.png" alt="C# Academy" className="w-full h-full object-contain" />
+              <img src="/images/logo.png" alt="C# Academy" className="w-full h-full object-contain" />
             </div>
             <span className="text-xl font-black text-neutral-900">C# Academy</span>
           </div>

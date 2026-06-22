@@ -4,6 +4,7 @@ import { fetchCourses } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useSound } from "../../context/SoundContext";
 import UserAvatar from "../../components/UserAvatar";
+import { useEffect } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -15,6 +16,46 @@ import {
   Award,
 } from "lucide-react";
 
+// ─── Lottie web-component type declaration ────────────────────────────────────
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "lottie-player": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          src?: string;
+          background?: string;
+          speed?: string;
+          loop?: boolean;
+          autoplay?: boolean;
+          style?: React.CSSProperties;
+        },
+        HTMLElement
+      >;
+    }
+  }
+}
+
+function LottieIcon({
+  src,
+  size = 40,
+  speed = 1,
+}: {
+  src: string;
+  size?: number;
+  speed?: number;
+}) {
+  return (
+    <lottie-player
+      src={src}
+      background="transparent"
+      speed={String(speed)}
+      style={{ width: size, height: size }}
+      loop
+      autoplay
+    />
+  );
+}
+
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const { playSound } = useSound();
@@ -23,16 +64,18 @@ export default function Home() {
     queryFn: fetchCourses,
   });
 
+  useEffect(() => {
+    import("@lottiefiles/lottie-player");
+  }, []);
+
   const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
   const todayIndex = new Date().getDay();
   const mondayFirstIndex = (todayIndex + 6) % 7;
   const streakDays = user?.currentStreak ?? 0;
   const userXp = user?.xp ?? 0;
 
-  // How many of this week's cells are already lit up
   const daysActiveThisWeek = Math.min(streakDays, mondayFirstIndex + 1);
 
-  // Next streak milestone badge
   const milestones = [3, 7, 14, 30, 50, 100, 365];
   const nextMilestone = milestones.find((m) => m > streakDays) ?? null;
   const daysToMilestone = nextMilestone ? nextMilestone - streakDays : null;
@@ -63,17 +106,11 @@ export default function Home() {
           70% { transform: scale(0.95) rotate(-5deg); opacity: 1; }
         }
 
-        /* Continuous ambient icon animations — always running, hover no longer required */
         .duo-home-flame-icon { animation: duo-flame-dance 2.4s ease-in-out infinite; }
         .duo-book-icon       { animation: duo-book-flip 2.8s ease-in-out infinite; }
         .duo-trophy-icon     { animation: duo-trophy-wobble 2.8s ease-in-out infinite; }
-        .duo-course-book     { animation: duo-book-flip 2.6s ease-in-out infinite; }
         .duo-sparkle-icon    { animation: duo-sparkle-pop 2.4s ease-in-out infinite; }
         .duo-header-trophy   { animation: duo-trophy-wobble 3s ease-in-out infinite; }
-
-        /* Stagger repeated course-link icons so they don't pulse in lockstep */
-        .duo-course-link:nth-child(2n) .duo-course-book { animation-delay: 0.3s; }
-        .duo-course-link:nth-child(3n) .duo-course-book { animation-delay: 0.6s; }
 
         /* ---------- Streak section ---------- */
         @keyframes duo-flame-ring-pulse {
@@ -150,7 +187,7 @@ export default function Home() {
 
         @media (prefers-reduced-motion: reduce) {
           .duo-home-flame-icon, .duo-book-icon, .duo-trophy-icon,
-          .duo-course-book, .duo-sparkle-icon, .duo-header-trophy,
+          .duo-sparkle-icon, .duo-header-trophy,
           .duo-flame-ring, .duo-milestone-icon, .duo-day-pop, .duo-day-today,
           .duo-gem-glint, .duo-xp-pill.duo-points-card::after {
             animation: none;
@@ -158,7 +195,7 @@ export default function Home() {
         }
       `}</style>
 
-      {/* Top Section */}
+      {/* ── Top Section (unchanged) ── */}
       <div className="flex items-start justify-between gap-4 mb-2">
         <div className="flex items-center gap-3">
           {isAuthenticated && (
@@ -193,7 +230,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* Streak Section */}
+      {/* ── Streak Section (unchanged) ── */}
       <div
         className="duo-panel relative overflow-hidden"
         style={{
@@ -210,7 +247,6 @@ export default function Home() {
         />
 
         <div className="relative flex items-start justify-between gap-4 mb-6 flex-wrap">
-          {/* Flame + streak count */}
           <div className="flex items-center gap-4">
             <div className="relative w-16 h-16 shrink-0">
               <span className="duo-flame-ring" />
@@ -232,7 +268,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Next milestone badge */}
           <div className="relative flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-2xl px-3 py-2 border-2 border-[#FFC800]/40 shrink-0">
             <Award className="w-5 h-5 text-[#FFC800] duo-milestone-icon" fill="#FFC800" />
             <div className="text-xs leading-tight">
@@ -255,7 +290,6 @@ export default function Home() {
           <span>{daysActiveThisWeek}/7 days</span>
         </div>
 
-        {/* Week tracker */}
         <div className="relative flex items-center justify-between gap-2 mb-4">
           {weekDays.map((day, index) => {
             const isActive = index <= mondayFirstIndex && index > mondayFirstIndex - streakDays;
@@ -277,7 +311,6 @@ export default function Home() {
           })}
         </div>
 
-        {/* Weekly progress bar */}
         <div className="relative duo-progress-track !h-2.5 !bg-white/40">
           <div
             className="duo-progress-fill duo-flame-fill"
@@ -286,7 +319,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Continue Learning */}
+      {/* ── Continue Learning (unchanged) ── */}
       {courses && courses.length > 0 && (
         <Link
           to={`/courses/${courses[0].id}`}
@@ -318,7 +351,9 @@ export default function Home() {
         </Link>
       )}
 
-      {/* All Courses */}
+      {/* ══════════════════════════════════════════════════════════════════
+          ALL COURSES — book icons swapped to book.json lottie
+      ══════════════════════════════════════════════════════════════════ */}
       <div>
         <h2 className="font-black text-lg text-neutral-900 mb-4 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-[#CE82FF] duo-sparkle-icon" />
@@ -342,8 +377,8 @@ export default function Home() {
                 onClick={() => playSound("click")}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 bg-[#1CB0F6] rounded-xl flex items-center justify-center shadow-[0_3px_0_#1899D6]">
-                    <BookOpen className="w-6 h-6 text-white duo-course-book" />
+                  <div className="w-11 h-11 bg-[#1CB0F6] rounded-xl flex items-center justify-center shadow-[0_3px_0_#1899D6] overflow-hidden">
+                    <LottieIcon src="/animations/Book.json" size={36} speed={0.8} />
                   </div>
                   <span className="duo-badge duo-badge-gray">
                     <Clock className="w-3 h-3" />
@@ -363,7 +398,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Challenges Section */}
+      {/* ── Challenges Section (unchanged) ── */}
       <div>
         <h2 className="font-black text-lg text-neutral-900 mb-4 flex items-center gap-2">
           <Trophy className="w-5 h-5 text-[#FFC800] duo-header-trophy" />
