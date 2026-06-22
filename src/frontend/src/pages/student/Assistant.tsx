@@ -10,7 +10,7 @@ interface Message {
   content: string;
 }
 
-const LOGO = <img src="/logo.png" alt="" aria-hidden="true" width={28} height={28}
+const LOGO = <img src="/images/logo.png" alt="" aria-hidden="true" width={28} height={28}
   style={{ objectFit: "contain", display: "block" }} />;
 
 const SUGGESTED_QUESTIONS = [
