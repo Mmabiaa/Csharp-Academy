@@ -146,7 +146,6 @@ export default function ProgressDashboard() {
       </div>
     );
   }
-
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6 pb-24 md:pb-0">

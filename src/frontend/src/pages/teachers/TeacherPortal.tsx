@@ -61,7 +61,6 @@ export default function TeacherPortal() {
       </div>
     );
   }
-
   const stats = [
     { label: "Classrooms", value: dashboard?.classroomCount ?? 0, icon: GraduationCap, color: "#1CB0F6", bg: "#DDF4FF" },
     { label: "Assignments", value: dashboard?.assignmentCount ?? 0, icon: FileText, color: "#46A302", bg: "#D7FFB8" },
