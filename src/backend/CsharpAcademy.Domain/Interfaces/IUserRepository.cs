@@ -14,4 +14,9 @@ public interface IUserRepository
     Task<int> CountAsync(CancellationToken cancellationToken = default);
     Task<bool> HasCompletedPracticeAsync(int userId, int exerciseId, CancellationToken cancellationToken = default);
     Task RecordPracticeCompletionAsync(int userId, int exerciseId, CancellationToken cancellationToken = default);
+    Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+    Task UpdateAsync(User user, CancellationToken cancellationToken = default);
+    Task SavePasswordResetTokenAsync(PasswordResetToken token, CancellationToken cancellationToken = default);
+    Task<PasswordResetToken?> GetValidPasswordResetTokenAsync(int userId, string otp, CancellationToken cancellationToken = default);
+    Task UpdatePasswordResetTokenAsync(PasswordResetToken token, CancellationToken cancellationToken = default);
 }

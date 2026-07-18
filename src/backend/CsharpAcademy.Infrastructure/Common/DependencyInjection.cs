@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IAiQuizGenerationService, AiQuizGenerationService>();
         services.AddScoped<ICertificatePdfService, CertificatePdfService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }

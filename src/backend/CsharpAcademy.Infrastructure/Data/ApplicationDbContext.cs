@@ -36,6 +36,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
     public DbSet<CodingChallenge> CodingChallenges { get; set; }
     public DbSet<ChallengeCompletion> ChallengeCompletions { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -237,6 +238,12 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .HasOne(a => a.Submission)
             .WithMany(s => s.Attachments)
             .HasForeignKey(a => a.SubmissionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PasswordResetToken>()
+            .HasOne(t => t.User)
+            .WithMany()
+            .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         PlatformSeedData.Apply(modelBuilder, SeedDate);

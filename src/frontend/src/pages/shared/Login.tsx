@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { login as apiLogin, googleLogin as apiGoogleLogin } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
-import { Mail, Lock, GraduationCap, XCircle } from "lucide-react";
+import { Mail, Lock, GraduationCap, XCircle, CheckCircle } from "lucide-react";
 
 export default function Login() {
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(location.state?.message || "");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -78,6 +80,13 @@ export default function Login() {
 
       <div className="duo-card">
         <form onSubmit={handleSubmit} className="space-y-5">
+          {successMessage && (
+            <div className="flex items-start gap-2 bg-[#D7FFB8] border-2 border-[#46A302] text-[#46A302] font-bold px-4 py-3 rounded-2xl">
+              <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+          
           {error && (
             <div className="flex items-start gap-2 bg-[#FFDFE0] border-2 border-[#FFB8B8] text-[#CC3A3A] font-bold px-4 py-3 rounded-2xl">
               <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -107,10 +116,18 @@ export default function Login() {
           <div className="space-y-2">
             <label
               htmlFor="password"
-              className="text-xs font-black text-neutral-500 uppercase tracking-wider flex items-center gap-1.5"
+              className="text-xs font-black text-neutral-500 uppercase tracking-wider flex items-center justify-between"
             >
-              <Lock className="w-3.5 h-3.5" />
-              Password
+              <span className="flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" />
+                Password
+              </span>
+              <Link 
+                to="/forgot-password" 
+                className="text-[#1CB0F6] font-bold normal-case tracking-normal text-xs hover:underline"
+              >
+                Forgot?
+              </Link>
             </label>
             <input
               id="password"
