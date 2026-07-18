@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Gmail SMTP Integration**: Implemented production-ready email service using MailKit 4.17.0 for sending password reset OTPs via Gmail SMTP.
+- **Professional Email Template**: Created responsive HTML email template for password reset OTPs with gradient header, styled OTP display box, expiration warnings, and branded footer.
+- **Email Configuration**: Added SMTP settings to `.env` and `.env.example` with instructions for generating Google App Passwords.
+
+### Changed
+- **EmailService**: Upgraded from placeholder logging to full SMTP implementation with both HTML and plain text email support.
+- **ResetPasswordCommandHandler**: Refactored to use `UserManager<User>` for secure password updates instead of direct hash manipulation.
+- **MailKit Package**: Updated to version 4.17.0 to address security vulnerabilities (previously 4.9.0 had moderate severity issues).
+
+### Security
+- **Password Reset Security**: Password changes now use ASP.NET Identity's `UserManager` for proper validation and secure hashing.
+- **SMTP Credentials**: Email credentials properly isolated in environment variables with fallback to development logging when unconfigured.
+
+---
+
 ## [1.1.1] - 2026-06-21
 
 ### Added

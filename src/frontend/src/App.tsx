@@ -23,6 +23,9 @@ import Challenges from "./pages/student/Challenges";
 import ProgressDashboard from "./pages/student/ProgressDashboard";
 import Login from "./pages/shared/Login";
 import Register from "./pages/shared/Register";
+import ForgotPassword from "./pages/shared/ForgotPassword";
+import VerifyOtp from "./pages/shared/VerifyOtp";
+import ResetPassword from "./pages/shared/ResetPassword";
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -58,6 +61,9 @@ function App() {
             <Route path="/certificates" element={<CertificateVerify />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </Layout>
       </Router>

@@ -87,4 +87,36 @@ public class UserRepository : IUserRepository
         });
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+    }
+
+    public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
+    {
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task SavePasswordResetTokenAsync(PasswordResetToken token, CancellationToken cancellationToken = default)
+    {
+        _context.PasswordResetTokens.Add(token);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<PasswordResetToken?> GetValidPasswordResetTokenAsync(int userId, string otp, CancellationToken cancellationToken = default)
+    {
+        return await _context.PasswordResetTokens
+            .Where(t => t.UserId == userId && t.Token == otp && !t.IsUsed && t.ExpiresAt > DateTime.UtcNow)
+            .OrderByDescending(t => t.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task UpdatePasswordResetTokenAsync(PasswordResetToken token, CancellationToken cancellationToken = default)
+    {
+        _context.PasswordResetTokens.Update(token);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

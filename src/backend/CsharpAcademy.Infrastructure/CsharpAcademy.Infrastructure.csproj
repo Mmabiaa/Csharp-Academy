@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
     <PackageReference Include="QuestPDF" Version="2024.12.2" />
+    <PackageReference Include="MailKit" Version="4.17.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CsharpAcademy.Application\CsharpAcademy.Application.csproj" />

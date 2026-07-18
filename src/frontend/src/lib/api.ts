@@ -873,3 +873,30 @@ export async function googleLogin(idToken: string): Promise<AuthResponse> {
   });
   return handleResponse<AuthResponse>(response);
 }
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return handleResponse<{ message: string }>(response);
+}
+
+export async function verifyOtp(email: string, otp: string): Promise<{ success: boolean; resetToken: string; email: string }> {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp }),
+  });
+  return handleResponse<{ success: boolean; resetToken: string; email: string }>(response);
+}
+
+export async function resetPassword(email: string, otp: string, newPassword: string): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp, newPassword }),
+  });
+  return handleResponse<{ message: string }>(response);
+}
