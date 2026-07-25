@@ -39,9 +39,9 @@ import { fetchLessonCompanionData } from "../../lib/api";
 import { getPreferredVoice, subscribeToPreferredVoice } from "../../lib/voicePreference";
 
 export interface LessonCompanionProps {
-  lessonId: number;
-  lessonTitle: string;
-  lessonContent: string;
+  lessonId?: number;
+  lessonTitle?: string;
+  lessonContent?: string;
   lessonVoiceSummary?: string;
   lessonBestPractices?: string;
   lessonCompleted?: boolean;
@@ -52,6 +52,9 @@ export interface LessonCompanionProps {
   practiceSuccessCount?: number;
   tutorialStep?: number;
   tutorialTotalSteps?: number;
+  pageTitle?: string;
+  pageContext?: string;
+  genericSuggestedQuestions?: string[];
 }
 
 type Mood = "idle" | "wave" | "thinking" | "happy" | "celebrate" | "concerned" | "speaking";
@@ -64,6 +67,92 @@ interface ChatMessage {
 }
 
 let chatIdCounter = 1;
+
+const GENERIC_GREETINGS: string[] = [
+  "Hi there! I'm here to help with your learning journey.",
+  "Welcome! Feel free to ask me anything about C sharp or programming.",
+  "Good day! How can I assist your studies today?",
+  "Hello! Ready to dive into some C sharp learning?",
+];
+
+const GENERIC_ENCOURAGEMENTS: string[] = [
+  "You're doing great — keep going!",
+  "Every expert was once a beginner. You're on the right path.",
+  "Consistency is key. Keep practicing and you'll master it.",
+  "Learning a language takes time. Be patient with yourself.",
+  "Mistakes are just stepping stones to understanding.",
+];
+
+const CSHARP_HELP: Record<string, string> = {
+  "c#": "**C# (C-Sharp)** is a modern, object-oriented programming language developed by Microsoft. Key features include:\n\n• **Type-safe**: Strong typing prevents many common errors\n• **Garbage collected**: Automatic memory management\n• **OOP & FP**: Supports both object-oriented and functional styles\n• **Cross-platform**: Runs on Windows, macOS, Linux via .NET\n• **Rich ecosystem**: ASP.NET for web, Unity for games, MAUI for mobile\n\nStart by exploring the **Courses** page to begin structured learning!",
+  "variables": "**Variables in C#** store data of specific types. Examples:\n\n```csharp\nint age = 25;\nstring name = \"Alice\";\nbool isActive = true;\ndouble price = 19.99;\nvar inferred = \"works too\"; // Type inferred\n```\n\nCommon types: `int`, `string`, `bool`, `double`, `decimal`, `var`",
+  "classes": "**Classes** are blueprints for creating objects in C#:\n\n```csharp\npublic class Student\n{\n    public string Name { get; set; }\n    public int Age { get; set; }\n\n    public void Study()\n    {\n        Console.WriteLine($\"{Name} is studying!\");\n    }\n}\n\n// Usage\nvar student = new Student { Name = \"Alex\", Age = 20 };\nstudent.Study();\n```\n\nC# supports: inheritance, interfaces, abstract classes, records, and more.",
+  "loops": "**Loops in C#** let you repeat code:\n\n```csharp\n// for loop\nfor (int i = 0; i < 5; i++) { /* code */ }\n\n// foreach loop\nforeach (var item in collection) { /* code */ }\n\n// while loop\nwhile (condition) { /* code */ }\n\n// do-while loop\ndo { /* code */ } while (condition);\n```\n\nUse `break` to exit, `continue` to skip to the next iteration.",
+  "async": "**Async/await in C#** enables non-blocking I/O:\n\n```csharp\npublic async Task<string> FetchDataAsync(string url)\n{\n    using var client = new HttpClient();\n    return await client.GetStringAsync(url);\n}\n\n// Call it:\nvar data = await FetchDataAsync(\"https://api.example.com\");\n```\n\nAlways return `Task` or `Task<T>` from async methods. Use `await` when calling them.",
+  "linq": "**LINQ (Language Integrated Query)** lets you query data with C# syntax:\n\n```csharp\nvar numbers = new[] { 1, 2, 3, 4, 5, 6 };\n\nvar evenNumbers = numbers\n    .Where(n => n % 2 == 0)\n    .OrderByDescending(n => n)\n    .Select(n => n * 10)\n    .ToList();\n\n// evenNumbers = [60, 40, 20]\n```\n\nCommon methods: `Where`, `Select`, `OrderBy`, `GroupBy`, `Sum`, `Any`, `FirstOrDefault`",
+  "tips": "**Pro tips for learning C#:**\n\n1. **Practice daily** — even 15 minutes helps\n2. **Use the Playground** to experiment with code\n3. **Build projects** — theory alone isn't enough\n4. **Read error messages** — they tell you exactly what's wrong\n5. **Use the Practices section** for hands-on exercises\n6. **Don't skip fundamentals** — they make advanced topics easier\n7. **Ask questions** — the AI Assistant is always here!",
+  "help": "I can help you with:\n\n• **C# concepts**: variables, classes, LINQ, async, etc.\n• **Programming tips**: best practices and pro advice\n• **Navigation**: where to find things in the app\n• **Motivation**: encouragement when you're stuck\n\nJust type a question or click a suggested button above!",
+};
+
+function getGenericAnswer(userMessage: string, pageTitle: string): string {
+  const msg = (userMessage || "").toLowerCase().trim();
+
+  if (!msg) {
+    return "I didn't catch that. Ask me anything about C#, programming, or this app!";
+  }
+
+  const greetingKeywords = ["hi", "hello", "hey", "greetings", "yo", "sup", "good morning", "good afternoon", "good evening"];
+  if (greetingKeywords.some((g) => msg.includes(g))) {
+    const greeting = GENERIC_GREETINGS[Math.floor(Math.random() * GENERIC_GREETINGS.length)];
+    return `${greeting}\n\nWe're currently on the **${pageTitle}** page. What would you like to know?`;
+  }
+
+  const encourageKeywords = ["encourage", "motivate", "inspire", "i need help", "stuck", "struggling", "can't do", "cant do", "give up", "hard", "difficult", "tired"];
+  if (encourageKeywords.some((k) => msg.includes(k))) {
+    return GENERIC_ENCOURAGEMENTS[Math.floor(Math.random() * GENERIC_ENCOURAGEMENTS.length)];
+  }
+
+  const helpKeywords = ["help", "what can you do", "capabilities", "features"];
+  if (helpKeywords.some((k) => msg.includes(k))) {
+    return CSHARP_HELP["help"];
+  }
+
+  for (const [key, value] of Object.entries(CSHARP_HELP)) {
+    if (msg.includes(key)) {
+      return value;
+    }
+  }
+
+  if (msg.includes("course")) {
+    return "Check out the **Courses** page to browse our structured curriculum. Each course contains lessons, videos, tutorials, and practice exercises to guide your C# learning journey from beginner to advanced.";
+  }
+
+  if (msg.includes("practice") || msg.includes("exercise")) {
+    return "The **Practices** page has hands-on coding exercises designed to reinforce what you learn. Each challenge has instant feedback to help you improve quickly!";
+  }
+
+  if (msg.includes("challenge")) {
+    return "**Challenges** are competitive coding problems where you can test your skills against other learners. Solve them efficiently to climb the **Leaderboard**!";
+  }
+
+  if (msg.includes("playground") || msg.includes("code")) {
+    return "The **Playground** lets you write and run C# code in the browser. It's a great place to experiment with ideas, test concepts, and practice without needing to set up anything locally.";
+  }
+
+  if (msg.includes("leaderboard") || msg.includes("rank")) {
+    return "The **Leaderboard** shows top learners by XP. Complete lessons, solve challenges, and ace practices to earn points and climb the rankings!";
+  }
+
+  if (msg.includes("progress") || msg.includes("track")) {
+    return "Your **Progress Dashboard** shows detailed analytics of your learning journey: completed lessons, earned XP, time studied, and areas where you can improve.";
+  }
+
+  if (msg.includes("profile") || msg.includes("account")) {
+    return "Your **Profile** page lets you view and edit your personal information, see your learning statistics, and manage account settings.";
+  }
+
+  return `Great question about **${pageTitle}**! While I focus on lesson content during lectures, here are some general things you can try:\n\n• Browse the **Courses** page for structured learning paths\n• Practice coding in the **Playground**\n• Test your knowledge with **Practices** and **Challenges**\n• Check the **Progress** dashboard to track your growth\n\nOr ask me about specific C# topics like **LINQ**, **async/await**, **classes**, **variables**, or **loops**!`;
+}
 
 /* =========================================================================
    COMPANION GREETINGS
@@ -91,8 +180,8 @@ const EMPTY_COMPANION_DATA: LessonCompanionData = {
 export default function LessonCompanion(props: LessonCompanionProps) {
   const {
     lessonId,
-    lessonTitle,
-    lessonContent,
+    lessonTitle: lessonTitleProp,
+    lessonContent: lessonContentProp,
     lessonVoiceSummary,
     lessonBestPractices,
     lessonCompleted,
@@ -102,7 +191,15 @@ export default function LessonCompanion(props: LessonCompanionProps) {
     practiceSuccessCount = 0,
     tutorialStep = 0,
     tutorialTotalSteps = 0,
+    pageTitle: pageTitleProp,
+    pageContext,
+    genericSuggestedQuestions,
   } = props;
+
+  const hasLessonContext = typeof lessonId === "number" && !isNaN(lessonId);
+  const lessonTitle = lessonTitleProp ?? pageTitleProp ?? "Academic Mentor";
+  const lessonContent = lessonContentProp ?? pageContext ?? "";
+  const contextLabel = hasLessonContext ? "Lecture" : "Current page";
 
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("chat");
@@ -154,10 +251,11 @@ export default function LessonCompanion(props: LessonCompanionProps) {
 
   const { data: companionDataRaw, isLoading, error } = useQuery({
     queryKey: ["lesson-companion-data", lessonId] as const,
-    queryFn: () => fetchLessonCompanionData(lessonId),
+    queryFn: () => fetchLessonCompanionData(lessonId!),
     staleTime: 10 * 60 * 1000,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * attempt, 5000),
+    enabled: hasLessonContext,
   });
 
   const companionData: LessonCompanionData = useMemo(() => {
@@ -176,7 +274,8 @@ export default function LessonCompanion(props: LessonCompanionProps) {
 
   useEffect(() => {
     const timer = setTimeout(() => setMood("idle"), 3200);
-    const g = COMPANION_GREETINGS[Math.floor(Math.random() * COMPANION_GREETINGS.length)];
+    const greetingPool = hasLessonContext ? COMPANION_GREETINGS : GENERIC_GREETINGS;
+    const g = greetingPool[Math.floor(Math.random() * greetingPool.length)];
     setBubbleText(g);
     const bubbleTimer = setTimeout(() => setBubbleText(null), 5000);
     return () => {
@@ -184,7 +283,7 @@ export default function LessonCompanion(props: LessonCompanionProps) {
       clearTimeout(bubbleTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessonTitle]);
+  }, [lessonTitle, hasLessonContext]);
 
   useEffect(() => {
     if (!open || bubbleText) return;
@@ -299,7 +398,7 @@ export default function LessonCompanion(props: LessonCompanionProps) {
                 <h3>Academic Mentor</h3>
                 <p>
                   <BookOpen className="w-3 h-3 inline-block mr-1" />
-                  Lecture: <strong>{lessonTitle}</strong>
+                  {contextLabel}: <strong>{lessonTitle}</strong>
                 </p>
               </div>
             </div>
@@ -338,8 +437,10 @@ export default function LessonCompanion(props: LessonCompanionProps) {
           <div className="duo-companion-tabs" role="tablist">
             {([
               ["chat", "Discussion", MessageCircle],
-              ["lecture", "Lecture", Mic],
-              ["quiz", "Assessment", Brain],
+              ...(hasLessonContext ? [
+                ["lecture", "Lecture", Mic] as const,
+                ["quiz", "Assessment", Brain] as const,
+              ] : []),
             ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
@@ -359,26 +460,28 @@ export default function LessonCompanion(props: LessonCompanionProps) {
           </div>
 
           {tab === "chat" && (
-            isLoading ? (
+            hasLessonContext && isLoading ? (
               <LoadingState label="Preparing educational resources..." />
-            ) : error ? (
+            ) : hasLessonContext && error ? (
               <ErrorState error={error} />
             ) : (
               <ChatTab
                 companionData={companionData}
                 lessonTitle={lessonTitle}
                 setMood={setMood}
+                hasLessonContext={hasLessonContext}
+                genericSuggestedQuestions={genericSuggestedQuestions}
               />
             )
           )}
-          {tab === "lecture" && (
+          {tab === "lecture" && hasLessonContext && (
             <LectureTab
               lessonContent={lessonContent}
               lessonVoiceSummary={lessonVoiceSummary}
               setMood={setMood}
             />
           )}
-          {tab === "quiz" && (
+          {tab === "quiz" && hasLessonContext && (
             isLoading ? (
               <LoadingState label="Preparing your assessment..." />
             ) : error ? (
@@ -431,17 +534,26 @@ function ChatTab({
   companionData,
   lessonTitle,
   setMood,
+  hasLessonContext,
+  genericSuggestedQuestions,
 }: {
   companionData: LessonCompanionData;
   lessonTitle: string;
   setMood: (m: Mood) => void;
+  hasLessonContext?: boolean;
+  genericSuggestedQuestions?: string[];
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [chatXp, setChatXp] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const suggested = useMemo(() => getSuggestedQuestions(companionData), [companionData]);
+  const suggested = useMemo(() => {
+    if (!hasLessonContext && genericSuggestedQuestions?.length) {
+      return genericSuggestedQuestions;
+    }
+    return getSuggestedQuestions(companionData);
+  }, [companionData, hasLessonContext, genericSuggestedQuestions]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -462,7 +574,12 @@ function ChatTab({
     setMessages((prev) => [...prev, userMsg]);
 
     setTimeout(() => {
-      const reply = getAnswerFromData(text, companionData, lessonTitle);
+      let reply: string;
+      if (hasLessonContext) {
+        reply = getAnswerFromData(text, companionData, lessonTitle);
+      } else {
+        reply = getGenericAnswer(text, lessonTitle);
+      }
       const assistantMsg: ChatMessage = {
         role: "assistant",
         content: reply,
@@ -479,16 +596,18 @@ function ChatTab({
   const empty = messages.length === 0;
 
   return (
-    <div className="duo-companion-tab-body duo-companion-chat">
+      <div className="duo-companion-tab-body duo-companion-chat">
       <div className="duo-companion-chat-area">
         {empty ? (
           <div className="duo-companion-empty">
             <div className="duo-companion-empty-owl">
               <CompanionAvatar mood="happy" small />
             </div>
-            <h4>Welcome to Academic Discussion</h4>
+            <h4>{hasLessonContext ? "Welcome to Academic Discussion" : "Welcome"}</h4>
             <p>
-              I'm your academic mentor for this lecture. I can help you with:
+              {hasLessonContext
+                ? "I'm your academic mentor for this lecture. I can help you with:"
+                : `I'm your academic mentor for ${lessonTitle}. I can help you with:`}
             </p>
             <div className="duo-companion-suggest-grid">
               {suggested.map((q) => (
@@ -571,7 +690,7 @@ function ChatTab({
         <input
           type="text"
           className="duo-input"
-          placeholder="Ask about this lecture..."
+          placeholder={hasLessonContext ? "Ask about this lecture..." : "Ask about C# or this page..."}
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />

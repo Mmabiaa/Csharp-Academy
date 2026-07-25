@@ -5,6 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import { ReactNode } from "react";
 import UserAvatar from "./UserAvatar";
 import NotificationOverlay from "./NotificationOverlay";
+import GlobalCompanion from "../sections/lesson-companion/GlobalCompanion";
 import {
   BookOpen,
   Trophy,
@@ -373,6 +374,8 @@ export default function Layout({ children }: { children: ReactNode }) {
         </main>
 
         <NotificationOverlay />
+
+        <GlobalCompanion />
 
         {/* Mobile Bottom Nav */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#e5e5e5] z-50">
