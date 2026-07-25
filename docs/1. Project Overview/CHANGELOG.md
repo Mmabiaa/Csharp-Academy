@@ -9,6 +9,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## feat: AI Learning Companion (Lesson Page)
+ 
+## Overview
+ 
+Introduced an AI-powered learning companion: a persistent, animated avatar fixed at the bottom-right of the lesson page that acts as a context-aware tutor for the current lesson. The feature uses predefined, lesson-specific data (no third-party AI integration yet) and is scoped exclusively to the lesson page — no other pages, routes, or shared components were modified.
+ 
+**Type:** Feature (frontend-only)
+**Scope:** `LessonPage` only
+**Backend changes:** None
+**New dependencies:** None (reuses `react-markdown`, `remark-gfm`, `lucide-react`)
+ 
+---
+ 
+## Added
+ 
+### `src/frontend/src/sections/lesson-companion/companionData.ts`
+Predefined, lesson-specific content store:
+- 12 C# concept explanations
+- 8 Q&A pairs
+- 3 worked examples
+- 5 mini-quizzes (multiple choice, with markdown explanations)
+- 6 encouragement messages, 5 celebration messages, 4 greetings
+- `matchLessonData()` — keyword detection against lesson content to auto-filter relevant topics
+- `getAnswerFromData()` — ranked matching pipeline: greeting → encouragement/motivation → lesson Q&A → concept explanation → generic fallback → help menu
+- `getSuggestedQuestions()` — surfaces lesson-relevant suggested questions in the chat empty state
+### `src/frontend/src/sections/lesson-companion/useLectureNarration.ts`
+Enhanced text-to-speech hook built on top of the browser Speech Synthesis API:
+- Play / pause / stop / replay / jump-to-segment controls
+- Adjustable playback speed: 0.75× / 1× / 1.25× / 1.5×, with seamless mid-playback restart
+- Markdown-aware cleanup (strips code blocks, backticks, links, images, headings) before segmenting narration text
+- Sentence-level segmentation with per-segment status (done / active / pending) and progress tracking
+### `src/frontend/src/sections/lesson-companion/LessonCompanion.tsx`
+Main companion component:
+- Floating avatar (owl, SVG) fixed bottom-right, with 7 mood states: `idle`, `wave`, `thinking`, `happy`, `celebrate`, `concerned`, `speaking`
+- Auto-triggered, clickable speech bubbles for greetings, encouragement, struggle detection, tutorial-midpoint checkpoints, and lesson-completion celebrations
+- Expandable panel with three tabs:
+  - **Discussion (Chat):** predefined Q&A/explanations, markdown + code rendering, typing indicator, per-session XP ticker
+  - **Lecture (Listen):** narration transcript with clickable segments, play/pause/stop/replay, speed selector, progress bar
+  - **Assessment (Quiz):** 5-question mini-quiz with instant feedback, score tracking, hearts, and a retake option
+- Voice mute/unmute toggle with persisted preference (`localStorage`, per-browser)
+- All UI built with the app's existing 3D button system (`duo-btn3d`) and Duolingo-style color tokens (`--duo-green`, `--duo-blue`, `--duo-yellow`, `--duo-purple`, etc.) for design consistency
+- Styles scoped under `.duo-companion-*` class names
+---
+ 
+## Changed
+ 
+### `src/frontend/src/pages/student/LessonPage.tsx`
+- Imported and mounted `<LessonCompanion key={lessonId} ... />` at the bottom of the page (component resets its internal state on lesson navigation)
+- Added local state: `practiceFailCount`, `practiceSuccessCount`, `lessonCompletedTrigger`
+- Wired practice submission results to increment fail/success counters (drives the companion's "struggling" detection and encouragement bubbles)
+- Wired `completeMutation.onSuccess` to trigger the companion's celebration mood
+- No other pages, layouts, or shared components were touched
+---
+ 
+## Fixed
+ 
+- **Malformed SVG transform:** The owl avatar's right eyebrow used an invalid `scale(1 1 17.5 10)` transform (SVG's `scale()` accepts 1–2 arguments, not 4). Replaced with the correct `translate → scale → translate` three-step pattern to mirror the shape about its pivot point, eliminating a console warning.
+- **White-on-white inactive tab buttons:** The companion's injected `<style>` block defined a global, unscoped base rule (`.duo-btn3d { color: white; }`). Because this stylesheet is injected into the document by `LessonCompanion` — which mounts on the same page as the lesson tab buttons (`Lesson` / `Video` / `Tutorial` / `Practice` / `Best practices`, styled with the shared `duo-btn3d-white` class from `index.css`) — it leaked outside the companion widget and overrode the intended dark text color (`--duo-eel`) on those buttons, making their labels invisible on a white background. Fix: removed the redundant `color: white;` line from the companion's base `.duo-btn3d` rule (color is already set individually on `.duo-btn3d-green` / `.duo-btn3d-blue` within the widget), restoring correct contrast on page-level white buttons without altering the companion's own styling.
+---
+ 
+## Notes / Follow-ups
+ 
+- Content is fully predefined/static per lesson; no LLM or third-party AI call is made in this iteration. The existing `/assistant` AI chat endpoint remains a separate, untouched feature that could later serve as a fallback for unmatched questions.
+- Gamification (XP for interactions, avatar cosmetic unlocks, dedicated badges) was scoped out of this pass and remains a suggested next step.
+- Because the companion's `<style>` tag is unscoped, any future class names added inside `LessonCompanion.tsx` should be prefixed (e.g. `.duo-companion-*`) to avoid repeating the global-leak issue fixed above.
+
 ### Added
 - **Gmail SMTP Integration**: Implemented production-ready email service using MailKit 4.17.0 for sending password reset OTPs via Gmail SMTP.
 - **Professional Email Template**: Created responsive HTML email template for password reset OTPs with gradient header, styled OTP display box, expiration warnings, and branded footer.
