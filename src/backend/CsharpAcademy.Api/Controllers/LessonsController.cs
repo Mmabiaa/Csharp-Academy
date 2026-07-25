@@ -56,6 +56,30 @@ public class LessonsController : ControllerBase
         Ok(await _mediator.Send(new GetLessonVideosQuery(lessonId)));
 
     /// <summary>
+    /// Gets context-aware learning companion data for a specific lesson.
+    /// The data is dynamically derived from the seeded/admin-uploaded lesson content
+    /// (title, content, best practices, voice summary, tutorial steps, and exercises)
+    /// and never hardcoded on the frontend.
+    /// </summary>
+    /// <param name="lessonId">The ID of the lesson.</param>
+    /// <returns>Companion data (concept explanations, Q&amp;A, examples, mini-quiz, and encouragement phrases).</returns>
+    /// <response code="200">Companion data successfully derived from the lesson.</response>
+    /// <response code="404">If the lesson is not found.</response>
+    [HttpGet("{lessonId}/companion-data")]
+    [ProducesResponseType(typeof(LessonCompanionDataDto), 200)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult<LessonCompanionDataDto>> GetCompanionData(int lessonId)
+    {
+        var data = await _mediator.Send(new GetLessonCompanionDataQuery(lessonId));
+        if (data is null)
+        {
+            return NotFound(new { message = "Lesson not found — could not build companion data." });
+        }
+
+        return Ok(data);
+    }
+
+    /// <summary>
     /// Marks a lesson as completed for the authenticated user and awards XP.
     /// </summary>
     /// <param name="id">The ID of the lesson.</param>

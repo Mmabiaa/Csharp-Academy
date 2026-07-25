@@ -659,7 +659,47 @@ export async function submitChallenge(challengeId: number, code: string, token: 
 
 export async function fetchLessonVideos(lessonId: number): Promise<LessonVideo[]> {
   const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/videos`);
-  return handleResponse(response);
+  return handleResponse<LessonVideo[]>(response);
+}
+
+export interface CompanionQa {
+  keywords: string[];
+  question: string;
+  answer: string;
+}
+
+export interface CompanionExample {
+  concept: string;
+  analogy: string;
+  codeSample: string;
+}
+
+export interface CompanionMiniQuiz {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export interface CompanionPracticeHint {
+  exerciseTitle: string;
+  hints: string[];
+}
+
+export interface LessonCompanionData {
+  encouragements: string[];
+  celebrations: string[];
+  greetings: string[];
+  conceptExplanations: Record<string, string>;
+  questionAnswers: CompanionQa[];
+  examples: CompanionExample[];
+  miniQuizzes: CompanionMiniQuiz[];
+  practiceHints: CompanionPracticeHint[];
+}
+
+export async function fetchLessonCompanionData(lessonId: number): Promise<LessonCompanionData> {
+  const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/companion-data`);
+  return handleResponse<LessonCompanionData>(response);
 }
 
 export async function fetchUserProgressSummary(token: string): Promise<UserProgressSummary> {
