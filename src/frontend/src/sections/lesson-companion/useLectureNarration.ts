@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getPreferredVoice, subscribeToPreferredVoice } from "../../lib/voicePreference";
 
 export type LectureSpeed = 0.75 | 1 | 1.25 | 1.5;
 
@@ -24,6 +25,7 @@ export function useLectureNarration(fullText: string, segments: Segment[]) {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const currentIndexRef = useRef(0);
   const pendingResumeRef = useRef(false);
+  const preferredVoiceRef = useRef<SpeechSynthesisVoice | null>(getPreferredVoice());
   const [state, setState] = useState<LectureState>({
     speaking: false,
     paused: false,
@@ -34,6 +36,12 @@ export function useLectureNarration(fullText: string, segments: Segment[]) {
     highlightedRange: null,
     progressPercent: 0,
   });
+
+  useEffect(() => {
+    return subscribeToPreferredVoice((voice) => {
+      preferredVoiceRef.current = voice;
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -93,6 +101,7 @@ export function useLectureNarration(fullText: string, segments: Segment[]) {
       const utter = new SpeechSynthesisUtterance(seg.text);
       utter.rate = speed;
       utter.pitch = 1.05;
+      if (preferredVoiceRef.current) utter.voice = preferredVoiceRef.current;
 
       utter.onstart = () => {
         setState((prev) => ({

@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import {
   Send,
   Volume2,
+  VolumeX,
   Pause,
   Play,
   RotateCcw,
@@ -32,6 +33,7 @@ import {
 } from "./useLectureNarration";
 import { useSound } from "../../context/SoundContext";
 import { fetchLessonCompanionData } from "../../lib/api";
+import { getPreferredVoice, subscribeToPreferredVoice } from "../../lib/voicePreference";
 
 export interface LessonCompanionProps {
   lessonId: number;
@@ -60,10 +62,26 @@ interface ChatMessage {
 
 let chatIdCounter = 1;
 
+/* =========================================================================
+   COMPANION GREETINGS
+   Edit this list to change what the owl says (and speaks aloud) when a
+   lesson loads or when someone taps the icon to open it. One is picked
+   at random each time. Keep them short — they're read aloud via speech
+   synthesis, and long lines take a while to finish speaking.
+   ========================================================================= */
+export const COMPANION_GREETINGS: string[] = [
+  "Hi there! What are you learning today?",
+  "Hello! What do you want to learn today?",
+  "Hey! Ready to dive into some C sharp?",
+  "Welcome back! Let's pick up where you left off.",
+  "Hi! I'm here if you get stuck on anything.",
+  "Good to see you! What's the plan for today?",
+];
+
 const EMPTY_COMPANION_DATA: LessonCompanionData = {
-  encouragements: ["You can do this! 💪"],
-  celebrations: ["🎉 Great job!"],
-  greetings: ["Hi! Let me load the lesson details for you..."],
+  encouragements: ["You can do this!"],
+  celebrations: ["Great job!"],
+  greetings: COMPANION_GREETINGS,
   conceptExplanations: {},
   questionAnswers: [],
   examples: [],
@@ -87,12 +105,58 @@ export default function LessonCompanion(props: LessonCompanionProps) {
     tutorialTotalSteps = 0,
   } = props;
 
-  const { playSound } = useSound();
-
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("chat");
   const [mood, setMood] = useState<Mood>("wave");
   const [bubbleText, setBubbleText] = useState<string | null>(null);
+
+  // ── Spoken greeting ─────────────────────────────────────────────────
+  // The owl says hello out loud when tapped, using the browser's built-in
+  // speech synthesis (same API the Listen tab uses). Preference persists
+  // per-device so a person who mutes it once doesn't have to redo it.
+  const [voiceEnabled, setVoiceEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const stored = window.localStorage.getItem("duo-companion-voice");
+    return stored === null ? true : stored === "1";
+  });
+  const preferredVoiceRef = useRef<SpeechSynthesisVoice | null>(getPreferredVoice());
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      window.localStorage?.setItem?.("duo-companion-voice", voiceEnabled ? "1" : "0");
+      return;
+    }
+    window.localStorage.setItem("duo-companion-voice", voiceEnabled ? "1" : "0");
+  }, [voiceEnabled]);
+
+  useEffect(() => {
+    return subscribeToPreferredVoice((voice) => {
+      preferredVoiceRef.current = voice;
+    });
+  }, []);
+
+  useEffect(() => {
+    // Stop talking if the panel closes or the component unmounts mid-sentence.
+    return () => {
+      if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+    };
+  }, []);
+
+  const speakGreeting = (text: string) => {
+    if (!voiceEnabled || typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/[*_#`>~]/g, "").trim();
+    if (!clean) return;
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.rate = 1.02;
+    utter.pitch = 1.15;
+    utter.volume = 1;
+    if (preferredVoiceRef.current) utter.voice = preferredVoiceRef.current;
+    utter.onstart = () => setMood("speaking");
+    utter.onend = () => setMood("happy");
+    utter.onerror = () => setMood("idle");
+    window.speechSynthesis.speak(utter);
+  };
 
   const { data: companionDataRaw, isLoading, error } = useQuery({
     queryKey: ["lesson-companion-data", lessonId] as const,
@@ -118,10 +182,7 @@ export default function LessonCompanion(props: LessonCompanionProps) {
 
   useEffect(() => {
     const timer = setTimeout(() => setMood("idle"), 3200);
-    const greetings = companionData.greetings?.length
-      ? companionData.greetings
-      : EMPTY_COMPANION_DATA.greetings;
-    const g = greetings[Math.floor(Math.random() * greetings.length)];
+    const g = COMPANION_GREETINGS[Math.floor(Math.random() * COMPANION_GREETINGS.length)];
     setBubbleText(g);
     const bubbleTimer = setTimeout(() => setBubbleText(null), 5000);
     return () => {
@@ -129,7 +190,7 @@ export default function LessonCompanion(props: LessonCompanionProps) {
       clearTimeout(bubbleTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessonTitle, companionData.greetings?.length]);
+  }, [lessonTitle]);
 
   useEffect(() => {
     if (!open || bubbleText) return;
@@ -139,7 +200,7 @@ export default function LessonCompanion(props: LessonCompanionProps) {
     if (practiceFailCount > 0 && practiceFailCount % 3 === 0) {
       setMood("concerned");
       setBubbleText(
-        "Hmm, this one is tricky. Want me to break it down step by step? 💡"
+        "Hmm, this one is tricky. Want me to break it down step by step?"
       );
       setTimeout(() => setBubbleText(null), 5500);
       onPracticeFailed?.();
@@ -197,9 +258,10 @@ export default function LessonCompanion(props: LessonCompanionProps) {
             open ? "duo-companion-bubble-hidden" : ""
           }`}
           onClick={() => {
+            const spoken = bubbleText;
             setBubbleText(null);
             setOpen(true);
-            playSound("click");
+            speakGreeting(spoken);
           }}
         >
           <span>{bubbleText}</span>
@@ -210,15 +272,24 @@ export default function LessonCompanion(props: LessonCompanionProps) {
       <button
         type="button"
         onClick={() => {
-          setOpen((o) => !o);
+          const opening = !open;
+          setOpen(opening);
           setBubbleText(null);
-          playSound("click");
+          if (opening) {
+            const g = COMPANION_GREETINGS[Math.floor(Math.random() * COMPANION_GREETINGS.length)];
+            speakGreeting(g);
+          } else if (typeof window !== "undefined") {
+            window.speechSynthesis?.cancel();
+            setMood("idle");
+          }
         }}
         aria-label={open ? "Close learning companion" : "Open learning companion"}
         className={`duo-companion-fab duo-companion-mood-${mood} ${
           open ? "duo-companion-fab-open" : ""
         }`}
       >
+        <span className="duo-companion-fab-ring" aria-hidden="true" />
+        <span className="duo-companion-fab-sheen" aria-hidden="true" />
         <OwlSvg mood={mood} />
         <span className="duo-companion-glow" aria-hidden="true" />
       </button>
@@ -238,17 +309,36 @@ export default function LessonCompanion(props: LessonCompanionProps) {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              className="duo-companion-close"
-              onClick={() => {
-                setOpen(false);
-                playSound("click");
-              }}
-              aria-label="Close"
-            >
-              <X size={18} />
-            </button>
+            <div className="duo-companion-header-actions">
+              <button
+                type="button"
+                className={`duo-companion-mute ${voiceEnabled ? "" : "duo-companion-mute-off"}`}
+                onClick={() => {
+                  const next = !voiceEnabled;
+                  setVoiceEnabled(next);
+                  if (!next && typeof window !== "undefined") {
+                    window.speechSynthesis?.cancel();
+                    setMood("idle");
+                  }
+                }}
+                aria-label={voiceEnabled ? "Mute companion voice" : "Unmute companion voice"}
+                aria-pressed={voiceEnabled}
+                title={voiceEnabled ? "Voice on" : "Voice off"}
+              >
+                {voiceEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+              </button>
+              <button
+                type="button"
+                className="duo-companion-close"
+                onClick={() => {
+                  setOpen(false);
+                  if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+                }}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           <div className="duo-companion-tabs" role="tablist">
@@ -263,7 +353,6 @@ export default function LessonCompanion(props: LessonCompanionProps) {
                 aria-selected={tab === key}
                 onClick={() => {
                   setTab(key);
-                  playSound("click");
                 }}
                 className={`duo-companion-tab ${
                   tab === key ? "duo-companion-tab-active" : ""
@@ -519,7 +608,6 @@ function LectureTab({
   lessonVoiceSummary?: string;
   setMood: (m: Mood) => void;
 }) {
-  const { playSound } = useSound();
   const source = lessonVoiceSummary?.trim()
     ? lessonVoiceSummary
     : lessonContent;
@@ -571,7 +659,6 @@ function LectureTab({
               type="button"
               onClick={() => {
                 jumpToSegment(seg.index);
-                playSound("click");
               }}
               className={`duo-companion-segment ${
                 state.currentSegmentIndex === seg.index &&
@@ -600,7 +687,6 @@ function LectureTab({
             className="duo-companion-round-btn duo-companion-ghost-btn"
             onClick={() => {
               replay();
-              playSound("click");
             }}
             aria-label="Replay"
             disabled={!state.supported}
@@ -620,7 +706,6 @@ function LectureTab({
             onClick={() => {
               if (state.speaking) pause();
               else play();
-              playSound("click");
             }}
             disabled={!state.supported}
             aria-label={state.speaking ? "Pause" : "Play"}
@@ -633,7 +718,6 @@ function LectureTab({
             className="duo-companion-round-btn duo-companion-ghost-btn"
             onClick={() => {
               stop();
-              playSound("click");
             }}
             aria-label="Stop"
             disabled={!state.supported || (!state.speaking && !state.paused)}
@@ -651,7 +735,6 @@ function LectureTab({
                 type="button"
                 onClick={() => {
                   setSpeed(s);
-                  playSound("click");
                 }}
                 className={`duo-companion-speed-btn ${
                   state.speed === s ? "duo-companion-speed-active" : ""
@@ -789,7 +872,6 @@ function QuizTab({
             type="button"
             onClick={() => {
               reset();
-              playSound("click");
             }}
             className="duo-btn3d duo-btn3d-blue"
           >
@@ -869,7 +951,6 @@ function QuizTab({
                 className="duo-btn3d duo-btn3d-green w-full"
                 onClick={() => {
                   submit();
-                  playSound("click");
                 }}
                 disabled={selected === null}
               >
@@ -882,7 +963,6 @@ function QuizTab({
                 className="duo-btn3d duo-btn3d-blue w-full"
                 onClick={() => {
                   next();
-                  playSound("click");
                 }}
               >
                 {index + 1 >= total ? (
@@ -909,7 +989,9 @@ function QuizTab({
 }
 
 /* =========================================================================
-   OWL SVG — multiple moods
+   OWL — layered gradients, soft sheen, refined mood states.
+   Kept as a single scalable mark so it reads clean at 22px (chat avatar)
+   and crisp at 46px (FAB) without redrawing per size.
    ========================================================================= */
 function OwlSvg({
   mood = "idle",
@@ -921,8 +1003,8 @@ function OwlSvg({
   tiny?: boolean;
 }) {
   const size = tiny ? 22 : small ? 36 : 46;
+  const uid = tiny ? "t" : small ? "s" : "f"; // keep gradient ids unique per instance size
 
-  // Eye + beak tweaks per mood
   const eyeY = mood === "thinking" || mood === "concerned" ? 12.5 : 13;
   const pupilOffsetY =
     mood === "happy" || mood === "celebrate" || mood === "speaking" ? -0.2 : 0;
@@ -939,11 +1021,8 @@ function OwlSvg({
   const browAngle =
     mood === "concerned" ? -10 : mood === "thinking" ? 8 : 0;
 
-  const wingColor = "rgba(255,255,255,0.32)";
-  const bodyWhite = "rgba(255,255,255,0.52)";
-  const eyeWhite = "white";
   const pupil = "#3C3C3C";
-  const beakColor = "#FFC800";
+  const beakColor = `url(#duo-beak-${uid})`;
 
   return (
     <svg
@@ -955,17 +1034,38 @@ function OwlSvg({
       aria-hidden="true"
       className="duo-companion-owl-svg"
     >
-      <ellipse cx="14" cy="16.5" rx="9" ry="10" fill={wingColor} />
-      <ellipse cx="14" cy="14.5" rx="7.2" ry="8.4" fill={bodyWhite} />
+      <defs>
+        <linearGradient id={`duo-body-${uid}`} x1="6" y1="5" x2="22" y2="26" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+          <stop offset="55%" stopColor="#F3FBE4" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#DFF3C4" stopOpacity="0.82" />
+        </linearGradient>
+        <linearGradient id={`duo-wing-${uid}`} x1="5" y1="6" x2="23" y2="27" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.16" />
+        </linearGradient>
+        <linearGradient id={`duo-beak-${uid}`} x1="12" y1="16" x2="16" y2="19" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FFD65C" />
+          <stop offset="100%" stopColor="#FFAE00" />
+        </linearGradient>
+        <radialGradient id={`duo-sheen-${uid}`} cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10.5 8) rotate(60) scale(9 6)">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      <ellipse cx="14" cy="16.5" rx="9" ry="10" fill={`url(#duo-wing-${uid})`} />
+      <ellipse cx="14" cy="14.5" rx="7.2" ry="8.4" fill={`url(#duo-body-${uid})`} />
+      <ellipse cx="14" cy="14.5" rx="7.2" ry="8.4" fill={`url(#duo-sheen-${uid})`} style={{ mixBlendMode: "screen" }} />
 
       {/* Tufts */}
       <path
         d="M8 7.2 C8 4.8 9.5 3.6 12 3.2 C12.5 3.14 13 3.12 13.5 3.12 L12.5 5 C11.2 5.2 10 5.7 9 6.5 Z"
-        fill={wingColor}
+        fill={`url(#duo-wing-${uid})`}
       />
       <path
         d="M20 7.2 C20 4.8 18.5 3.6 16 3.2 C15.5 3.14 15 3.12 14.5 3.12 L15.5 5 C16.8 5.2 18 5.7 19 6.5 Z"
-        fill={wingColor}
+        fill={`url(#duo-wing-${uid})`}
       />
 
       {/* Brows (per mood) */}
@@ -1013,8 +1113,8 @@ function OwlSvg({
       {/* Regular eyes (not happy/celebrate) */}
       {mood !== "happy" && mood !== "celebrate" && (
         <>
-          <circle cx="10.5" cy={eyeY} r={mood === "concerned" ? 2.4 : 2.7} fill={eyeWhite} />
-          <circle cx="17.5" cy={eyeY} r={mood === "concerned" ? 2.4 : 2.7} fill={eyeWhite} />
+          <circle cx="10.5" cy={eyeY} r={mood === "concerned" ? 2.4 : 2.7} fill="white" />
+          <circle cx="17.5" cy={eyeY} r={mood === "concerned" ? 2.4 : 2.7} fill="white" />
           <circle cx={10.5 + (mood === "thinking" ? 0.7 : 0)} cy={eyeY + pupilOffsetY} r={1.35} fill={pupil} />
           <circle cx={17.5 + (mood === "thinking" ? 0.7 : 0)} cy={eyeY + pupilOffsetY} r={1.35} fill={pupil} />
           <circle cx={10.5 - 0.4} cy={eyeY - 0.6 + pupilOffsetY} r={0.45} fill="white" />
@@ -1040,7 +1140,7 @@ function OwlSvg({
         cy={mood === "celebrate" ? 14.5 : 20}
         rx="2.3"
         ry="1.1"
-        fill={wingColor}
+        fill={`url(#duo-wing-${uid})`}
         transform={mood === "celebrate" ? "rotate(-30 6.8 14.5)" : "rotate(0)"}
       />
       <ellipse
@@ -1048,7 +1148,7 @@ function OwlSvg({
         cy={mood === "celebrate" ? 14.5 : 20}
         rx="2.3"
         ry="1.1"
-        fill={wingColor}
+        fill={`url(#duo-wing-${uid})`}
         transform={mood === "celebrate" ? "rotate(30 21.2 14.5)" : "rotate(0)"}
       />
 
@@ -1075,83 +1175,148 @@ const STYLES = `
   right: 18px;
   bottom: 22px;
   font-family: "DIN Round Pro", "Nunito", "Trebuchet MS", system-ui, sans-serif;
+  --duo-green-1: #8CE522;
+  --duo-green-2: #52C000;
+  --duo-green-deep: #3D9200;
+  --duo-blue-1: #35C1FF;
+  --duo-blue-2: #12A2E8;
+  --duo-blue-deep: #0C7FB8;
 }
 @media (min-width: 768px) {
   .duo-companion-root { right: 30px; bottom: 28px; }
 }
 
-/* ─── Floating Action Button (Owl) ─── */
+/* ─── Floating Action Button (Owl) ───
+   Layered "glassy 3D" treatment: soft ambient shadow for lift + a crisp
+   colored offset for the classic chunky Duolingo edge, plus a subtle
+   inner top highlight so it reads as a lacquered button, not a flat chip. */
 .duo-companion-fab {
   position: relative;
   width: 68px;
   height: 68px;
   border-radius: 24px;
-  border: 2px solid #46A302;
-  background: linear-gradient(145deg, #89E219, #58CC02);
-  box-shadow: 0 6px 0 #46A302, 0 12px 24px rgba(88, 204, 2, 0.25);
+  border: none;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 40%),
+    linear-gradient(145deg, var(--duo-green-1), var(--duo-green-2));
+  background-blend-mode: overlay, normal;
+  box-shadow:
+    0 1px 1px rgba(255,255,255,0.5) inset,
+    0 -3px 6px rgba(0,0,0,0.08) inset,
+    0 6px 0 var(--duo-green-deep),
+    0 10px 22px rgba(61, 146, 0, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: inherit;
   padding: 0;
-  transition: transform 0.08s ease, box-shadow 0.08s ease, border-radius 0.2s ease;
+  transition: transform 0.12s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.12s ease, border-radius 0.25s ease;
   overflow: visible;
-  animation: duo-companion-idle 3s ease-in-out infinite;
+  animation: duo-companion-idle 3.4s ease-in-out infinite;
 }
 .duo-companion-fab-open {
-  border-radius: 18px;
-  background: linear-gradient(145deg, #1CB0F6, #0EA5E9);
-  border-color: #1899D6;
-  box-shadow: 0 6px 0 #1899D6, 0 12px 24px rgba(28, 176, 246, 0.28);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 40%),
+    linear-gradient(145deg, var(--duo-blue-1), var(--duo-blue-2));
+  box-shadow:
+    0 1px 1px rgba(255,255,255,0.5) inset,
+    0 -3px 6px rgba(0,0,0,0.08) inset,
+    0 6px 0 var(--duo-blue-deep),
+    0 10px 22px rgba(12, 127, 184, 0.3);
   animation: none;
 }
-.duo-companion-fab:active { transform: translateY(4px); box-shadow: 0 2px 0 #46A302; }
-.duo-companion-fab-open:active { box-shadow: 0 2px 0 #1899D6; }
-.duo-companion-fab:hover:not(:active) { transform: translateY(-1px); }
+.duo-companion-fab:active { transform: translateY(4px); box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 2px 0 var(--duo-green-deep); }
+.duo-companion-fab-open:active { box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 2px 0 var(--duo-blue-deep); }
+.duo-companion-fab:hover:not(:active) { transform: translateY(-2px); }
+.duo-companion-fab:focus-visible {
+  outline: 3px solid #1CB0F6;
+  outline-offset: 3px;
+}
+
+/* Slim rotating aura ring — a quieter, more "designed" substitute for a
+   blurred glow blob. Only ever whispers, never shouts. */
+.duo-companion-fab-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 28px;
+  padding: 1.5px;
+  background: conic-gradient(from 0deg, #58CC02, #1CB0F6, #FFC800, #58CC02);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  animation: duo-companion-ring-spin 6s linear infinite, duo-companion-ring-fade 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+.duo-companion-fab-open .duo-companion-fab-ring { animation: none; opacity: 0; }
+@keyframes duo-companion-ring-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes duo-companion-ring-fade {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.55; }
+}
+
+/* Soft glossy sheen across the top of the button — reinforces the
+   "lacquered enamel" read without extra markup weight. */
+.duo-companion-fab-sheen {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  right: 10px;
+  height: 40%;
+  border-radius: 999px 999px 60% 60%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+  pointer-events: none;
+  opacity: 0.9;
+}
 
 .duo-companion-glow {
   position: absolute;
   inset: -6px;
   border-radius: 30px;
-  background: radial-gradient(closest-side, rgba(88,204,2,0.25), transparent 70%);
+  background: radial-gradient(closest-side, rgba(88,204,2,0.22), transparent 70%);
   pointer-events: none;
-  opacity: 0.8;
-  animation: duo-companion-glow 2.8s ease-in-out infinite;
+  opacity: 0.7;
+  animation: duo-companion-glow 3.2s ease-in-out infinite;
+  z-index: -1;
 }
 .duo-companion-fab-open .duo-companion-glow {
-  background: radial-gradient(closest-side, rgba(28,176,246,0.28), transparent 70%);
+  background: radial-gradient(closest-side, rgba(28,176,246,0.25), transparent 70%);
 }
 
 @keyframes duo-companion-idle {
-  0%, 100% { transform: translateY(0) rotate(-1.2deg); }
-  50% { transform: translateY(-5px) rotate(1.2deg); }
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-4px) rotate(1deg); }
 }
 @keyframes duo-companion-glow {
-  0%, 100% { opacity: 0.5; transform: scale(0.96); }
-  50% { opacity: 1; transform: scale(1.08); }
+  0%, 100% { opacity: 0.45; transform: scale(0.97); }
+  50% { opacity: 0.85; transform: scale(1.05); }
 }
 
-/* Mood-specific tweaks */
-.duo-companion-mood-wave { animation: duo-companion-wave 1.6s ease-in-out 2; }
+/* Mood-specific tweaks — softened easing so transitions feel deliberate
+   rather than jittery. */
+.duo-companion-mood-wave { animation: duo-companion-wave 1.7s cubic-bezier(0.45, 0, 0.55, 1) 2; }
 @keyframes duo-companion-wave {
   0%, 100% { transform: translateY(0) rotate(-3deg); }
-  25% { transform: translateY(-8px) rotate(4deg); }
-  50% { transform: translateY(-3px) rotate(-2deg); }
-  75% { transform: translateY(-6px) rotate(3deg); }
+  25% { transform: translateY(-7px) rotate(4deg); }
+  50% { transform: translateY(-2px) rotate(-2deg); }
+  75% { transform: translateY(-5px) rotate(3deg); }
 }
-.duo-companion-mood-happy .duo-companion-owl-svg { animation: duo-companion-bop 0.6s ease-in-out 2; }
-.duo-companion-mood-celebrate { animation: duo-companion-jump 0.55s cubic-bezier(.34,1.56,.64,1) 3; }
-.duo-companion-mood-speaking .duo-companion-owl-svg { animation: duo-companion-bop 1.4s ease-in-out infinite; }
+.duo-companion-mood-happy .duo-companion-owl-svg { animation: duo-companion-bop 0.65s ease-in-out 2; }
+.duo-companion-mood-celebrate { animation: duo-companion-jump 0.6s cubic-bezier(.34,1.56,.64,1) 3; }
+.duo-companion-mood-speaking .duo-companion-owl-svg { animation: duo-companion-bop 1.5s ease-in-out infinite; }
 .duo-companion-mood-concerned { animation: duo-companion-shake 0.5s ease-in-out 2; }
-.duo-companion-mood-thinking .duo-companion-owl-svg { animation: duo-companion-think 1.2s ease-in-out infinite; }
+.duo-companion-mood-thinking .duo-companion-owl-svg { animation: duo-companion-think 1.3s ease-in-out infinite; }
 @keyframes duo-companion-bop {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
 }
 @keyframes duo-companion-jump {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  40% { transform: translateY(-14px) rotate(-4deg); }
+  40% { transform: translateY(-13px) rotate(-4deg); }
   70% { transform: translateY(-2px) rotate(3deg); }
 }
 @keyframes duo-companion-shake {
@@ -1177,26 +1342,31 @@ const STYLES = `
   max-width: 260px;
   background: white;
   color: #3C3C3C;
-  border: 2px solid #E5E5E5;
-  box-shadow: 0 4px 0 #E5E5E5, 0 8px 18px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 10px 24px rgba(30, 30, 30, 0.1);
   border-radius: 18px 18px 4px 18px;
   padding: 10px 14px;
   font-size: 14px;
   font-weight: 700;
   line-height: 1.35;
   cursor: pointer;
-  animation: duo-pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  animation: duo-pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.duo-companion-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05), 0 14px 28px rgba(30, 30, 30, 0.14);
 }
 .duo-companion-bubble-hidden { display: none; }
 .duo-companion-bubble-arrow {
   position: absolute;
-  right: -9px;
+  right: -8px;
   bottom: 16px;
   width: 12px;
   height: 12px;
   background: white;
-  border-right: 2px solid #E5E5E5;
-  border-top: 2px solid #E5E5E5;
+  border-right: 1px solid rgba(0,0,0,0.06);
+  border-top: 1px solid rgba(0,0,0,0.06);
   transform: rotate(45deg);
 }
 @keyframes duo-pop-in {
@@ -1215,9 +1385,9 @@ const STYLES = `
   width: min(92vw, 380px);
   height: min(78vh, 620px);
   background: white;
-  border: 2px solid #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 24px;
-  box-shadow: 0 10px 0 #E5E5E5, 0 26px 50px rgba(0,0,0,0.14);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 30px 60px rgba(20,20,20,0.16);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1235,7 +1405,7 @@ const STYLES = `
   justify-content: space-between;
   padding: 14px 14px 12px;
   background: linear-gradient(180deg, #F4FBE8 0%, #FFFFFF 100%);
-  border-bottom: 2px solid #E5E5E5;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   gap: 8px;
 }
 .duo-companion-header-title {
@@ -1247,9 +1417,9 @@ const STYLES = `
 }
 .duo-companion-title-avatar {
   width: 44px; height: 44px;
-  background: #58CC02;
+  background: linear-gradient(150deg, var(--duo-green-1), var(--duo-green-2));
   border-radius: 16px;
-  box-shadow: 0 4px 0 #46A302;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 4px 0 var(--duo-green-deep);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
@@ -1277,12 +1447,18 @@ const STYLES = `
   text-transform: none;
   letter-spacing: 0;
 }
+.duo-companion-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
 .duo-companion-close {
   width: 34px; height: 34px;
   border-radius: 12px;
   background: white;
-  border: 2px solid #E5E5E5;
-  box-shadow: 0 3px 0 #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.06);
   color: #AFAFAF;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
@@ -1292,10 +1468,32 @@ const STYLES = `
 .duo-companion-close:hover {
   border-color: #FF4B4B;
   color: #FF4B4B;
-  box-shadow: 0 3px 0 #CC3333;
+  box-shadow: 0 2px 0 #CC3333;
   transform: translateY(-1px);
 }
-.duo-companion-close:active { transform: translateY(2px); box-shadow: 0 0 0 #E5E5E5; }
+.duo-companion-close:active { transform: translateY(2px); box-shadow: 0 0 0 transparent; }
+
+.duo-companion-mute {
+  width: 34px; height: 34px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.8) inset, 0 2px 0 rgba(0,0,0,0.06);
+  color: #1899D6;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.1s;
+}
+.duo-companion-mute:hover {
+  border-color: #1CB0F6;
+  transform: translateY(-1px);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.8) inset, 0 2px 0 #1899D6;
+}
+.duo-companion-mute:active { transform: translateY(2px); box-shadow: 0 0 0 transparent; }
+.duo-companion-mute-off {
+  color: #AFAFAF;
+}
 
 /* ─── Tabs ─── */
 .duo-companion-tabs {
@@ -1304,7 +1502,7 @@ const STYLES = `
   padding: 8px;
   gap: 6px;
   background: #F7F7F7;
-  border-bottom: 2px solid #E5E5E5;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 .duo-companion-tab {
   display: inline-flex;
@@ -1313,7 +1511,7 @@ const STYLES = `
   gap: 6px;
   padding: 10px 8px;
   border-radius: 14px;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   background: transparent;
   color: #AFAFAF;
   font-weight: 800;
@@ -1321,7 +1519,7 @@ const STYLES = `
   text-transform: uppercase;
   letter-spacing: 0.4px;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.14s ease;
   font-family: inherit;
 }
 .duo-companion-tab:hover {
@@ -1330,8 +1528,8 @@ const STYLES = `
 }
 .duo-companion-tab-active {
   background: white;
-  border-color: #E5E5E5;
-  box-shadow: 0 3px 0 #E5E5E5;
+  border-color: rgba(0,0,0,0.06);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.6) inset, 0 2px 0 rgba(0,0,0,0.06), 0 4px 10px rgba(24,153,214,0.14);
   color: #1899D6;
 }
 
@@ -1373,12 +1571,12 @@ const STYLES = `
   margin-top: 2px;
 }
 .duo-companion-chat .duo-avatar.owl {
-  background: #58CC02;
-  box-shadow: 0 3px 0 #46A302;
+  background: linear-gradient(150deg, var(--duo-green-1), var(--duo-green-2));
+  box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 2px 0 var(--duo-green-deep);
 }
 .duo-companion-chat .duo-avatar.user-av {
-  background: #CE82FF;
-  box-shadow: 0 3px 0 #A568CC;
+  background: linear-gradient(150deg, #DA9CFF, #C060FF);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 2px 0 #9C3FE0;
   font-size: 12px;
   font-weight: 800;
   color: white;
@@ -1393,18 +1591,18 @@ const STYLES = `
 }
 .duo-companion-chat .duo-bubble.owl-bubble {
   background: white;
-  border: 2px solid #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 4px 18px 18px 18px;
   color: #3C3C3C;
-  box-shadow: 0 3px 0 #E5E5E5;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 3px 10px rgba(0,0,0,0.05);
   margin-left: 6px;
 }
 .duo-companion-chat .duo-bubble.user-bubble {
-  background: #1CB0F6;
-  border: 2px solid #1899D6;
+  background: linear-gradient(150deg, var(--duo-blue-1), var(--duo-blue-2));
+  border: none;
   border-radius: 18px 4px 18px 18px;
   color: white;
-  box-shadow: 0 3px 0 #1899D6;
+  box-shadow: 0 3px 10px rgba(12,127,184,0.28);
   margin-right: 6px;
   white-space: pre-wrap;
 }
@@ -1414,9 +1612,9 @@ const STYLES = `
 }
 .duo-companion-chat .duo-typing-dots {
   background: white;
-  border: 2px solid #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 4px 18px 18px 18px;
-  box-shadow: 0 3px 0 #E5E5E5;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 3px 10px rgba(0,0,0,0.05);
   padding: 12px 18px;
   display: flex; align-items: center; gap: 5px;
 }
@@ -1456,8 +1654,8 @@ const STYLES = `
   padding: 10px 14px;
   margin: 8px 0;
   overflow-x: auto;
-  border: 2px solid #2D3050;
-  box-shadow: 0 3px 0 #12141E;
+  border: 1px solid #2D3050;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
 }
 .duo-md pre code {
   background: none; border: none; padding: 0; color: #A9B1D6;
@@ -1501,11 +1699,13 @@ const STYLES = `
 }
 .duo-companion-empty-owl {
   width: 64px; height: 64px;
-  background: linear-gradient(145deg, #89E219, #58CC02);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 40%),
+    linear-gradient(145deg, var(--duo-green-1), var(--duo-green-2));
   border-radius: 22px;
-  box-shadow: 0 5px 0 #46A302;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 5px 0 var(--duo-green-deep), 0 10px 20px rgba(61,146,0,0.22);
   display: flex; align-items: center; justify-content: center;
-  animation: duo-companion-idle 3s ease-in-out infinite;
+  animation: duo-companion-idle 3.4s ease-in-out infinite;
 }
 .duo-companion-empty h4 {
   font-size: 18px; font-weight: 800; color: #3C3C3C; margin: 0;
@@ -1524,27 +1724,27 @@ const STYLES = `
 .duo-companion-suggest-btn {
   text-align: left;
   background: white;
-  border: 2px solid #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 14px;
   padding: 9px 12px;
   font-size: 12.5px;
   font-weight: 700;
   color: #3C3C3C;
   cursor: pointer;
-  box-shadow: 0 3px 0 #E5E5E5;
-  transition: all 0.12s;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+  transition: all 0.14s ease;
   line-height: 1.35;
   font-family: inherit;
 }
 .duo-companion-suggest-btn:hover {
   border-color: #1CB0F6;
   color: #1CB0F6;
-  box-shadow: 0 3px 0 #1899D6;
+  box-shadow: 0 2px 0 #1899D6;
   transform: translateY(-1px);
 }
 .duo-companion-suggest-btn:active {
   transform: translateY(2px);
-  box-shadow: 0 0 0 #E5E5E5;
+  box-shadow: 0 0 0 transparent;
 }
 
 /* ─── XP bar (chat) ─── */
@@ -1554,8 +1754,8 @@ const STYLES = `
   justify-content: center;
   gap: 6px;
   padding: 7px 10px;
-  background: #FFF8E0;
-  border-top: 2px solid #FFE69A;
+  background: linear-gradient(180deg, #FFFCF0, #FFF8E0);
+  border-top: 1px solid #FFE69A;
   color: #946800;
   font-size: 12px;
   font-weight: 800;
@@ -1567,7 +1767,7 @@ const STYLES = `
   gap: 8px;
   align-items: center;
   padding: 10px;
-  border-top: 2px solid #F0F0F0;
+  border-top: 1px solid #F0F0F0;
   background: white;
   flex-shrink: 0;
 }
@@ -1578,45 +1778,43 @@ const STYLES = `
   font-weight: 600;
   font-family: inherit;
   color: #3C3C3C;
-  background: white;
-  border: 2px solid #E5E5E5;
+  background: #FAFAFA;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 14px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-shadow: 0 3px 0 #E5E5E5;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 .duo-companion-chat .duo-input::placeholder { color: #AFAFAF; font-weight: 600; }
 .duo-companion-chat .duo-input:focus {
+  background: white;
   border-color: #1CB0F6;
-  box-shadow: 0 3px 0 #1899D6, 0 0 0 4px rgba(28,176,246,0.12);
+  box-shadow: 0 0 0 4px rgba(28,176,246,0.12);
 }
 .duo-companion-chat .duo-send-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px; height: 44px;
-  background: #1CB0F6;
+  background: linear-gradient(150deg, var(--duo-blue-1), var(--duo-blue-2));
   color: white;
-  border: 2px solid #1899D6;
+  border: none;
   border-radius: 14px;
-  box-shadow: 0 4px 0 #1899D6;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 4px 0 var(--duo-blue-deep);
   cursor: pointer;
-  transition: all 0.1s;
+  transition: all 0.12s;
   flex-shrink: 0;
   padding: 0;
 }
 .duo-companion-chat .duo-send-btn:hover:not(:disabled) {
-  background: #0EA5E9;
   transform: translateY(-1px);
-  box-shadow: 0 5px 0 #1899D6;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 5px 0 var(--duo-blue-deep);
 }
 .duo-companion-chat .duo-send-btn:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #1899D6;
+  box-shadow: 0 1px 0 var(--duo-blue-deep);
 }
 .duo-companion-chat .duo-send-btn:disabled {
   background: #E5E5E5;
-  border-color: #CCCCCC;
   box-shadow: 0 4px 0 #CCCCCC;
   color: #AFAFAF;
   cursor: not-allowed;
@@ -1626,7 +1824,7 @@ const STYLES = `
 .duo-companion-lecture { }
 .duo-companion-lecture-progress {
   padding: 12px 12px 8px;
-  border-bottom: 2px solid #F0F0F0;
+  border-bottom: 1px solid #F0F0F0;
   background: #FAFBFF;
 }
 .duo-companion-lecture-progress-row {
@@ -1655,7 +1853,7 @@ const STYLES = `
   width: 100%;
   text-align: left;
   background: white;
-  border: 2px solid #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.07);
   border-radius: 12px;
   padding: 8px 12px;
   font-size: 13px;
@@ -1663,7 +1861,7 @@ const STYLES = `
   line-height: 1.5;
   color: #4B4B4B;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.14s ease;
   font-family: inherit;
 }
 .duo-companion-segment:hover {
@@ -1675,7 +1873,7 @@ const STYLES = `
   border-color: #FFC800;
   color: #7A5000;
   font-weight: 700;
-  box-shadow: 0 0 0 4px rgba(255, 200, 0, 0.15);
+  box-shadow: 0 0 0 4px rgba(255, 200, 0, 0.14);
 }
 .duo-companion-segment-done {
   color: #949494;
@@ -1704,7 +1902,7 @@ const STYLES = `
 .duo-companion-lecture-controls {
   flex-shrink: 0;
   padding: 12px;
-  border-top: 2px solid #F0F0F0;
+  border-top: 1px solid #F0F0F0;
   background: #F7F7F7;
   display: flex;
   flex-direction: column;
@@ -1716,70 +1914,79 @@ const STYLES = `
   justify-content: center;
   gap: 14px;
 }
+
+/* Round icon buttons — same layered-gradient / inset-highlight / offset-
+   shadow language as the FAB, scaled down. This is the shared "3D icon"
+   system: ghost (neutral), play (primary), and speed chips all derive
+   from it so the whole companion feels like one designed system. */
 .duo-companion-round-btn {
   width: 44px; height: 44px;
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  transition: all 0.1s;
+  transition: all 0.12s cubic-bezier(0.34, 1.4, 0.64, 1);
   padding: 0;
   font-family: inherit;
 }
 .duo-companion-round-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 .duo-companion-ghost-btn {
-  background: white;
-  color: #777777;
-  border: 2px solid #E5E5E5;
-  box-shadow: 0 3px 0 #E5E5E5;
+  background: linear-gradient(180deg, #FFFFFF, #FBFBFB);
+  color: #7A7A7A;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.8) inset, 0 3px 0 rgba(0,0,0,0.07);
 }
 .duo-companion-ghost-btn:hover:not(:disabled) {
   border-color: #1CB0F6;
   color: #1CB0F6;
-  box-shadow: 0 3px 0 #1899D6;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.8) inset, 0 3px 0 #1899D6;
   transform: translateY(-1px);
 }
 .duo-companion-ghost-btn:active:not(:disabled) {
-  transform: translateY(2px); box-shadow: 0 0 0 #E5E5E5;
+  transform: translateY(2px); box-shadow: 0 0 0 transparent;
 }
 .duo-companion-play-btn {
   width: 60px; height: 60px;
   border-radius: 20px;
   display: flex; align-items: center; justify-content: center;
-  border: 2px solid #46A302;
-  background: linear-gradient(145deg, #89E219, #58CC02);
+  border: none;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 40%),
+    linear-gradient(145deg, var(--duo-green-1), var(--duo-green-2));
   color: white;
-  box-shadow: 0 5px 0 #46A302;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 5px 0 var(--duo-green-deep), 0 10px 18px rgba(61,146,0,0.22);
   cursor: pointer;
-  transition: all 0.08s ease;
+  transition: all 0.1s ease;
   padding: 0;
 }
-.duo-companion-play-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.duo-companion-play-btn:hover:not(:disabled) { transform: translateY(-2px); }
 .duo-companion-play-btn:active:not(:disabled) {
   transform: translateY(4px);
-  box-shadow: 0 1px 0 #46A302;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 1px 0 var(--duo-green-deep);
 }
 .duo-companion-play-btn:disabled {
   opacity: 0.5; cursor: not-allowed;
 }
 .duo-companion-playing {
-  background: linear-gradient(145deg, #FF7065, #FF4B4B);
-  border-color: #EA2B2B;
-  box-shadow: 0 5px 0 #EA2B2B;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 40%),
+    linear-gradient(145deg, #FF8A7E, #FF4B4B);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 5px 0 #EA2B2B, 0 10px 18px rgba(234,43,43,0.25);
 }
 .duo-companion-playing:active:not(:disabled) {
-  box-shadow: 0 1px 0 #EA2B2B;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 1px 0 #EA2B2B;
 }
 .duo-companion-paused {
-  background: linear-gradient(145deg, #FFD44D, #FFC800);
-  border-color: #E6B400;
-  box-shadow: 0 5px 0 #E6B400;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 40%),
+    linear-gradient(145deg, #FFDA6E, #FFC800);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 5px 0 #E6B400, 0 10px 18px rgba(230,180,0,0.25);
   color: #4B3A00;
 }
 .duo-companion-paused:active:not(:disabled) {
-  box-shadow: 0 1px 0 #E6B400;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 1px 0 #E6B400;
 }
 
 .duo-companion-lecture-bottom {
@@ -1794,10 +2001,10 @@ const STYLES = `
   align-items: center;
   gap: 4px;
   background: white;
-  border: 2px solid #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 12px;
   padding: 4px;
-  box-shadow: 0 3px 0 #E5E5E5;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.8) inset, 0 2px 0 rgba(0,0,0,0.06);
 }
 .duo-companion-speed-btn {
   background: transparent;
@@ -1809,13 +2016,13 @@ const STYLES = `
   color: #777777;
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.1s;
+  transition: all 0.12s;
 }
 .duo-companion-speed-btn:hover { color: #1CB0F6; }
 .duo-companion-speed-active {
-  background: #1CB0F6;
+  background: linear-gradient(150deg, var(--duo-blue-1), var(--duo-blue-2));
   color: white !important;
-  box-shadow: 0 2px 0 #1899D6;
+  box-shadow: 0 1px 1px rgba(255,255,255,0.4) inset, 0 2px 0 var(--duo-blue-deep);
 }
 .duo-companion-lecture-hint {
   font-size: 11px; color: #C47500; font-weight: 800;
@@ -1825,8 +2032,8 @@ const STYLES = `
 .duo-companion-quiz { }
 .duo-companion-quiz-header {
   padding: 12px;
-  border-bottom: 2px solid #F0F0F0;
-  background: #FFF8E0;
+  border-bottom: 1px solid #F0F0F0;
+  background: linear-gradient(180deg, #FFFCF0, #FFF8E0);
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
@@ -1880,15 +2087,15 @@ const STYLES = `
   gap: 10px;
   text-align: left;
   background: white;
-  border: 2px solid #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 16px;
   padding: 10px 12px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
   color: #3C3C3C;
-  box-shadow: 0 3px 0 #E5E5E5;
-  transition: all 0.1s;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+  transition: all 0.12s ease;
   font-family: inherit;
 }
 .duo-companion-quiz-opt:disabled { cursor: default; }
@@ -1899,12 +2106,12 @@ const STYLES = `
 }
 .duo-companion-quiz-opt:active:not(:disabled) {
   transform: translateY(2px);
-  box-shadow: 0 0 0 #E5E5E5;
+  box-shadow: 0 0 0 transparent;
 }
 .duo-companion-quiz-opt-letter {
   width: 26px; height: 26px;
   border-radius: 8px;
-  border: 2px solid #E5E5E5;
+  border: 1px solid rgba(0,0,0,0.08);
   background: #F7F7F7;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -1921,32 +2128,32 @@ const STYLES = `
   background: #E8F5FF;
   border-color: #1CB0F6 !important;
   color: #1899D6 !important;
-  box-shadow: 0 3px 0 #1899D6 !important;
+  box-shadow: 0 2px 0 #1899D6 !important;
 }
 .duo-companion-quiz-opt-selected .duo-companion-quiz-opt-letter {
-  background: #1CB0F6;
-  border-color: #1899D6;
+  background: linear-gradient(150deg, var(--duo-blue-1), var(--duo-blue-2));
+  border-color: var(--duo-blue-deep);
   color: white;
 }
 .duo-companion-quiz-opt-correct {
   background: #E8FBD8 !important;
   border-color: #58CC02 !important;
   color: #3C6300 !important;
-  box-shadow: 0 3px 0 #46A302 !important;
+  box-shadow: 0 2px 0 #46A302 !important;
 }
 .duo-companion-quiz-opt-correct .duo-companion-quiz-opt-letter {
-  background: #58CC02;
-  border-color: #46A302;
+  background: linear-gradient(150deg, var(--duo-green-1), var(--duo-green-2));
+  border-color: var(--duo-green-deep);
   color: white;
 }
 .duo-companion-quiz-opt-wrong {
   background: #FFEFEF !important;
   border-color: #FF4B4B !important;
   color: #CC3A3A !important;
-  box-shadow: 0 3px 0 #CC3A3A !important;
+  box-shadow: 0 2px 0 #CC3A3A !important;
 }
 .duo-companion-quiz-opt-wrong .duo-companion-quiz-opt-letter {
-  background: #FF4B4B;
+  background: linear-gradient(150deg, #FF8A7E, #FF4B4B);
   border-color: #CC3A3A;
   color: white;
 }
@@ -1962,19 +2169,19 @@ const STYLES = `
 }
 .duo-companion-quiz-explanation-correct {
   background: #E8FBD8;
-  border: 2px solid #B4E582;
+  border: 1px solid #B4E582;
   color: #3C6300;
 }
 .duo-companion-quiz-explanation-wrong {
   background: #FFEFEF;
-  border: 2px solid #FFC2C2;
+  border: 1px solid #FFC2C2;
   color: #8F2A2A;
 }
 
 .duo-companion-quiz-actions {
   flex-shrink: 0;
   padding: 12px 14px;
-  border-top: 2px solid #F0F0F0;
+  border-top: 1px solid #F0F0F0;
   background: white;
 }
 .duo-companion-quiz-actions .duo-btn3d {
@@ -1999,8 +2206,10 @@ const STYLES = `
 .duo-companion-quiz-trophy {
   width: 88px; height: 88px;
   border-radius: 28px;
-  background: linear-gradient(145deg, #FFD44D, #FFC800);
-  box-shadow: 0 6px 0 #E6B400;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 40%),
+    linear-gradient(145deg, #FFDA6E, #FFC800);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 6px 0 #E6B400, 0 14px 26px rgba(230,180,0,0.28);
   display: flex; align-items: center; justify-content: center;
   color: white;
   margin-bottom: 6px;
@@ -2059,4 +2268,21 @@ const STYLES = `
   color: #EA2B2B;
 }
 .duo-companion-error strong { color: #C31818; }
+
+@media (prefers-reduced-motion: reduce) {
+  .duo-companion-fab,
+  .duo-companion-empty-owl,
+  .duo-companion-mood-wave,
+  .duo-companion-mood-celebrate,
+  .duo-companion-mood-concerned,
+  .duo-companion-mood-happy .duo-companion-owl-svg,
+  .duo-companion-mood-speaking .duo-companion-owl-svg,
+  .duo-companion-mood-thinking .duo-companion-owl-svg,
+  .duo-companion-fab-ring,
+  .duo-companion-glow,
+  .duo-companion-think-dot,
+  .duo-companion-quiz-trophy {
+    animation: none !important;
+  }
+}
 `;
