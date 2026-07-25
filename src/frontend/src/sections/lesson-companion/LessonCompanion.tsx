@@ -986,7 +986,7 @@ function OwlSvg({
           strokeWidth="1.4"
           strokeLinecap="round"
           fill="none"
-          transform={`scale(${mood === "concerned" ? "-1 1" : "1 1"} 17.5 10)`}
+          transform={mood === "concerned" ? "translate(17.5 10) scale(-1 1) translate(-17.5 -10)" : undefined}
         />
       </g>
 
