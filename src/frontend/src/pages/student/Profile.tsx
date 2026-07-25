@@ -5,9 +5,10 @@ import { fetchUserProfile, fetchCertificates, getCertificatePdfUrl, updateProfil
 import UserAvatar from "../../components/UserAvatar";
 import { useAuth } from "../../context/AuthContext";
 import { useSound } from "../../context/SoundContext";
+import { useVoice } from "../../context/VoiceContext";
 import {
   Download, Eye, Lock, Settings, User as UserIcon,
-  Camera, Check, X, Loader2, Save, Volume2
+  Camera, Check, X, Loader2, Save, Volume2, Mic
 } from "lucide-react";
 
 // ─── Lottie web-component type declaration ───────────────────────────────────
@@ -77,6 +78,13 @@ const PRESET_AVATARS = [
 export default function Profile() {
   const { token, isAuthenticated, updateUserSettings } = useAuth();
   const { isSoundEnabled, setSoundEnabled, playSound } = useSound();
+  const {
+    isVoiceRecognitionEnabled,
+    setVoiceRecognitionEnabled,
+    isListening,
+    toggleListening,
+    supported: voiceSupported,
+  } = useVoice();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"profile" | "settings">("profile");
 
@@ -90,6 +98,7 @@ export default function Profile() {
     lastName: "",
     email: "",
     profileImageUrl: "",
+    voiceRecognitionEnabled: false,
     currentPassword: "",
     newPassword: "",
   });
@@ -105,6 +114,7 @@ export default function Profile() {
         lastName: data.lastName,
         email: data.email,
         profileImageUrl: data.profileImageUrl || "",
+        voiceRecognitionEnabled: !!data.voiceRecognitionEnabled,
         currentPassword: "",
         newPassword: "",
       });
@@ -120,7 +130,7 @@ export default function Profile() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: any) => updateProfile(token!, data),
+    mutationFn: (data: any) => updateProfile(token!, { ...data, voiceRecognitionEnabled: formData.voiceRecognitionEnabled }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       updateUserSettings({
@@ -128,7 +138,8 @@ export default function Profile() {
         lastName: formData.lastName,
         email: formData.email,
         profileImageUrl: formData.profileImageUrl,
-      });
+        voiceRecognitionEnabled: formData.voiceRecognitionEnabled,
+      } as any);
       setSuccessMsg("Profile updated successfully!");
       setFormData((prev) => ({ ...prev, currentPassword: "", newPassword: "" }));
       setTimeout(() => setSuccessMsg(""), 3000);
@@ -552,6 +563,74 @@ export default function Profile() {
                       }`}
                   />
                 </button>
+              </div>
+            </div>
+
+            {/* ── Voice & Speech Preferences ── */}
+            <div className="duo-card">
+              <h2 className="font-black text-lg text-neutral-900 mb-6 flex items-center gap-2">
+                <div className="w-8 h-8 bg-[#FF6FAE] rounded-xl flex items-center justify-center shadow-[0_3px_0_#E0488C]">
+                  <Mic className="w-4 h-4 text-white" />
+                </div>
+                Voice & Speech
+              </h2>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-2xl border-2 border-neutral-200">
+                  <div>
+                    <p className="font-black text-neutral-800 flex items-center gap-2">
+                      Voice Recognition
+                      {!voiceSupported && (
+                        <span className="text-[10px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#FF4B4B]/10 text-[#CC3A3A] border border-[#FF4B4B]/20">
+                          Unsupported browser
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-sm text-neutral-500 font-bold">
+                      Wake the companion by saying <code className="px-1.5 py-0.5 rounded bg-white border border-neutral-200 text-[#534AB7] font-black">"C# Academy"</code>, <code className="px-1.5 py-0.5 rounded bg-white border border-neutral-200 text-[#534AB7] font-black">"hello"</code>, or <code className="px-1.5 py-0.5 rounded bg-white border border-neutral-200 text-[#534AB7] font-black">"I need help"</code>
+                    </p>
+                    <p className="text-xs text-neutral-400 font-bold mt-1">
+                      Shortcut: press <kbd className="px-1.5 py-0.5 rounded bg-white border border-neutral-200 text-neutral-600 font-black shadow-[0_1px_0_#e5e5e5]">Alt</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-white border border-neutral-200 text-neutral-600 font-black shadow-[0_1px_0_#e5e5e5]">M</kbd> to toggle microphone
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <button
+                      type="button"
+                      disabled={!voiceSupported}
+                      onClick={async () => {
+                        playSound("click");
+                        const next = !isVoiceRecognitionEnabled;
+                        await setVoiceRecognitionEnabled(next);
+                        setFormData((prev) => ({ ...prev, voiceRecognitionEnabled: next }));
+                      }}
+                      className={`w-14 h-8 rounded-full transition-all relative ${isVoiceRecognitionEnabled && voiceSupported ? "bg-[#58CC02]" : "bg-neutral-300"
+                        } ${!voiceSupported ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      <div
+                        className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${isVoiceRecognitionEnabled && voiceSupported ? "left-7" : "left-1"
+                          }`}
+                      />
+                    </button>
+                    {voiceSupported && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playSound("click");
+                          toggleListening();
+                        }}
+                        disabled={!isVoiceRecognitionEnabled}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all border-2 ${
+                          isListening
+                            ? "bg-[#FF4B4B]/10 text-[#CC3A3A] border-[#FF4B4B]/30 animate-pulse"
+                            : "bg-neutral-100 text-neutral-500 border-neutral-200 hover:border-neutral-300"
+                        } ${!isVoiceRecognitionEnabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        <Mic className="w-3.5 h-3.5" />
+                        {isListening ? "Listening..." : "Test Mic"}
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 

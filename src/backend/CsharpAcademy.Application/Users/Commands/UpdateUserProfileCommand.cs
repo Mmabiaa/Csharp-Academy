@@ -10,6 +10,7 @@ public record UpdateUserProfileCommand(
     string LastName,
     string Email,
     string? ProfileImageUrl,
+    bool VoiceRecognitionEnabled,
     string? CurrentPassword = null,
     string? NewPassword = null) : IRequest<bool>;
 
@@ -30,6 +31,7 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.ProfileImageUrl = request.ProfileImageUrl;
+        user.VoiceRecognitionEnabled = request.VoiceRecognitionEnabled;
 
         if (user.Email != request.Email)
         {

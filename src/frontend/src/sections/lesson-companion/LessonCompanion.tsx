@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   GraduationCap,
   Mic,
+  MicOff,
   FileText,
 } from "lucide-react";
 import type { LessonCompanionData, CompanionMiniQuiz } from "./companionData";
@@ -34,9 +35,9 @@ import {
   useLectureNarration,
   type LectureSpeed,
 } from "./useLectureNarration";
-import { useSound } from "../../context/SoundContext";
 import { fetchLessonCompanionData } from "../../lib/api";
 import { getPreferredVoice, subscribeToPreferredVoice } from "../../lib/voicePreference";
+import { useVoice } from "../../context/VoiceContext";
 
 export interface LessonCompanionProps {
   lessonId?: number;
@@ -206,6 +207,39 @@ export default function LessonCompanion(props: LessonCompanionProps) {
   const [mood, setMood] = useState<Mood>("wave");
   const [bubbleText, setBubbleText] = useState<string | null>(null);
 
+  const voiceHook = useVoice();
+  const {
+    isListening,
+    toggleListening,
+    supported: voiceSupported,
+    isVoiceRecognitionEnabled,
+    registerWakeHandler,
+  } = voiceHook;
+
+  const wakeUpRef = useRef<((transcript: string) => void) | null>(null);
+  const chatTabSendRef = useRef<((text?: string) => void) | null>(null);
+  const chatTabMessagesRef = useRef<ChatMessage[] | null>(null);
+
+  useEffect(() => {
+    const handler = (transcript: string) => {
+      wakeUpRef.current?.(transcript);
+    };
+    return registerWakeHandler(handler);
+  }, [registerWakeHandler]);
+
+  useEffect(() => {
+    wakeUpRef.current = (transcript: string) => {
+      setBubbleText(null);
+      setOpen(true);
+      setTab("chat");
+      if (chatTabMessagesRef.current && chatTabMessagesRef.current.length === 0) {
+        setTimeout(() => {
+          chatTabSendRef.current?.(transcript);
+        }, 250);
+      }
+    };
+  }, []);
+
   const [voiceEnabled, setVoiceEnabled] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
     const stored = window.localStorage.getItem("duo-companion-voice");
@@ -215,7 +249,6 @@ export default function LessonCompanion(props: LessonCompanionProps) {
 
   useEffect(() => {
     if (typeof window === "undefined") {
-      window.localStorage?.setItem?.("duo-companion-voice", voiceEnabled ? "1" : "0");
       return;
     }
     window.localStorage.setItem("duo-companion-voice", voiceEnabled ? "1" : "0");
@@ -245,6 +278,28 @@ export default function LessonCompanion(props: LessonCompanionProps) {
     if (preferredVoiceRef.current) utter.voice = preferredVoiceRef.current;
     utter.onstart = () => setMood("speaking");
     utter.onend = () => setMood("happy");
+    utter.onerror = () => setMood("idle");
+    window.speechSynthesis.speak(utter);
+  };
+
+  const speakReply = (text: string) => {
+    if (!voiceEnabled || typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    let clean = text
+      .replace(/```[\s\S]*?```/g, " ")
+      .replace(/`[^`]*`/g, " ")
+      .replace(/[*_#>~\[\]()!]/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    if (!clean) return;
+    if (clean.length > 600) clean = clean.slice(0, 600) + " ... ";
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.rate = 1.0;
+    utter.pitch = 1.12;
+    utter.volume = 1;
+    if (preferredVoiceRef.current) utter.voice = preferredVoiceRef.current;
+    utter.onstart = () => setMood("speaking");
+    utter.onend = () => setMood("idle");
     utter.onerror = () => setMood("idle");
     window.speechSynthesis.speak(utter);
   };
@@ -471,6 +526,12 @@ export default function LessonCompanion(props: LessonCompanionProps) {
                 setMood={setMood}
                 hasLessonContext={hasLessonContext}
                 genericSuggestedQuestions={genericSuggestedQuestions}
+                speakReply={speakReply}
+                sendRef={chatTabSendRef}
+                messagesRef={chatTabMessagesRef}
+                voiceSupported={voiceSupported && isVoiceRecognitionEnabled}
+                isListening={isListening}
+                toggleListening={toggleListening}
               />
             )
           )}
@@ -536,12 +597,24 @@ function ChatTab({
   setMood,
   hasLessonContext,
   genericSuggestedQuestions,
+  speakReply,
+  sendRef,
+  messagesRef,
+  voiceSupported,
+  isListening,
+  toggleListening,
 }: {
   companionData: LessonCompanionData;
   lessonTitle: string;
   setMood: (m: Mood) => void;
   hasLessonContext?: boolean;
   genericSuggestedQuestions?: string[];
+  speakReply?: (text: string) => void;
+  sendRef?: React.MutableRefObject<((text?: string) => void) | null>;
+  messagesRef?: React.MutableRefObject<ChatMessage[] | null>;
+  voiceSupported?: boolean;
+  isListening?: boolean;
+  toggleListening?: () => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -558,6 +631,14 @@ function ChatTab({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    if (sendRef) sendRef.current = handleSend;
+  }, [sendRef, loading, input, hasLessonContext, companionData, lessonTitle]);
+
+  useEffect(() => {
+    if (messagesRef) messagesRef.current = messages;
+  }, [messagesRef, messages]);
 
   const handleSend = (rawText?: string) => {
     const text = (rawText ?? input).trim();
@@ -589,6 +670,7 @@ function ChatTab({
       setChatXp((prev) => prev + 5);
       setLoading(false);
       setMood("happy");
+      if (speakReply) speakReply(reply);
       setTimeout(() => setMood("idle"), 1500);
     }, 550 + Math.random() * 300);
   };
@@ -694,6 +776,17 @@ function ChatTab({
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
+        {voiceSupported ? (
+          <button
+            type="button"
+            onClick={toggleListening}
+            className={`duo-send-btn ${isListening ? "!bg-[#FF4B4B] animate-pulse" : "!bg-neutral-500 hover:!bg-neutral-600"}`}
+            title={isListening ? "Stop listening" : "Start voice input (Alt+M)"}
+            aria-label={isListening ? "Stop voice input" : "Start voice input"}
+          >
+            {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+          </button>
+        ) : null}
         <button
           type="submit"
           className="duo-send-btn"
