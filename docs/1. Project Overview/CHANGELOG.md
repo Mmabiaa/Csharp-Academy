@@ -8,24 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+## feat — AI Learning Companion (Lesson Page)
 
-## feat: AI Learning Companion (Lesson Page)
- 
 ## Overview
- 
+
 Introduced an AI-powered learning companion: a persistent, animated avatar fixed at the bottom-right of the lesson page that acts as a context-aware tutor for the current lesson. The feature uses predefined, lesson-specific data (no third-party AI integration yet) and is scoped exclusively to the lesson page — no other pages, routes, or shared components were modified.
- 
-**Type:** Feature (frontend-only)
-**Scope:** `LessonPage` only
-**Backend changes:** None
-**New dependencies:** None (reuses `react-markdown`, `remark-gfm`, `lucide-react`)
- 
+
+The feature shipped in two passes: an initial frontend-only version with content hardcoded in the client bundle, followed by a revision that moved all pedagogical content to the backend and exposed it through a dedicated API endpoint.
+
+**Type:** Feature (full-stack: backend + frontend)
+**Scope:** `LessonPage` only (frontend); new `lessons/{id}/companion-data` endpoint (backend)
+**New dependencies:** None (reuses `react-markdown`, `remark-gfm`, `lucide-react` on the frontend; existing MediatR/repository pipeline on the backend)
+
 ---
- 
-## Added
- 
-### `src/frontend/src/sections/lesson-companion/companionData.ts`
-Predefined, lesson-specific content store:
+
+## Added — v1 (frontend-only, hardcoded content)
+
+> ⚠️ Superseded by v2 below — kept here for history. `matchLessonData()` and the hardcoded knowledge base described in this section were later removed from the frontend entirely.
+
+### `src/frontend/src/sections/lesson-companion/companionData.ts` (original version)
+Predefined, lesson-specific content store shipped directly in the client bundle:
 - 12 C# concept explanations
 - 8 Q&A pairs
 - 3 worked examples
@@ -34,12 +36,14 @@ Predefined, lesson-specific content store:
 - `matchLessonData()` — keyword detection against lesson content to auto-filter relevant topics
 - `getAnswerFromData()` — ranked matching pipeline: greeting → encouragement/motivation → lesson Q&A → concept explanation → generic fallback → help menu
 - `getSuggestedQuestions()` — surfaces lesson-relevant suggested questions in the chat empty state
+
 ### `src/frontend/src/sections/lesson-companion/useLectureNarration.ts`
 Enhanced text-to-speech hook built on top of the browser Speech Synthesis API:
 - Play / pause / stop / replay / jump-to-segment controls
 - Adjustable playback speed: 0.75× / 1× / 1.25× / 1.5×, with seamless mid-playback restart
 - Markdown-aware cleanup (strips code blocks, backticks, links, images, headings) before segmenting narration text
 - Sentence-level segmentation with per-segment status (done / active / pending) and progress tracking
+
 ### `src/frontend/src/sections/lesson-companion/LessonCompanion.tsx`
 Main companion component:
 - Floating avatar (owl, SVG) fixed bottom-right, with 7 mood states: `idle`, `wave`, `thinking`, `happy`, `celebrate`, `concerned`, `speaking`
@@ -51,29 +55,73 @@ Main companion component:
 - Voice mute/unmute toggle with persisted preference (`localStorage`, per-browser)
 - All UI built with the app's existing 3D button system (`duo-btn3d`) and Duolingo-style color tokens (`--duo-green`, `--duo-blue`, `--duo-yellow`, `--duo-purple`, etc.) for design consistency
 - Styles scoped under `.duo-companion-*` class names
+
 ---
- 
+
+## Added — v2 (backend migration)
+
+Moved all pedagogical/companion content server-side so nothing lesson-specific ships in the frontend bundle. The frontend now fetches this data per-lesson from a new API endpoint and only handles routing/rendering.
+
+### Backend
+
+**`LessonCompanionDataDto.cs`** (`Lessons/Queries/`)
+Response DTO shaping the JSON payload: `greetings`, `celebrations`, `encouragements`, `conceptExplanations`, `questionAnswers`, `examples`, `miniQuizzes`, `practiceHints`, with typed sub-DTOs (`CompanionQaDto`, `CompanionExampleDto`, `CompanionMiniQuizDto`, `CompanionPracticeHintDto`).
+
+**`GetLessonCompanionDataQuery.cs`** (`Lessons/Queries/`)
+`GetLessonCompanionDataQueryHandler.Handle()` loads the real `Lesson` row plus its `CodingExercise`s and `TutorialStep`s via existing repositories, builds a searchable haystack from title + content + best practices + voice summary + tutorial titles/content, and filters the knowledge base by keyword intersection — so the companion only discusses topics actually present in that lesson. Practice hints are built from the real `CodingExercise.Hint` column, tying hints to the actual practice problems in the database.
+
+**`LessonCompanionKnowledgeBase.cs`** (`Lessons/Queries/`)
+Single, server-only source of truth for content: 12 concept explanations, 8 Q&A pairs (C# intro, class vs. object, namespaces, value/reference types, static, `for` vs. `foreach`, LINQ, "what if I'm stuck?"), 5 worked examples with analogies, 7 multiple-choice questions, 4 greetings, 6 encouragements, 5 celebrations. Not included in any frontend bundle.
+
+**`LessonsController.cs`**
+New endpoint: `GET /api/lessons/{lessonId}/companion-data`, returning `LessonCompanionDataDto` (200) or 404 if the lesson doesn't exist. Uses the same MediatR `ISender` pipeline as the existing `/quiz` and `/videos` endpoints.
+
+### Frontend
+
+**`lib/api.ts`**
+Added `fetchLessonCompanionData(lessonId)` plus five matching TypeScript interfaces (`LessonCompanionData`, `CompanionQa`, `CompanionExample`, `CompanionMiniQuiz`, `CompanionPracticeHint`) mirroring the backend DTO shape.
+
+**`sections/lesson-companion/companionData.ts`** (rewritten)
+Reduced from ~300 lines of hardcoded content to ~112 lines of routing logic only: type re-exports from `api.ts`, small keyword tables for greeting/struggle/encouragement detection, `getAnswerFromData()` (four-tier match against the server payload, score-sorted), `getSuggestedQuestions()`, and a `pickRandom()` utility. No lesson content remains in this file, or anywhere under `src/frontend/`.
+
+**`sections/lesson-companion/LessonCompanion.tsx`**
+- Removed the hardcoded knowledge base and `matchLessonData()` import
+- Added a TanStack Query fetch: `useQuery({ queryKey: ["lesson-companion-data", lessonId], queryFn: () => fetchLessonCompanionData(lessonId), staleTime: 10 * 60 * 1000, retry: 2, retryDelay: (a) => Math.min(1000 * a, 5000) })`
+- Added an `EMPTY_COMPANION_DATA` fallback so the UI stays safe while loading
+- Added `LoadingState` (spinner + "Warming up my C# tutor brain…") and `ErrorState` (surfaces the actual `error.message`, e.g. a 404 or network failure) panels, styled with the existing green/red Duolingo tokens
+
+### Verification
+- `npx tsc --noEmit` — zero errors from any file touched in this change (all remaining reported errors are pre-existing issues in untouched Admin/Login/Profile/Layout files)
+- IDE diagnostics — zero errors/warnings across the workspace
+- Data-leak audit — searched the frontend tree for `GENERIC_COMPANION_DATA`, `matchLessonData`, `ToLowerInvariant`, and lesson-content keywords (`public class Car`, `int age`, `value type`, `namespace`, `static`, `LINQ`, `constructor`, etc.); all matches were false positives (CSS `color: inherit` / `font-family: inherit`), confirming no pedagogical content ships to the client
+
+---
+
 ## Changed
- 
+
 ### `src/frontend/src/pages/student/LessonPage.tsx`
 - Imported and mounted `<LessonCompanion key={lessonId} ... />` at the bottom of the page (component resets its internal state on lesson navigation)
 - Added local state: `practiceFailCount`, `practiceSuccessCount`, `lessonCompletedTrigger`
 - Wired practice submission results to increment fail/success counters (drives the companion's "struggling" detection and encouragement bubbles)
 - Wired `completeMutation.onSuccess` to trigger the companion's celebration mood
 - No other pages, layouts, or shared components were touched
+
 ---
- 
+
 ## Fixed
- 
+
+- **Blank lesson page from a C#-ism left in TypeScript:** The original `matchLessonData()` in `companionData.ts` called `.ToLowerInvariant()` — a C# string method with no equivalent in JavaScript/TypeScript. Because the string type isn't checked against this method call at compile time in this context, `tsc` did not catch it, and the call threw at runtime, breaking the lesson page. Resolved as part of the v2 backend migration: all keyword matching now happens server-side in C# (where `.ToLowerInvariant()` is valid), and the frontend only consumes the already-processed JSON response.
 - **Malformed SVG transform:** The owl avatar's right eyebrow used an invalid `scale(1 1 17.5 10)` transform (SVG's `scale()` accepts 1–2 arguments, not 4). Replaced with the correct `translate → scale → translate` three-step pattern to mirror the shape about its pivot point, eliminating a console warning.
 - **White-on-white inactive tab buttons:** The companion's injected `<style>` block defined a global, unscoped base rule (`.duo-btn3d { color: white; }`). Because this stylesheet is injected into the document by `LessonCompanion` — which mounts on the same page as the lesson tab buttons (`Lesson` / `Video` / `Tutorial` / `Practice` / `Best practices`, styled with the shared `duo-btn3d-white` class from `index.css`) — it leaked outside the companion widget and overrode the intended dark text color (`--duo-eel`) on those buttons, making their labels invisible on a white background. Fix: removed the redundant `color: white;` line from the companion's base `.duo-btn3d` rule (color is already set individually on `.duo-btn3d-green` / `.duo-btn3d-blue` within the widget), restoring correct contrast on page-level white buttons without altering the companion's own styling.
+
 ---
- 
+
 ## Notes / Follow-ups
- 
-- Content is fully predefined/static per lesson; no LLM or third-party AI call is made in this iteration. The existing `/assistant` AI chat endpoint remains a separate, untouched feature that could later serve as a fallback for unmatched questions.
+
+- Content is fully predefined/static per lesson and now lives entirely on the backend; no LLM or third-party AI call is made in this iteration. The existing `/assistant` AI chat endpoint remains a separate, untouched feature that could later serve as a fallback for unmatched questions.
 - Gamification (XP for interactions, avatar cosmetic unlocks, dedicated badges) was scoped out of this pass and remains a suggested next step.
-- Because the companion's `<style>` tag is unscoped, any future class names added inside `LessonCompanion.tsx` should be prefixed (e.g. `.duo-companion-*`) to avoid repeating the global-leak issue fixed above.
+- Because the companion's `<style>` tag is unscoped, any future class names added inside `LessonCompanion.tsx` should be prefixed (e.g. `.duo-companion-*`) to avoid repeating the global-leak issue fixed earlier in this changelog.
+- The companion-data endpoint now needs the backend running locally for the lesson page to render its content correctly — without it, the frontend will show the `ErrorState` panel rather than a blank page.
 
 ### Added
 - **Gmail SMTP Integration**: Implemented production-ready email service using MailKit 4.17.0 for sending password reset OTPs via Gmail SMTP.
