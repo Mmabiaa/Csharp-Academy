@@ -129,6 +129,7 @@ export interface UserProfile {
   lastName: string;
   profileImageUrl?: string;
   voiceRecognitionEnabled: boolean;
+  voiceFeedbackEnabled: boolean;
   roles: string[];
   xp: number;
   currentStreak: number;
@@ -144,6 +145,7 @@ export interface UpdateProfileRequest {
   email: string;
   profileImageUrl?: string;
   voiceRecognitionEnabled: boolean;
+  voiceFeedbackEnabled: boolean;
   currentPassword?: string;
   newPassword?: string;
 }
@@ -918,6 +920,19 @@ export async function setVoiceRecognitionEnabled(token: string, enabled: boolean
     throw new Error(error.message || "Failed to update voice recognition preference");
   }
   return handleResponse<{ voiceRecognitionEnabled: boolean }>(response);
+}
+
+export async function setVoiceFeedbackEnabled(token: string, enabled: boolean): Promise<{ voiceFeedbackEnabled: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/users/me/voice-feedback`, {
+    method: "PATCH",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(enabled),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to update voice feedback preference");
+  }
+  return handleResponse<{ voiceFeedbackEnabled: boolean }>(response);
 }
 
 export async function googleLogin(idToken: string): Promise<AuthResponse> {

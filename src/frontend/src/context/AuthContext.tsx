@@ -8,6 +8,7 @@ interface User {
   lastName: string;
   profileImageUrl?: string;
   voiceRecognitionEnabled: boolean;
+  voiceFeedbackEnabled: boolean;
   roles: string[];
   xp: number;
   currentStreak: number;
@@ -50,6 +51,7 @@ function normalizeUser(raw: any, existingRoles?: string[]): User | null {
     lastName: raw.lastName ?? raw.LastName ?? "",
     profileImageUrl: raw.profileImageUrl ?? raw.ProfileImageUrl,
     voiceRecognitionEnabled: raw.voiceRecognitionEnabled ?? raw.VoiceRecognitionEnabled ?? false,
+    voiceFeedbackEnabled: raw.voiceFeedbackEnabled ?? raw.VoiceFeedbackEnabled ?? true,
     roles,
     xp: raw.xp ?? raw.Xp ?? 0,
     currentStreak: raw.currentStreak ?? raw.CurrentStreak ?? 0,

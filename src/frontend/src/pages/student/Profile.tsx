@@ -81,9 +81,12 @@ export default function Profile() {
   const {
     isVoiceRecognitionEnabled,
     setVoiceRecognitionEnabled,
+    isVoiceFeedbackEnabled,
+    setVoiceFeedbackEnabled,
     isListening,
     toggleListening,
     supported: voiceSupported,
+    speakFeedback,
   } = useVoice();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"profile" | "settings">("profile");
@@ -99,6 +102,7 @@ export default function Profile() {
     email: "",
     profileImageUrl: "",
     voiceRecognitionEnabled: false,
+    voiceFeedbackEnabled: true,
     currentPassword: "",
     newPassword: "",
   });
@@ -115,6 +119,7 @@ export default function Profile() {
         email: data.email,
         profileImageUrl: data.profileImageUrl || "",
         voiceRecognitionEnabled: !!data.voiceRecognitionEnabled,
+        voiceFeedbackEnabled: typeof data.voiceFeedbackEnabled === "boolean" ? data.voiceFeedbackEnabled : true,
         currentPassword: "",
         newPassword: "",
       });
@@ -130,7 +135,7 @@ export default function Profile() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: any) => updateProfile(token!, { ...data, voiceRecognitionEnabled: formData.voiceRecognitionEnabled }),
+    mutationFn: (data: any) => updateProfile(token!, { ...data, voiceRecognitionEnabled: formData.voiceRecognitionEnabled, voiceFeedbackEnabled: formData.voiceFeedbackEnabled }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       updateUserSettings({
@@ -139,6 +144,7 @@ export default function Profile() {
         email: formData.email,
         profileImageUrl: formData.profileImageUrl,
         voiceRecognitionEnabled: formData.voiceRecognitionEnabled,
+        voiceFeedbackEnabled: formData.voiceFeedbackEnabled,
       } as any);
       setSuccessMsg("Profile updated successfully!");
       setFormData((prev) => ({ ...prev, currentPassword: "", newPassword: "" }));

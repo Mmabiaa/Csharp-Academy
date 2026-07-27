@@ -81,11 +81,42 @@ public class UsersController : ControllerBase
             LastName: profile.LastName,
             Email: profile.Email,
             ProfileImageUrl: profile.ProfileImageUrl,
-            VoiceRecognitionEnabled: enabled
+            VoiceRecognitionEnabled: enabled,
+            VoiceFeedbackEnabled: profile.VoiceFeedbackEnabled
         );
 
         await _mediator.Send(command);
         return Ok(new { VoiceRecognitionEnabled = enabled });
+    }
+
+    /// <summary>
+    /// Toggles the voice feedback (TTS speech) preference for the currently authenticated user.
+    /// </summary>
+    /// <param name="enabled">Whether spoken confirmation feedback should be played after navigation and actions.</param>
+    /// <returns>User profile updated with the new feedback preference.</returns>
+    /// <response code="200">Preference updated successfully.</response>
+    /// <response code="401">If user is not authenticated.</response>
+    [Authorize]
+    [HttpPatch("me/voice-feedback")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult> SetVoiceFeedback([FromBody] bool enabled)
+    {
+        var userId = GetRequiredUserId();
+
+        var profile = await _mediator.Send(new GetUserProfileQuery(userId));
+        var command = new UpdateUserProfileCommand(
+            UserId: userId,
+            FirstName: profile.FirstName,
+            LastName: profile.LastName,
+            Email: profile.Email,
+            ProfileImageUrl: profile.ProfileImageUrl,
+            VoiceRecognitionEnabled: profile.VoiceRecognitionEnabled,
+            VoiceFeedbackEnabled: enabled
+        );
+
+        await _mediator.Send(command);
+        return Ok(new { VoiceFeedbackEnabled = enabled });
     }
 
     /// <summary>
