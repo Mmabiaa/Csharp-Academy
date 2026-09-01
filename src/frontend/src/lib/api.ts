@@ -128,6 +128,8 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   profileImageUrl?: string;
+  voiceRecognitionEnabled: boolean;
+  voiceFeedbackEnabled: boolean;
   roles: string[];
   xp: number;
   currentStreak: number;
@@ -142,6 +144,8 @@ export interface UpdateProfileRequest {
   lastName: string;
   email: string;
   profileImageUrl?: string;
+  voiceRecognitionEnabled: boolean;
+  voiceFeedbackEnabled: boolean;
   currentPassword?: string;
   newPassword?: string;
 }
@@ -659,7 +663,47 @@ export async function submitChallenge(challengeId: number, code: string, token: 
 
 export async function fetchLessonVideos(lessonId: number): Promise<LessonVideo[]> {
   const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/videos`);
-  return handleResponse(response);
+  return handleResponse<LessonVideo[]>(response);
+}
+
+export interface CompanionQa {
+  keywords: string[];
+  question: string;
+  answer: string;
+}
+
+export interface CompanionExample {
+  concept: string;
+  analogy: string;
+  codeSample: string;
+}
+
+export interface CompanionMiniQuiz {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export interface CompanionPracticeHint {
+  exerciseTitle: string;
+  hints: string[];
+}
+
+export interface LessonCompanionData {
+  encouragements: string[];
+  celebrations: string[];
+  greetings: string[];
+  conceptExplanations: Record<string, string>;
+  questionAnswers: CompanionQa[];
+  examples: CompanionExample[];
+  miniQuizzes: CompanionMiniQuiz[];
+  practiceHints: CompanionPracticeHint[];
+}
+
+export async function fetchLessonCompanionData(lessonId: number): Promise<LessonCompanionData> {
+  const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/companion-data`);
+  return handleResponse<LessonCompanionData>(response);
 }
 
 export async function fetchUserProgressSummary(token: string): Promise<UserProgressSummary> {
@@ -863,6 +907,32 @@ export async function updateProfile(token: string, data: UpdateProfileRequest): 
     const error = await response.json();
     throw new Error(error.message || "Failed to update profile");
   }
+}
+
+export async function setVoiceRecognitionEnabled(token: string, enabled: boolean): Promise<{ voiceRecognitionEnabled: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/users/me/voice-recognition`, {
+    method: "PATCH",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(enabled),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to update voice recognition preference");
+  }
+  return handleResponse<{ voiceRecognitionEnabled: boolean }>(response);
+}
+
+export async function setVoiceFeedbackEnabled(token: string, enabled: boolean): Promise<{ voiceFeedbackEnabled: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/users/me/voice-feedback`, {
+    method: "PATCH",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(enabled),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to update voice feedback preference");
+  }
+  return handleResponse<{ voiceFeedbackEnabled: boolean }>(response);
 }
 
 export async function googleLogin(idToken: string): Promise<AuthResponse> {

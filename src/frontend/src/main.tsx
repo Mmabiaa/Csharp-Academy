@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { SoundProvider } from './context/SoundContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { VoiceProvider } from './context/VoiceContext'
 import './index.css'
 import App from './App.tsx'
 
@@ -16,9 +17,11 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <ThemeProvider>
           <SoundProvider>
-            <NotificationProvider>
-              <App />
-            </NotificationProvider>
+            <VoiceProvider>
+              <NotificationProvider>
+                <App />
+              </NotificationProvider>
+            </VoiceProvider>
           </SoundProvider>
         </ThemeProvider>
       </AuthProvider>

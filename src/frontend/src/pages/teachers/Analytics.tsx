@@ -78,7 +78,6 @@ export default function Analytics() {
       </div>
     );
   }
-
   const stats = [
     { label: "Total Users", value: data.totalUsers, icon: Users, color: "#1CB0F6", bg: "#DDF4FF" },
     { label: "Enrollments", value: data.totalEnrollments, icon: BookOpen, color: "#46A302", bg: "#D7FFB8" },

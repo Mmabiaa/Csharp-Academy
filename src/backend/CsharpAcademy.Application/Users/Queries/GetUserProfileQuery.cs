@@ -14,6 +14,8 @@ public class UserProfileDto
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? ProfileImageUrl { get; set; }
+    public bool VoiceRecognitionEnabled { get; set; }
+    public bool VoiceFeedbackEnabled { get; set; }
     public int Xp { get; set; }
     public int CurrentStreak { get; set; }
     public int MaxStreak { get; set; }
@@ -69,6 +71,8 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
             LastName = user.LastName,
             Roles = roles.ToList(),
             ProfileImageUrl = user.ProfileImageUrl,
+            VoiceRecognitionEnabled = user.VoiceRecognitionEnabled,
+            VoiceFeedbackEnabled = user.VoiceFeedbackEnabled,
             Xp = user.Xp,
             CurrentStreak = user.CurrentStreak,
             MaxStreak = user.MaxStreak,

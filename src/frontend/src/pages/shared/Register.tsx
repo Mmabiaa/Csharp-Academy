@@ -173,7 +173,6 @@ export default function Register() {
           </button>
         </form>
       </div>
-
       <div className="text-center pt-6">
         <p className="text-neutral-500 font-bold">
           Already have an account?{" "}

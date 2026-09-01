@@ -5922,6 +5922,12 @@ namespace CsharpAcademy.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
+                    b.Property<bool>("VoiceFeedbackEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("VoiceRecognitionEnabled")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<int>("Xp")
                         .HasColumnType("int");
 

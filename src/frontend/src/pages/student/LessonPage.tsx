@@ -20,6 +20,7 @@ import { useVoiceNarration } from "../../hooks/useVoiceNarration";
 import CodeEditor from "../../components/CodeEditor";
 import ConsolePanel from "../../components/ConsolePanel";
 import VideoPlayer from "../../components/VideoPlayer";
+import LessonCompanion from "../../sections/lesson-companion/LessonCompanion";
 import {
   ArrowLeft,
   Volume2,
@@ -75,6 +76,9 @@ export default function LessonPage() {
   const [practiceRunTrigger, setPracticeRunTrigger] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<number | null>(null);
+  const [practiceFailCount, setPracticeFailCount] = useState(0);
+  const [practiceSuccessCount, setPracticeSuccessCount] = useState(0);
+  const [lessonCompletedTrigger, setLessonCompletedTrigger] = useState(false);
 
   const { token, isAuthenticated, isTeacher } = useAuth();
   const { showNotification } = useNotifications();
@@ -129,6 +133,7 @@ export default function LessonPage() {
     mutationFn: () => completeLesson(lessonId, token!),
     onSuccess: (result) => {
       playSound("complete");
+      setLessonCompletedTrigger(true);
       setIsSuccess(true);
       const badgeMsg = result.newBadges.length > 0
         ? ` Badges earned: ${result.newBadges.join(", ")}` : "";
@@ -179,8 +184,10 @@ export default function LessonPage() {
       setIsSuccess(result.passed);
       if (result.passed) {
         playSound("success");
+        setPracticeSuccessCount((c) => c + 1);
       } else {
         playSound("error");
+        setPracticeFailCount((c) => c + 1);
       }
       setMessage(result.message + (result.xpEarned > 0 ? ` +${result.xpEarned} XP` : ""));
       if (result.passed) {
@@ -514,6 +521,21 @@ export default function LessonPage() {
           <span className="font-black">{message}</span>
         </div>
       )}
+
+      {/* Learning Companion (bottom-right, lessons-only) */}
+      <LessonCompanion
+        key={lessonId}
+        lessonId={lessonId}
+        lessonTitle={lesson.title}
+        lessonContent={lesson.content}
+        lessonVoiceSummary={lesson.voiceSummary}
+        lessonBestPractices={lesson.bestPractices}
+        lessonCompleted={lesson.isCompleted || lessonCompletedTrigger}
+        practiceFailCount={practiceFailCount}
+        practiceSuccessCount={practiceSuccessCount}
+        tutorialStep={tutorialStep}
+        tutorialTotalSteps={tab === "tutorial" && tutorialSteps ? tutorialSteps.length : 0}
+      />
     </div>
   );
 }
